@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "invest-os"
+version = "0.1.0"
+description = "For investors who want to focus on generating alpha"
+authors = ["focus on generating alphaCharlie Reese"]
+license = "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
+readme = "README.md"
+packages = [{include = "invest_os"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
