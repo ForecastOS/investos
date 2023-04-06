@@ -1,5 +1,6 @@
 import pandas as pd
 
+import invest_os as inv
 import invest_os.util as util
 
 class PortfolioOptimization():
@@ -57,20 +58,25 @@ class PortfolioOptimization():
             "short": [],
             "long": [],
         },
-        "optimization": "multi_period", # multi_period or single_period
     }
 
     def __init__(
         self, 
         df_historical, 
         df_forecast,
+        strategy=inv.portfolio_optimization.strategy.RankLongShort,
+        initial_portfolio=None, # In dollars (or other currency), not in weights
+        initial_cash=100_000_000,
         df_categories=None, 
         config={},
         **kwargs):
+        self.strategy = strategy
+
         self.config = util.deep_dict_merge(self.BASE_CONFIG, config)
 
         self.historical = {}
         self.historical['return'] = self.pivot_and_fill(df_historical, values='return')
+        self.historical['price'] = self.pivot_and_fill(df_historical, values='price')
         self.historical['volume'] = self.pivot_and_fill(df_historical, values='volume')
         self.historical['spread'] = self.pivot_and_fill(df_historical, values='spread')
 
@@ -79,6 +85,7 @@ class PortfolioOptimization():
         self.forecast['std_dev'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'std_dev'), values='std_dev')
         self.forecast['volume'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'volume'), values='volume')
         self.forecast['spread'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'spread'), values='spread')
+        self.forecast['price'] = self.create_forecast_price()
 
 
     def pivot_and_fill(self, df, values, columns='asset', index='date', fill_method='bfill'):
@@ -108,15 +115,63 @@ class PortfolioOptimization():
             )
 
 
-        # [ ] Does volume need to be $ weighted? Check paper. In shares rn, which isn't right
-        # --> Probably makes sense to have (historical and forecast) prices
+    def create_forecast_price(self):
+        last_historical_prices = self.historical['price'].loc[self.historical['price'].index.max()]
+        
+        # Make geometric - add 1, 
+        df = self.forecast['return'] + 1
+        
+        # Geometric cumulative mean
+        df = df.cumprod()
+        
+        # Multiply geometric return factors by last historical value
+        return df * self.historical['price'].loc[self.historical['price'].index.max()]
+       
 
-        # [ ] Build risk model
+    def optimize(self):
+        print("Optimizing...")
 
-        # [ ] RankLongShort
+        for t in self.forecast['return'].index:
+            self.strategy.generate_trade_list(self, t)
 
-        # [ ] Run SPO - as separate class
+        print("Done optimizing. Check backtest_result object for more information")
 
-        # [ ] Build crude reporting to make sure everything is working
+# START THURSDAY
 
-        # [ ] Run MPO - as separate class
+# [ ] Default initial portfolio to 0, with X in cash
+# --> [ ] Have default value for cash too (100MM) that can be overridden
+# --> [ ] Add cash myself to initial portfolio DF 
+# --> [ ] Add default borrow cost annually
+
+
+# [ ] RankLongShort
+# --> Generate trade list
+# --> propogate (which will calc holding and trade costs)
+# -->--> New position and trades
+# -->--> H cost
+# -->--> T cost
+# --> Log result (in result - backtest - object). Borrow heavy inspo to keep easy
+
+# [ ] Build crude inv.backtest.Result model to make sure everything is working
+# --> inspo from result
+
+# STOP THURSDAY
+
+# [ ] Need to water down signal more
+
+# [ ] Should only NEED forecast, not historical, if everything is passed in
+
+# [ ] Build duck-typed (i.e. swappable) risk model
+
+# [ ] Build duck-typed (i.e. swappable) cost model
+# --> for t costs
+# --> for h costs
+
+# [ ] Run SPO - as separate class
+
+# [ ] Run MPO - as separate class
+
+# [ ] Add ability to run multiple iterations of type, config, etc.
+# --> Essentially grid search wrapper
+
+# [ ] Support forecast dividends / distributions (positive or negative)
