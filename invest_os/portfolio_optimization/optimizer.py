@@ -1,9 +1,11 @@
 import pandas as pd
+import statistics
 
-import invest_os as inv
+import invest_os.portfolio_optimization.strategy as strategy
+import invest_os.backtest as backtest
 import invest_os.util as util
 
-class PortfolioOptimization():
+class Optimizer():
     
     BASE_CONFIG = {
         "constraints": {
@@ -36,8 +38,7 @@ class PortfolioOptimization():
             },
         },
         "borrowing": {
-            "interest_rate_on_cash": None,
-            "interest_rate_on_assets": None,
+            "interest_rate": 0.005,
         },
         "traiding": {
             "sensitivity": 1, 
@@ -62,23 +63,38 @@ class PortfolioOptimization():
 
     def __init__(
         self, 
-        df_historical, 
         df_forecast,
-        strategy=inv.portfolio_optimization.strategy.RankLongShort,
+        df_actual=None,
+        df_historical=None, 
+        strategy=strategy.RankLongShort,
+        backtest_model=None,
         initial_portfolio=None, # In dollars (or other currency), not in weights
+        costs=[],
         initial_cash=100_000_000,
         df_categories=None, 
         config={},
         **kwargs):
-        self.strategy = strategy
-
+        
         self.config = util.deep_dict_merge(self.BASE_CONFIG, config)
 
-        self.historical = {}
-        self.historical['return'] = self.pivot_and_fill(df_historical, values='return')
-        self.historical['price'] = self.pivot_and_fill(df_historical, values='price')
-        self.historical['volume'] = self.pivot_and_fill(df_historical, values='volume')
-        self.historical['spread'] = self.pivot_and_fill(df_historical, values='spread')
+        self.strategy = strategy # Must be initialized first
+
+        self.costs = costs
+        
+        if backtest_model is None:
+            if df_actual is not None:
+                self.backtest_model = backtest.Result
+            else:
+                self.backtest_model = backtest.ForecastResult
+        else:   
+            self.backtest_model = backtest_model # Not initialized when passed in
+
+        if df_historical is not None:
+            self.historical = {}
+            self.historical['return'] = self.pivot_and_fill(df_historical, values='return')
+            self.historical['price'] = self.pivot_and_fill(df_historical, values='price')
+            self.historical['volume'] = self.pivot_and_fill(df_historical, values='volume')
+            self.historical['spread'] = self.pivot_and_fill(df_historical, values='spread')
 
         self.forecast = {}
         self.forecast['return'] = self.pivot_and_fill(df_forecast, values='return')
@@ -86,6 +102,16 @@ class PortfolioOptimization():
         self.forecast['volume'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'volume'), values='volume')
         self.forecast['spread'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'spread'), values='spread')
         self.forecast['price'] = self.create_forecast_price()
+        self.forecast['return']['cash'] = self.config['borrowing']['interest_rate']
+
+        if df_actual is not None:
+            self.actual = {}
+            self.actual['return'] = self.pivot_and_fill(df_actual, values='return')
+            self.actual['return']['cash'] = self.config['borrowing']['interest_rate']
+
+        self.create_initial_portfolio(initial_portfolio, initial_cash)
+
+        self.strategy.forecast_returns = self.forecast['return']
 
 
     def pivot_and_fill(self, df, values, columns='asset', index='date', fill_method='bfill'):
@@ -128,36 +154,81 @@ class PortfolioOptimization():
         return df * self.historical['price'].loc[self.historical['price'].index.max()]
        
 
+    def create_initial_portfolio(self, initial_portfolio, initial_cash):
+        if initial_portfolio is None:
+            initial_portfolio = pd.Series(index=self.forecast['return'].columns, data=0)
+        
+        initial_portfolio["cash"] = initial_cash
+
+        self.initial_portfolio = initial_portfolio
+
+
     def optimize(self):
         print("Optimizing...")
 
+        self.backtest = self.backtest_model()
+
+        # Submit initial position
+        t = self.get_initial_t()
+        u = pd.Series(index=self.initial_portfolio.index, data=0) # No trades at time 0
+        h_next = self.initial_portfolio # Includes cash
+        self.backtest.save_position(t, u, h_next)
+
+        # Propograte through future trades and resulting positions
         for t in self.forecast['return'].index:
-            self.strategy.generate_trade_list(self, t)
+            u = self.strategy.generate_trade_list(h_next, t)
+            h_next, u = self.propagate(h_next, u, t)
+            self.backtest.save_position(t, u, h_next)
 
-        print("Done optimizing. Check backtest_result object for more information")
-
-# START THURSDAY
-
-# [ ] Default initial portfolio to 0, with X in cash
-# --> [ ] Have default value for cash too (100MM) that can be overridden
-# --> [ ] Add cash myself to initial portfolio DF 
-# --> [ ] Add default borrow cost annually
+        print("Done simulating.")
+        
+        return self.backtest
 
 
-# [ ] RankLongShort
-# --> Generate trade list
-# --> propogate (which will calc holding and trade costs)
-# -->--> New position and trades
+    def propagate(self, h, u, t):
+        """From CvxPortfolio
+
+        Propagates the portfolio forward over time period t, given trades u.
+
+        Args:
+            h: pandas Series object describing current portfolio
+            u: n vector with the stock trades (not cash)
+            t: current time
+
+        Returns:
+            h_next: portfolio after returns propagation (for t to t+1 period)
+            u: trades vector with simulated cash balance
+        """
+        h_plus = h + u
+        
+        costs = [cost.value_expr(t, h_plus=h_plus, u=u) for cost in self.costs]
+
+        u["cash"] = -sum(u[u.index != "cash"]) - sum(costs)
+        h_plus["cash"] = h["cash"] + u["cash"]
+
+        h_next = self.actual['return'].loc[t] * h_plus + h_plus
+
+        return h_next, u
+
+
+    def get_initial_t(self):
+        median_time_delta = statistics.median(
+            self.forecast['return'].index[1:5] - self.forecast['return'].index[0:4]
+        )
+
+        return self.forecast['return'].index[0] - median_time_delta
+
+# Unwind trade from LongShort appropriately. Probably with cumprod (see create_forecast_price method)
+
 # -->--> H cost
 # -->--> T cost
-# --> Log result (in result - backtest - object). Borrow heavy inspo to keep easy
 
 # [ ] Build crude inv.backtest.Result model to make sure everything is working
-# --> inspo from result
 
 # STOP THURSDAY
 
-# [ ] Need to water down signal more
+# [ ] Duck type everything and allow everything to be passed in (for easy extensibility)
+# --> Duck typing initial transform for historical and forecast data would be amazing as well (so it can be customized and resused by specific companies)
 
 # [ ] Should only NEED forecast, not historical, if everything is passed in
 
@@ -175,3 +246,5 @@ class PortfolioOptimization():
 # --> Essentially grid search wrapper
 
 # [ ] Support forecast dividends / distributions (positive or negative)
+
+# NOTE TO SELF: backtester can AND SHOULD sometimes have different costs than strategy. Strategy costs are for informing trades (i.e. discouraging turnover), backtest costs are ACTUAL expected costs given trades determined by strategy
