@@ -1,5 +1,7 @@
 import pandas as pd
+import numpy as np
 import statistics
+import datetime as dt
 
 import invest_os.portfolio_optimization.strategy as strategy
 import invest_os.backtest as backtest
@@ -100,18 +102,22 @@ class Optimizer():
         self.forecast['return'] = self.pivot_and_fill(df_forecast, values='return')
         self.forecast['std_dev'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'std_dev'), values='std_dev')
         self.forecast['volume'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'volume'), values='volume')
-        self.forecast['spread'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'spread'), values='spread')
-        self.forecast['price'] = self.create_forecast_price()
-        self.forecast['return']['cash'] = self.config['borrowing']['interest_rate']
+        self.forecast['half_spread'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'spread'), values='spread') / 2
+        self.forecast['price'] = self.create_price(self.forecast['return'])
+        self._set_cash_return_for_each_period(self.forecast['return'])
 
         if df_actual is not None:
             self.actual = {}
             self.actual['return'] = self.pivot_and_fill(df_actual, values='return')
-            self.actual['return']['cash'] = self.config['borrowing']['interest_rate']
+            self.actual['std_dev'] = self.pivot_and_fill(self.create_forecast(df_actual, 'std_dev'), values='std_dev')
+            self.actual['volume'] = self.pivot_and_fill(self.create_forecast(df_actual, 'volume'), values='volume')
+            self.actual['half_spread'] = self.pivot_and_fill(self.create_forecast(df_actual, 'spread'), values='spread') / 2
+            self.actual['price'] = self.create_price(self.actual['return'])
+            self._set_cash_return_for_each_period(self.actual['return'])
 
         self.create_initial_portfolio(initial_portfolio, initial_cash)
 
-        self.strategy.forecast_returns = self.forecast['return']
+        self._set_references_back_to_optimizer()
 
 
     def pivot_and_fill(self, df, values, columns='asset', index='date', fill_method='bfill'):
@@ -141,11 +147,11 @@ class Optimizer():
             )
 
 
-    def create_forecast_price(self):
+    def create_price(self, df_return):
         last_historical_prices = self.historical['price'].loc[self.historical['price'].index.max()]
         
-        # Make geometric - add 1, 
-        df = self.forecast['return'] + 1
+        # Make geometric - add 1
+        df = df_return + 1
         
         # Geometric cumulative mean
         df = df.cumprod()
@@ -201,13 +207,17 @@ class Optimizer():
         """
         h_plus = h + u
         
-        costs = [cost.value_expr(t, h_plus=h_plus, u=u) for cost in self.costs]
+        costs = [cost.value_expr(t, h_plus=h_plus, u=u) for cost in self.strategy.costs]
 
         u["cash"] = -sum(u[u.index != "cash"]) - sum(costs)
         h_plus["cash"] = h["cash"] + u["cash"]
 
         h_next = self.actual['return'].loc[t] * h_plus + h_plus
 
+        zero_threshold = 0.00001
+        h_next[np.abs(h_next) < zero_threshold] = 0
+        u[np.abs(u) < zero_threshold] = 0
+        
         return h_next, u
 
 
@@ -217,6 +227,27 @@ class Optimizer():
         )
 
         return self.forecast['return'].index[0] - median_time_delta
+
+
+    def _set_cash_return_for_each_period(self, df): 
+        df['cash'] = self.config['borrowing']['interest_rate']
+
+        df['tmp_date'] = df.index
+        df['tmp_date_lagged'] = df['tmp_date'].shift(1)
+        df['tmp_date_delta'] = df['tmp_date'] - df['tmp_date_lagged']
+        df['tmp_date_delta_fraction_of_year'] = df['tmp_date_delta'] / dt.timedelta(365,0,0,0)
+        df['cash'] = (1 + df['cash']) ** df['tmp_date_delta_fraction_of_year'] - 1
+        df['cash'] = df['cash'].fillna(method='bfill')
+
+        df.drop(columns=['tmp_date', 'tmp_date_lagged', 'tmp_date_delta', 'tmp_date_delta_fraction_of_year'], inplace=True)
+
+
+    def _set_references_back_to_optimizer(self):
+        self.strategy.forecast_returns = self.forecast['return']
+        self.strategy.optimizer = self
+        
+        for c in self.strategy.costs:
+            c.optimizer = self
 
 # Unwind trade from LongShort appropriately. Probably with cumprod (see create_forecast_price method)
 
