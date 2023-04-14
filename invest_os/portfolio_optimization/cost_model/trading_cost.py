@@ -17,10 +17,7 @@ class TradingCost(BaseCost):
         u_no_cash = u.iloc[:-1]
         
         spread_cost = np.abs(u_no_cash) * values_in_time(self.optimizer.actual['half_spread'], t)
-        std_dev_dollars = (
-            values_in_time(self.optimizer.actual['std_dev'], t) *
-            values_in_time(self.optimizer.actual['price'], t)
-        )
+        std_dev = values_in_time(self.optimizer.actual['std_dev'], t)
         volume_dollars = (
             values_in_time(self.optimizer.actual['volume'], t) *
             values_in_time(self.optimizer.actual['price'], t)
@@ -30,7 +27,8 @@ class TradingCost(BaseCost):
         self.tmp_trading_costs = (
             spread_cost + (
                 self.sensitivity_coeff * 
-                std_dev_dollars * 
+                std_dev * 
+                np.abs(u_no_cash) *
                 percent_volume_traded
             )
         )

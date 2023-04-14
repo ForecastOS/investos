@@ -2,15 +2,18 @@ import pandas as pd
 import datetime as dt
 
 from invest_os.portfolio_optimization.strategy import BaseStrategy
-from invest_os.portfolio_optimization.cost_model import TradingCost
+from invest_os.portfolio_optimization.cost_model import TradingCost, HoldingCost
 from invest_os.util import values_in_time
 
 class RankLongShort(BaseStrategy):
-    def __init__(self, n_periods_held=1, leverage=1, percent_short=0.25, percent_long=0.25):
+    def __init__(self, n_periods_held=1, leverage=1, percent_short=0.25, percent_long=0.25, costs=[]):
         self.forecast_returns = None # Set by Optimizer in init
         self.optimizer = None # Set by Optimizer in init
 
-        self.costs = [TradingCost()]
+        self.costs = costs
+        if not self.costs:
+            self.costs = [TradingCost(), HoldingCost()]
+
         self.constraints = [] # TBU
 
         self.percent_short = percent_short
@@ -31,8 +34,6 @@ class RankLongShort(BaseStrategy):
             w_unwind = self._get_trade_weights_for_t(holdings_unwind, t_unwind)
             u_unwind_pre = sum(holdings_unwind) * w_unwind * self.leverage_per_trade
             u_unwind_scaled = u_unwind_pre * self._cum_returns_to_scale_unwind(t_unwind, t)
-
-            # print("rank_LS:", "u", u['AAPL'], "u_unwind_pre_scale", u_unwind_pre['AAPL'], "u_unwind_scaled", u_unwind_scaled['AAPL'])
             
             u -= u_unwind_scaled
 

@@ -1,4 +1,4 @@
 import invest_os.portfolio_optimization.strategy
 import invest_os.portfolio_optimization.risk_model
 import invest_os.portfolio_optimization.cost_model
-from invest_os.portfolio_optimization.optimizer import Optimizer
+from invest_os.portfolio_optimization.backtester import Backtester

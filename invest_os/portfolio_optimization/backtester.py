@@ -7,7 +7,7 @@ import invest_os.portfolio_optimization.strategy as strategy
 import invest_os.backtest as backtest
 import invest_os.util as util
 
-class Optimizer():
+class Backtester():
     
     BASE_CONFIG = {
         "constraints": {
@@ -41,6 +41,7 @@ class Optimizer():
         },
         "borrowing": {
             "interest_rate": 0.005,
+            "short_rate": 0.005
         },
         "traiding": {
             "sensitivity": 1, 
@@ -71,8 +72,7 @@ class Optimizer():
         strategy=strategy.RankLongShort,
         backtest_model=None,
         initial_portfolio=None, # In dollars (or other currency), not in weights
-        costs=[],
-        aum=100_000_000,
+        aum=500_000_000,
         df_categories=None, 
         config={},
         **kwargs):
@@ -80,8 +80,6 @@ class Optimizer():
         self.config = util.deep_dict_merge(self.BASE_CONFIG, config)
 
         self.strategy = strategy # Must be initialized first
-
-        self.costs = costs
         
         if backtest_model is None:
             if df_actual is not None:
