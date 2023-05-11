@@ -1,15 +1,21 @@
 [tool.poetry]
-name = "invest-os"
+name = "investos"
 version = "0.1.0"
 description = "For investors who want to focus on generating alpha"
-authors = ["focus on generating alphaCharlie Reese"]
+authors = ["Charlie Reese"]
 license = "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
 readme = "README.md"
-packages = [{include = "invest_os"}]
+packages = [{include = "investos"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+pandas = "^2.0.1"
+numpy = "^1.24.3"
 
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.3.1"
+sphinx = "^7.0.0"
 
 [build-system]
 requires = ["poetry-core"]
