@@ -1,3 +1,4 @@
 examples/data
 **/__pycache__
 .personal_README.md
+**/.doctrees

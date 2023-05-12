@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>investos.portfolio_optimization package &#8212; InvestOS 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="investos-portfolio-optimization-package">
+<h1>investos.portfolio_optimization package<a class="headerlink" href="#investos-portfolio-optimization-package" title="Permalink to this heading">¶</a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="investos.portfolio_optimization.cost_model.html">investos.portfolio_optimization.cost_model package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="investos.portfolio_optimization.cost_model.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="investos.portfolio_optimization.cost_model.html#module-investos.portfolio_optimization.cost_model.base_cost">investos.portfolio_optimization.cost_model.base_cost module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="investos.portfolio_optimization.cost_model.html#investos.portfolio_optimization.cost_model.base_cost.BaseCost"><code class="docutils literal notranslate"><span class="pre">BaseCost</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="investos.portfolio_optimization.cost_model.html#investos.portfolio_optimization.cost_model.base_cost.BaseCost.value_expr"><code class="docutils literal notranslate"><span class="pre">BaseCost.value_expr()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="investos.portfolio_optimization.cost_model.html#module-investos.portfolio_optimization.cost_model.holding_cost">investos.portfolio_optimization.cost_model.holding_cost module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="investos.portfolio_optimization.cost_model.html#investos.portfolio_optimization.cost_model.holding_cost.HoldingCost"><code class="docutils literal notranslate"><span class="pre">HoldingCost</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="investos.portfolio_optimization.cost_model.html#investos.portfolio_optimization.cost_model.holding_cost.HoldingCost.value_expr"><code class="docutils literal notranslate"><span class="pre">HoldingCost.value_expr()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="investos.portfolio_optimization.cost_model.html#module-investos.portfolio_optimization.cost_model.trading_cost">investos.portfolio_optimization.cost_model.trading_cost module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="investos.portfolio_optimization.cost_model.html#investos.portfolio_optimization.cost_model.trading_cost.TradingCost"><code class="docutils literal notranslate"><span class="pre">TradingCost</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="investos.portfolio_optimization.cost_model.html#investos.portfolio_optimization.cost_model.trading_cost.TradingCost.value_expr"><code class="docutils literal notranslate"><span class="pre">TradingCost.value_expr()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="investos.portfolio_optimization.cost_model.html#module-investos.portfolio_optimization.cost_model">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="investos.portfolio_optimization.risk_model.html">investos.portfolio_optimization.risk_model package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="investos.portfolio_optimization.risk_model.html#module-investos.portfolio_optimization.risk_model">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="investos.portfolio_optimization.strategy.html">investos.portfolio_optimization.strategy package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="investos.portfolio_optimization.strategy.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="investos.portfolio_optimization.strategy.html#module-investos.portfolio_optimization.strategy.base_strategy">investos.portfolio_optimization.strategy.base_strategy module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="investos.portfolio_optimization.strategy.html#investos.portfolio_optimization.strategy.base_strategy.BaseStrategy"><code class="docutils literal notranslate"><span class="pre">BaseStrategy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="investos.portfolio_optimization.strategy.html#investos.portfolio_optimization.strategy.base_strategy.BaseStrategy.generate_trade_list"><code class="docutils literal notranslate"><span class="pre">BaseStrategy.generate_trade_list()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="investos.portfolio_optimization.strategy.html#investos.portfolio_optimization.strategy.base_strategy.BaseStrategy.generate_trade_list_shares"><code class="docutils literal notranslate"><span class="pre">BaseStrategy.generate_trade_list_shares()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="investos.portfolio_optimization.strategy.html#investos.portfolio_optimization.strategy.base_strategy.BaseStrategy.generate_trade_list_weights"><code class="docutils literal notranslate"><span class="pre">BaseStrategy.generate_trade_list_weights()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="investos.portfolio_optimization.strategy.html#module-investos.portfolio_optimization.strategy.rank_long_short">investos.portfolio_optimization.strategy.rank_long_short module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="investos.portfolio_optimization.strategy.html#investos.portfolio_optimization.strategy.rank_long_short.RankLongShort"><code class="docutils literal notranslate"><span class="pre">RankLongShort</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="investos.portfolio_optimization.strategy.html#investos.portfolio_optimization.strategy.rank_long_short.RankLongShort.generate_trade_list"><code class="docutils literal notranslate"><span class="pre">RankLongShort.generate_trade_list()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="investos.portfolio_optimization.strategy.html#module-investos.portfolio_optimization.strategy">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-investos.portfolio_optimization.backtester">
+<span id="investos-portfolio-optimization-backtester-module"></span><h2>investos.portfolio_optimization.backtester module<a class="headerlink" href="#module-investos.portfolio_optimization.backtester" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.backtester.Backtester">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">investos.portfolio_optimization.backtester.</span></span><span class="sig-name descname"><span class="pre">Backtester</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_forecast</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_actual=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_historical=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy=&lt;class</span> <span class="pre">'investos.portfolio_optimization.strategy.rank_long_short.RankLongShort'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backtest_model=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_portfolio=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aum=500000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_categories=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config={}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.backtester.Backtester" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.backtester.Backtester.BASE_CONFIG">
+<span class="sig-name descname"><span class="pre">BASE_CONFIG</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'borrowing':</span> <span class="pre">{'interest_rate':</span> <span class="pre">0.005,</span> <span class="pre">'short_rate':</span> <span class="pre">0.005},</span> <span class="pre">'constraints':</span> <span class="pre">{'borrowing':</span> <span class="pre">{'allowed':</span> <span class="pre">False,</span> <span class="pre">'leverage':</span> <span class="pre">1},</span> <span class="pre">'investing_style':</span> <span class="pre">{'long_only':</span> <span class="pre">True},</span> <span class="pre">'risk':</span> <span class="pre">{'max_asset_weight':</span> <span class="pre">1,</span> <span class="pre">'neutral_categories':</span> <span class="pre">[]},</span> <span class="pre">'trading':</span> <span class="pre">{'turnover_limit':</span> <span class="pre">None}},</span> <span class="pre">'forecast':</span> <span class="pre">{'spread':</span> <span class="pre">{'n_prev_periods':</span> <span class="pre">100},</span> <span class="pre">'start':</span> <span class="pre">None,</span> <span class="pre">'std_dev':</span> <span class="pre">{'n_prev_periods':</span> <span class="pre">100},</span> <span class="pre">'stop':</span> <span class="pre">None,</span> <span class="pre">'volume':</span> <span class="pre">{'n_prev_periods':</span> <span class="pre">100}},</span> <span class="pre">'restricted':</span> <span class="pre">{'all':</span> <span class="pre">[],</span> <span class="pre">'long':</span> <span class="pre">[],</span> <span class="pre">'short':</span> <span class="pre">[]},</span> <span class="pre">'risk_model':</span> <span class="pre">{'aversion':</span> <span class="pre">0.5,</span> <span class="pre">'covariance_risk_factors':</span> <span class="pre">15,</span> <span class="pre">'use_full_covariance_matrix':</span> <span class="pre">False},</span> <span class="pre">'traiding':</span> <span class="pre">{'asymmetry':</span> <span class="pre">0,</span> <span class="pre">'ignore':</span> <span class="pre">{'holding_costs':</span> <span class="pre">False,</span> <span class="pre">'trading_costs':</span> <span class="pre">False},</span> <span class="pre">'round_trip_costs_enabled':</span> <span class="pre">False,</span> <span class="pre">'sensitivity':</span> <span class="pre">1}}</span></em><a class="headerlink" href="#investos.portfolio_optimization.backtester.Backtester.BASE_CONFIG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.backtester.Backtester.create_forecast">
+<span class="sig-name descname"><span class="pre">create_forecast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_forecast</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'std_dev'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.backtester.Backtester.create_forecast" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.backtester.Backtester.create_initial_portfolio">
+<span class="sig-name descname"><span class="pre">create_initial_portfolio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_portfolio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aum</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.backtester.Backtester.create_initial_portfolio" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.backtester.Backtester.create_price">
+<span class="sig-name descname"><span class="pre">create_price</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_return</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.backtester.Backtester.create_price" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.backtester.Backtester.get_initial_t">
+<span class="sig-name descname"><span class="pre">get_initial_t</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.backtester.Backtester.get_initial_t" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.backtester.Backtester.optimize">
+<span class="sig-name descname"><span class="pre">optimize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.backtester.Backtester.optimize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.backtester.Backtester.pivot_and_fill">
+<span class="sig-name descname"><span class="pre">pivot_and_fill</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'asset'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'date'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bfill'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.backtester.Backtester.pivot_and_fill" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.backtester.Backtester.propagate">
+<span class="sig-name descname"><span class="pre">propagate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.backtester.Backtester.propagate" title="Permalink to this definition">¶</a></dt>
+<dd><p>From CvxPortfolio</p>
+<p>Propagates the portfolio forward over time period t, given trades u.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h</strong> – pandas Series object describing current portfolio</p></li>
+<li><p><strong>u</strong> – n vector with the stock trades (not cash)</p></li>
+<li><p><strong>t</strong> – current time</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>portfolio after returns propagation (for t to t+1 period)
+u: trades vector with simulated cash balance</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>h_next</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-investos.portfolio_optimization.optimizer">
+<span id="investos-portfolio-optimization-optimizer-module"></span><h2>investos.portfolio_optimization.optimizer module<a class="headerlink" href="#module-investos.portfolio_optimization.optimizer" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.optimizer.Optimizer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">investos.portfolio_optimization.optimizer.</span></span><span class="sig-name descname"><span class="pre">Optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_forecast</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_actual=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_historical=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy=&lt;class</span> <span class="pre">'investos.portfolio_optimization.strategy.rank_long_short.RankLongShort'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backtest_model=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_portfolio=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">costs=[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aum=100000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_categories=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config={}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.optimizer.Optimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.optimizer.Optimizer.BASE_CONFIG">
+<span class="sig-name descname"><span class="pre">BASE_CONFIG</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'borrowing':</span> <span class="pre">{'interest_rate':</span> <span class="pre">0.005},</span> <span class="pre">'constraints':</span> <span class="pre">{'borrowing':</span> <span class="pre">{'allowed':</span> <span class="pre">False,</span> <span class="pre">'leverage':</span> <span class="pre">1},</span> <span class="pre">'investing_style':</span> <span class="pre">{'long_only':</span> <span class="pre">True},</span> <span class="pre">'risk':</span> <span class="pre">{'max_asset_weight':</span> <span class="pre">1,</span> <span class="pre">'neutral_categories':</span> <span class="pre">[]},</span> <span class="pre">'trading':</span> <span class="pre">{'turnover_limit':</span> <span class="pre">None}},</span> <span class="pre">'forecast':</span> <span class="pre">{'spread':</span> <span class="pre">{'n_prev_periods':</span> <span class="pre">100},</span> <span class="pre">'start':</span> <span class="pre">None,</span> <span class="pre">'std_dev':</span> <span class="pre">{'n_prev_periods':</span> <span class="pre">100},</span> <span class="pre">'stop':</span> <span class="pre">None,</span> <span class="pre">'volume':</span> <span class="pre">{'n_prev_periods':</span> <span class="pre">100}},</span> <span class="pre">'restricted':</span> <span class="pre">{'all':</span> <span class="pre">[],</span> <span class="pre">'long':</span> <span class="pre">[],</span> <span class="pre">'short':</span> <span class="pre">[]},</span> <span class="pre">'risk_model':</span> <span class="pre">{'aversion':</span> <span class="pre">0.5,</span> <span class="pre">'covariance_risk_factors':</span> <span class="pre">15,</span> <span class="pre">'use_full_covariance_matrix':</span> <span class="pre">False},</span> <span class="pre">'traiding':</span> <span class="pre">{'asymmetry':</span> <span class="pre">0,</span> <span class="pre">'ignore':</span> <span class="pre">{'holding_costs':</span> <span class="pre">False,</span> <span class="pre">'trading_costs':</span> <span class="pre">False},</span> <span class="pre">'round_trip_costs_enabled':</span> <span class="pre">False,</span> <span class="pre">'sensitivity':</span> <span class="pre">1}}</span></em><a class="headerlink" href="#investos.portfolio_optimization.optimizer.Optimizer.BASE_CONFIG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.optimizer.Optimizer.create_forecast">
+<span class="sig-name descname"><span class="pre">create_forecast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_forecast</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'std_dev'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.optimizer.Optimizer.create_forecast" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.optimizer.Optimizer.create_initial_portfolio">
+<span class="sig-name descname"><span class="pre">create_initial_portfolio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_portfolio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aum</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.optimizer.Optimizer.create_initial_portfolio" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.optimizer.Optimizer.create_price">
+<span class="sig-name descname"><span class="pre">create_price</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_return</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.optimizer.Optimizer.create_price" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.optimizer.Optimizer.get_initial_t">
+<span class="sig-name descname"><span class="pre">get_initial_t</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.optimizer.Optimizer.get_initial_t" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.optimizer.Optimizer.optimize">
+<span class="sig-name descname"><span class="pre">optimize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.optimizer.Optimizer.optimize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.optimizer.Optimizer.pivot_and_fill">
+<span class="sig-name descname"><span class="pre">pivot_and_fill</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'asset'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'date'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bfill'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.optimizer.Optimizer.pivot_and_fill" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.optimizer.Optimizer.propagate">
+<span class="sig-name descname"><span class="pre">propagate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.optimizer.Optimizer.propagate" title="Permalink to this definition">¶</a></dt>
+<dd><p>From CvxPortfolio</p>
+<p>Propagates the portfolio forward over time period t, given trades u.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h</strong> – pandas Series object describing current portfolio</p></li>
+<li><p><strong>u</strong> – n vector with the stock trades (not cash)</p></li>
+<li><p><strong>t</strong> – current time</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>portfolio after returns propagation (for t to t+1 period)
+u: trades vector with simulated cash balance</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>h_next</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-investos.portfolio_optimization">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-investos.portfolio_optimization" title="Permalink to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">InvestOS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Charlie Reese.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="_sources/investos.portfolio_optimization.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
