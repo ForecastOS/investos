@@ -1,0 +1,27 @@
+a {
+    color: #5046e6;
+    text-decoration: none;
+}
+
+.universal-footer ul {
+    margin: 0;
+}
+
+.universal-footer li {
+    list-style: none;
+}
+
+.universal-footer div.border-t {
+    border-top-style: solid;
+}
+
+body {
+    font-family: "Inter var", ui-sans-serif, system-ui, -apple-system,
+        "system-ui", "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
+        sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        "Noto Color Emoji" !important;
+}
+
+#searchbox {
+    margin-bottom: 20px;
+}

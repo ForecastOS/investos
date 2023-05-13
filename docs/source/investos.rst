@@ -1,4 +1,4 @@
-investos package
+investos
 ================
 
 Subpackages
