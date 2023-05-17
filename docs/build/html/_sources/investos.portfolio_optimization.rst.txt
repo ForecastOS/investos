@@ -22,14 +22,6 @@ investos.portfolio\_optimization.backtester module
    :undoc-members:
    :show-inheritance:
 
-investos.portfolio\_optimization.optimizer module
--------------------------------------------------
-
-.. automodule:: investos.portfolio_optimization.optimizer
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 

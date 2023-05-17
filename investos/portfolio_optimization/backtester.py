@@ -180,7 +180,7 @@ class Backtester():
         h_next = self.initial_portfolio # Includes cash
         self.backtest.save_position(t, u, h_next)
 
-        # Propograte through future trades and resulting positions
+        # Propagrate through future trades and resulting positions
         for t in self.forecast['return'].index:
             u = self.strategy.generate_trade_list(h_next, t)
             h_next, u = self.propagate(h_next, u, t)
@@ -192,7 +192,7 @@ class Backtester():
 
 
     def propagate(self, h, u, t):
-        """From CvxPortfolio
+        """Heavily inspired by CvxPortfolio.
 
         Propagates the portfolio forward over time period t, given trades u.
 

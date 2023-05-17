@@ -89,25 +89,19 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
 </section>
-<section id="module-investos.backtest.forecast_result">
-<span id="investos-backtest-forecast-result-module"></span><h2>investos.backtest.forecast_result module<a class="headerlink" href="#module-investos.backtest.forecast_result" title="Permalink to this heading">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="investos.backtest.forecast_result.ForecastResult">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">investos.backtest.forecast_result.</span></span><span class="sig-name descname"><span class="pre">ForecastResult</span></span><a class="headerlink" href="#investos.backtest.forecast_result.ForecastResult" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#investos.backtest.result.Result" title="investos.backtest.result.Result"><code class="xref py py-class docutils literal notranslate"><span class="pre">Result</span></code></a></p>
-</dd></dl>
-
-</section>
 <section id="module-investos.backtest.result">
 <span id="investos-backtest-result-module"></span><h2>investos.backtest.result module<a class="headerlink" href="#module-investos.backtest.result" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="investos.backtest.result.Result">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">investos.backtest.result.</span></span><span class="sig-name descname"><span class="pre">Result</span></span><a class="headerlink" href="#investos.backtest.result.Result" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The <cite>Result</cite> class captures portfolio data and performance for each asset over time.</p>
+<p>Instances of this object are called by the <a class="reference internal" href="investos.portfolio_optimization.html#investos.portfolio_optimization.backtester.Backtester.propagate" title="investos.portfolio_optimization.backtester.Backtester.propagate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">investos.portfolio_optimization.backtester.Backtester.propagate()</span></code></a> method.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="investos.backtest.result.Result.annualized_return">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">annualized_return</span></span><a class="headerlink" href="#investos.backtest.result.Result.annualized_return" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">annualized_return</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#investos.backtest.result.Result.annualized_return" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a float representing the annualized return of the entire period under review. Uses beginning and ending portfolio values for the calculation (value &#64; t[-1] and value &#64; t[0]), as well as the number of years in the forecast.</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="investos.backtest.result.Result.excess_returns">
@@ -116,8 +110,8 @@
 
 <dl class="py property">
 <dt class="sig sig-object py" id="investos.backtest.result.Result.h">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">h</span></span><a class="headerlink" href="#investos.backtest.result.Result.h" title="Permalink to this definition">¶</a></dt>
-<dd><p>Concatenate initial portfolio and h_next dataframe.</p>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">h</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span></em><a class="headerlink" href="#investos.backtest.result.Result.h" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pandas Dataframe of asset holdings (<cite>h</cite>) at the beginning of each datetime period.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -127,37 +121,67 @@
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="investos.backtest.result.Result.num_periods">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_periods</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#investos.backtest.result.Result.num_periods" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of periods in backtest.</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="investos.backtest.result.Result.ppy">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ppy</span></span><a class="headerlink" href="#investos.backtest.result.Result.ppy" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="investos.backtest.result.Result.returns">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">returns</span></span><a class="headerlink" href="#investos.backtest.result.Result.returns" title="Permalink to this definition">¶</a></dt>
-<dd><p>The returns R_t = (v_{t+1}-v_t)/v_t</p>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">returns</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#investos.backtest.result.Result.returns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pandas Series of the returns for each datetime period (vs the previous period).</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="investos.backtest.result.Result.save_data">
-<span class="sig-name descname"><span class="pre">save_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entry</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.backtest.result.Result.save_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">save_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entry</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#investos.backtest.result.Result.save_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save <cite>entry</cite> on <cite>Result</cite> object, a (pandas) Series of data as <cite>name</cite> for datetime <cite>t</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – The name <cite>entry</cite> is saved under in this <cite>Result</cite> object.</p></li>
+<li><p><strong>t</strong> (<em>datetime.datetime</em>) – The datetime <cite>entry</cite> is saved under in this <cite>Result</cite> object.</p></li>
+<li><p><strong>entry</strong> (<em>pandas.Series</em>) – A series of values - for a collection of assets / stocks / tickers at a specific point in time.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="investos.backtest.result.Result.save_position">
-<span class="sig-name descname"><span class="pre">save_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h_next</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.backtest.result.Result.save_position" title="Permalink to this definition">¶</a></dt>
-<dd><p>u: trades for period
-h_next: holdings at beginning of period, after trades</p>
+<span class="sig-name descname"><span class="pre">save_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h_next</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#investos.backtest.result.Result.save_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save data <cite>u</cite> and <cite>h_next</cite> related to position for datetime <cite>t</cite> on <cite>Result</cite> object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>datetime.datetime</em>) – The datetime for associated trades <cite>u</cite> and t + 1 holdings <cite>h_next</cite>.</p></li>
+<li><p><strong>u</strong> (<em>pandas.Series</em>) – Trades (as values) for period <cite>t</cite>.</p></li>
+<li><p><strong>h_next</strong> (<em>pandas.Series</em>) – Holdings at beginning of period t + 1, after trades <cite>u</cite> and returns for period <cite>t</cite>.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="investos.backtest.result.Result.sharpe_ratio">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sharpe_ratio</span></span><a class="headerlink" href="#investos.backtest.result.Result.sharpe_ratio" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sharpe_ratio</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#investos.backtest.result.Result.sharpe_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a float representing the (annualized)
+<a class="reference external" href="https://en.wikipedia.org/wiki/Sharpe_ratio">Sharpe Ratio</a>
+of the portfolio.</p>
+<p>Ratio is calculated as mean of <a class="reference internal" href="#investos.backtest.result.Result.excess_returns" title="investos.backtest.result.Result.excess_returns"><code class="xref py py-attr docutils literal notranslate"><span class="pre">excess_returns</span></code></a> / standard deviation of <a class="reference internal" href="#investos.backtest.result.Result.excess_returns" title="investos.backtest.result.Result.excess_returns"><code class="xref py py-attr docutils literal notranslate"><span class="pre">excess_returns</span></code></a>. Annualized by multiplying ratio by square root of periods per year (<a class="reference internal" href="#investos.backtest.result.Result.ppy" title="investos.backtest.result.Result.ppy"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ppy</span></code></a>).</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="investos.backtest.result.Result.summary">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">summary</span></span><a class="headerlink" href="#investos.backtest.result.Result.summary" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">summary</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#investos.backtest.result.Result.summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Outputs a string summary of backtest result properties and performance
+(e.g. <a class="reference internal" href="#investos.backtest.result.Result.num_periods" title="investos.backtest.result.Result.num_periods"><code class="xref py py-attr docutils literal notranslate"><span class="pre">num_periods</span></code></a>, <a class="reference internal" href="#investos.backtest.result.Result.sharpe_ratio" title="investos.backtest.result.Result.sharpe_ratio"><code class="xref py py-attr docutils literal notranslate"><span class="pre">sharpe_ratio</span></code></a>, <a class="reference internal" href="#investos.backtest.result.Result.max_drawdown" title="investos.backtest.result.Result.max_drawdown"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_drawdown</span></code></a>, etc.).</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="investos.backtest.result.Result.turnover">
@@ -167,8 +191,8 @@ h_next: holdings at beginning of period, after trades</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="investos.backtest.result.Result.v">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">v</span></span><a class="headerlink" href="#investos.backtest.result.Result.v" title="Permalink to this definition">¶</a></dt>
-<dd><p>The value of the portfolio over time.</p>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">v</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#investos.backtest.result.Result.v" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pandas Series for the value (<cite>v</cite>) of the portfolio for each datetime period.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -220,7 +244,6 @@ h_next: holdings at beginning of period, after trades</p>
 <li class="toctree-l2 current"><a class="reference internal" href="investos.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">investos.backtest package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-investos.backtest.forecast_result">investos.backtest.forecast_result module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-investos.backtest.result">investos.backtest.result module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-investos.backtest">Module contents</a></li>
 </ul>
@@ -229,7 +252,6 @@ h_next: holdings at beginning of period, after trades</p>
 <li class="toctree-l4"><a class="reference internal" href="investos.portfolio_optimization.html#subpackages">Subpackages</a></li>
 <li class="toctree-l4"><a class="reference internal" href="investos.portfolio_optimization.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="investos.portfolio_optimization.html#module-investos.portfolio_optimization.backtester">investos.portfolio_optimization.backtester module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio_optimization.html#module-investos.portfolio_optimization.optimizer">investos.portfolio_optimization.optimizer module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="investos.portfolio_optimization.html#module-investos.portfolio_optimization">Module contents</a></li>
 </ul>
 </li>

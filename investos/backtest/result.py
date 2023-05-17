@@ -5,10 +5,26 @@ import datetime as dt
 import collections
 
 class Result():
+    """The `Result` class captures portfolio data and performance for each asset over time.
+
+    Instances of this object are called by the :py:meth:`investos.portfolio_optimization.backtester.Backtester.propagate` method.
+    """
+
     def __init__(self):
         pass
 
-    def save_data(self, name, t, entry):
+    def save_data(self, name: str, t: dt.datetime, entry: pd.Series) -> None:
+        """Save `entry` on `Result` object, a (pandas) Series of data as `name` for datetime `t`.
+
+        Parameters
+        ----------
+        name : str
+            The name `entry` is saved under in this `Result` object.
+        t : datetime.datetime
+            The datetime `entry` is saved under in this `Result` object.
+        entry : pandas.Series
+            A series of values - for a collection of assets / stocks / tickers at a specific point in time.
+        """
         try:
             getattr(self, name).loc[t] = entry
         except AttributeError:
@@ -17,23 +33,39 @@ class Result():
                      pd.DataFrame)(index=[t], data=[entry]))
 
 
-    def save_position(self, t, u, h_next):
+    def save_position(self, t: dt.datetime, u: pd.Series, h_next: pd.Series) -> None:
         """
-        u: trades for period
-        h_next: holdings at beginning of period, after trades
+        Save data `u` and `h_next` related to position for datetime `t` on `Result` object.
+
+        Parameters
+        ----------
+        t : datetime.datetime
+            The datetime for associated trades `u` and t + 1 holdings `h_next`.
+        u : pandas.Series
+            Trades (as values) for period `t`.
+        h_next : pandas.Series
+            Holdings at beginning of period t + 1, after trades `u` and returns for period `t`.
         """
         self.save_data("u", t, u)
         self.save_data("h_next", t, h_next)
 
 
     @property
-    def summary(self):
+    def summary(self) -> None:
+        """Outputs a string summary of backtest result properties and performance 
+        (e.g. :py:attr:`~investos.backtest.result.Result.num_periods`, :py:attr:`~investos.backtest.result.Result.sharpe_ratio`, :py:attr:`~investos.backtest.result.Result.max_drawdown`, etc.).
+        """
         print(self._summary_string())
 
-    def _summary_string(self):
+    def _summary_string(self) -> str:
+        """Returns a string summary of backtest result properties and performance 
+        (e.g. :py:attr:`~investos.backtest.result.Result.num_periods`, :py:attr:`~investos.backtest.result.Result.sharpe_ratio`, :py:attr:`~investos.backtest.result.Result.max_drawdown`, etc.).
+
+        Do not call directly; call :py:attr:`~investos.backtest.result.Result.summary` instead.
+        """
         data = collections.OrderedDict({
             'Number of periods':
-                self.u.shape[0],
+                self.num_periods,
             'Initial timestamp':
                 self.h.index[0],
             'Final timestamp':
@@ -57,9 +89,8 @@ class Result():
 
 
     @property
-    def h(self):
-        """
-        Concatenate initial portfolio and h_next dataframe.
+    def h(self) -> pd.DataFrame:
+        """Returns a pandas Dataframe of asset holdings (`h`) at the beginning of each datetime period.
         """
         tmp = self.h_next.copy()
         tmp = self.h_next.shift(1) # Shift h_next to h timing
@@ -67,23 +98,30 @@ class Result():
 
 
     @property
-    def v(self):
-        """The value of the portfolio over time.
+    def num_periods(self) -> int:
+        """Number of periods in backtest."""
+        return self.u.shape[0]
+
+
+    @property
+    def v(self) -> pd.Series:
+        """Returns a pandas Series for the value (`v`) of the portfolio for each datetime period.
         """
         return self.h.sum(axis=1)
 
 
     @property
-    def returns(self):
-        """The returns R_t = (v_{t+1}-v_t)/v_t
-        """
+    def returns(self) -> pd.Series:
+        """Returns a pandas Series of the returns for each datetime period (vs the previous period)."""
         val = self.v
         return pd.Series(data=val.values[1:] / val.values[:-1] - 1,
                          index=val.index[1:]).dropna()
 
 
     @property
-    def annualized_return(self):
+    def annualized_return(self) -> float:
+        """Returns a float representing the annualized return of the entire period under review. Uses beginning and ending portfolio values for the calculation (value @ t[-1] and value @ t[0]), as well as the number of years in the forecast.
+        """
         a_return = self.v[-1] / self.v[0]
 
         return (
@@ -107,7 +145,13 @@ class Result():
 
 
     @property
-    def sharpe_ratio(self):
+    def sharpe_ratio(self) -> float:
+        """Returns a float representing the (annualized) 
+        `Sharpe Ratio <https://en.wikipedia.org/wiki/Sharpe_ratio>`_ 
+        of the portfolio.
+
+        Ratio is calculated as mean of :py:attr:`~investos.backtest.result.Result.excess_returns` / standard deviation of :py:attr:`~investos.backtest.result.Result.excess_returns`. Annualized by multiplying ratio by square root of periods per year (:py:attr:`~investos.backtest.result.Result.ppy`).
+        """
         return (
             np.sqrt(self.ppy) * np.mean(self.excess_returns) /
             np.std(self.excess_returns)
