@@ -21,10 +21,10 @@ investos.util module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
+.. Module contents
+.. ---------------
 
-.. automodule:: investos
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. .. automodule:: investos
+..    :members:
+..    :undoc-members:
+..    :show-inheritance:

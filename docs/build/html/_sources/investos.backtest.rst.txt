@@ -20,10 +20,10 @@ investos.backtest.result module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
+.. Module contents
+.. ---------------
 
-.. automodule:: investos.backtest
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. .. automodule:: investos.backtest
+..    :members:
+..    :undoc-members:
+..    :show-inheritance:

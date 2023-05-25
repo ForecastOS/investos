@@ -4,77 +4,150 @@ import statistics
 import datetime as dt
 
 import investos.portfolio_optimization.strategy as strategy
+from investos.portfolio_optimization.strategy import BaseStrategy, RankLongShort
 import investos.backtest as backtest
 import investos.util as util
 
 class Backtester():
+    """Container class that runs backtests using passed-in portfolio optimization `strategy` (see :py:class:`~investos.portfolio_optimization.strategy.base_strategy.BaseStrategy`), then saves results into passed-in `result` (see :py:class:`~investos.backtest.result.Result`) class.
+    
+    Parameters
+    ----------
+    df_forecast : pd.DataFrame
+        DataFrame of forecast asset returns for backtest period.
+
+        Expected columns: 
+        asset (unique ID/ticker), 
+        date (datetime), 
+        return (float)
+    
+    df_actual : pd.DataFrame
+        DataFrame of forecast asset returns for backtest period.
+
+        Expected columns: 
+        asset (unique ID/ticker), 
+        date (datetime), 
+        return (float)
+    
+    df_historical : pd.DataFrame
+        DataFrame of historical asset returns before backtest period. Used to create forecasts for std_dev, spread, and volume if forecasts not given.
+        
+        Expected columns: 
+        asset (unique ID/ticker), 
+        date (datetime), 
+        price (float), 
+        return (float), 
+        volume (of shares traded, float), 
+        spread (float)
+
+    strategy : :py:class:`~investos.portfolio_optimization.strategy.base_strategy.BaseStrategy`
+        Optimization strategy used by backtester. Used to determine what trades to make at each forecast time period.
+    
+    backtest_model : :py:class:`~investos.backtest.result.Result`
+        Stores result from simulated backtest, and contains convenience properties and methods for reporting.
+
+    initial_portfolio : pd.DataFrame, optional
+        Initial portfolio values in dollars (or other currency), not in weights.
+
+    aum : float, optional
+        Total assets under management, in dollars (or other currency).
+
+    df_categories : pd.DataFrame, optional
+        Additional category data for assets. Used by certain optimization strategies.
+
+    config : dict, optional
+        Configuration parameters.
+
+    **kwargs : 
+        Additional keyword arguments.
+
+    Attributes
+    ----------
+    config : dict
+        Configuration parameters after merging with base configuration.
+
+    strategy : :py:class:`~investos.portfolio_optimization.strategy.base_strategy.BaseStrategy`
+        Optimization strategy used by backtester.
+
+    backtest_model : :py:class:`~investos.backtest.result.Result`
+        Stores result from simulated backtest.
+
+    historical : dict
+        Holds the pivoted and filled historical DataFrames.
+
+    forecast : dict
+        Holds the pivoted and filled forecast DataFrames.
+
+    actual : dict
+        Holds the pivoted and filled actual DataFrames, if provided.
+
+    initial_portfolio : pd.DataFrame
+        Initial portfolio values, including cash.
+
+    Methods
+    -------
+    optimize(self):
+        Optimizes the portfolio and backtests it. Returns :py:class:`~investos.backtest.result.Result` object.
+    
+    pivot_and_fill(self, df: pd.DataFrame, values: str, columns='asset', index='date', fill_method='bfill'):
+        Pivots and fills the DataFrame based on the provided values, columns, and index.
+
+    create_forecast(self, df_forecast: pd.DataFrame, col_name: str = 'std_dev'):
+        Creates a forecast DataFrame based on the provided df_forecast and col_name.
+
+    create_price(self, df_return: pd.DataFrame):
+        Creates price data based on provided return data and last historical price.
+
+    create_initial_portfolio(self, initial_portfolio, aum):
+        Creates the initial portfolio based on provided initial portfolio (or aum value if iniitial portfolio not provided).
+
+    propagate(self, h: pd.Series, u: pd.Series, t: dt.Series):
+        Heavily inspired by CvxPortfolio.
+
+        Propagates the portfolio forward over time period t, given trades u.
+
+        Args:
+            h: pandas Series object describing current portfolio
+            u: n pandas Series vector with stock trades
+            t: current datetime
+
+        Returns:
+            h_next: pandas Series portfolio after returns propagation (for t to t+1 period)
+            u: pandas Series trades vector with simulated cash balance
+
+    get_initial_t(self):
+        Gets the initial time period for the backtest.
+    """
     
     BASE_CONFIG = {
-        "constraints": {
-            "investing_style": {
-                "long_only": True,
-            },
-            "risk": {
-                "max_asset_weight": 1, # 1 == 100%
-                "neutral_categories": [], # For neutralizing exposures to certain risk factors, like industries, small-cap, etc.
-            },
-            "borrowing": {
-                "allowed": False,
-                "leverage": 1, # i.e. absolute exposure
-            },
-            "trading": {
-                "turnover_limit": None,
-            },
-        },
         "forecast": {
-            "start": None, # Earliest date in df
-            "stop": None, # Last date in df
             "std_dev": {
-                "n_prev_periods": 100, # Calc from historical if not passed in
+                "calc_from_n_prev_periods": 100, # Calc from historical if not passed in
             },
             "spread": {
-                "n_prev_periods": 100, # Calc from historical if not passed in
+                "calc_from_n_prev_periods": 100, # Calc from historical if not passed in
             },
             "volume": {
-                "n_prev_periods": 100, # Calc from historical if not passed in
+                "calc_from_n_prev_periods": 100, # Calc from historical if not passed in
             },
         },
         "borrowing": {
             "interest_rate": 0.005,
             "short_rate": 0.005
         },
-        "traiding": {
-            "sensitivity": 1, 
-            "asymmetry": 0, 
-            "round_trip_costs_enabled": False, # Auto-enable for SPO; only for SPO
-            "ignore": {
-                "trading_costs": False,
-                "holding_costs": False,
-            },
-        },
-        "risk_model": {
-            "aversion": 0.5,
-            "covariance_risk_factors": 15, 
-            "use_full_covariance_matrix": False,
-        },
-        "restricted": {
-            "all": [],
-            "short": [],
-            "long": [],
-        },
     }
 
     def __init__(
         self, 
-        df_forecast,
-        df_actual=None,
-        df_historical=None, 
-        strategy=strategy.RankLongShort,
-        backtest_model=None,
-        initial_portfolio=None, # In dollars (or other currency), not in weights
-        aum=500_000_000,
-        df_categories=None, 
-        config={},
+        df_forecast: pd.DataFrame,
+        df_actual: pd.DataFrame = None,
+        df_historical: pd.DataFrame = None, 
+        strategy: BaseStrategy = RankLongShort,
+        backtest_model: backtest.Result = None,
+        initial_portfolio: pd.DataFrame = None, # In dollars (or other currency), not in weights
+        aum: float = 500_000_000,
+        df_categories: pd.DataFrame = None, 
+        config: dict = {},
         **kwargs):
         
         self.config = util.deep_dict_merge(self.BASE_CONFIG, config)
@@ -132,7 +205,7 @@ class Backtester():
         elif col_name == 'std_dev':
             return df_forecast[['date', 'asset']].merge(
                 self.historical['return'].tail(
-                    self.config['forecast'][col_name]['n_prev_periods']
+                    self.config['forecast'][col_name]['calc_from_n_prev_periods']
                 ).std().rename(col_name).reset_index(), 
                 how='left', 
                 on='asset'
@@ -140,7 +213,7 @@ class Backtester():
         else:
             return df_forecast[['date', 'asset']].merge(
                 self.historical[col_name].tail(
-                    self.config['forecast'][col_name]['n_prev_periods']
+                    self.config['forecast'][col_name]['calc_from_n_prev_periods']
                 ).mean().rename(col_name).reset_index(), 
                 how='left', 
                 on='asset'
@@ -163,8 +236,7 @@ class Backtester():
     def create_initial_portfolio(self, initial_portfolio, aum):
         if initial_portfolio is None:
             initial_portfolio = pd.Series(index=self.forecast['return'].columns, data=0)
-        
-        initial_portfolio["cash"] = aum
+            initial_portfolio["cash"] = aum
 
         self.initial_portfolio = initial_portfolio
 
@@ -180,7 +252,7 @@ class Backtester():
         h_next = self.initial_portfolio # Includes cash
         self.backtest.save_position(t, u, h_next)
 
-        # Propagrate through future trades and resulting positions
+        # Propagate through future trades and resulting positions
         for t in self.forecast['return'].index:
             u = self.strategy.generate_trade_list(h_next, t)
             h_next, u = self.propagate(h_next, u, t)
@@ -192,19 +264,6 @@ class Backtester():
 
 
     def propagate(self, h, u, t):
-        """Heavily inspired by CvxPortfolio.
-
-        Propagates the portfolio forward over time period t, given trades u.
-
-        Args:
-            h: pandas Series object describing current portfolio
-            u: n vector with the stock trades (not cash)
-            t: current time
-
-        Returns:
-            h_next: portfolio after returns propagation (for t to t+1 period)
-            u: trades vector with simulated cash balance
-        """
         h_plus = h + u
         
         costs = [cost.value_expr(t, h_plus=h_plus, u=u) for cost in self.strategy.costs]
@@ -249,33 +308,6 @@ class Backtester():
         for c in self.strategy.costs:
             c.optimizer = self
 
-# Unwind trade from LongShort appropriately. Probably with cumprod (see create_forecast_price method)
-
-# -->--> H cost
-# -->--> T cost
-
-# [ ] Build crude inv.backtest.Result model to make sure everything is working
-
-# STOP THURSDAY
-
-# [ ] Duck type everything and allow everything to be passed in (for easy extensibility)
-# --> Duck typing initial transform for historical and forecast data would be amazing as well (so it can be customized and resused by specific companies)
-
-# [ ] Should only NEED forecast, not historical, if everything is passed in
-
-# [ ] Build duck-typed (i.e. swappable) risk model
-
-# [ ] Build duck-typed (i.e. swappable) cost model
-# --> for t costs
-# --> for h costs
-
-# [ ] Run SPO - as separate class
-
-# [ ] Run MPO - as separate class
-
-# [ ] Add ability to run multiple iterations of type, config, etc.
-# --> Essentially grid search wrapper
 
 # [ ] Support forecast dividends / distributions (positive or negative)
-
 # NOTE TO SELF: backtester can AND SHOULD sometimes have different costs than strategy. Strategy costs are for informing trades (i.e. discouraging turnover), backtest costs are ACTUAL expected costs given trades determined by strategy

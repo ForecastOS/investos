@@ -99,8 +99,8 @@ class Result():
 
     @property
     def num_periods(self) -> int:
-        """Number of periods in backtest."""
-        return self.u.shape[0]
+        """Number of periods in backtest. Note that the starting position (at t=0) does not count as a period."""
+        return self.h.shape[0]
 
 
     @property
@@ -130,18 +130,26 @@ class Result():
 
 
     @property
-    def excess_returns(self):
+    def excess_returns(self) -> pd.Series:
+        """Returns a pandas Series of returns in excess of the (cash) benchmark.
+        """
         return (self.returns - self.optimizer.actual['return']['cash']).dropna()
 
 
     @property
-    def years_forecast(self):
+    def years_forecast(self) -> float:
+        """Returns a float representing the number of years in the backtest period.
+        Calculated as (datetime @ t[-1] - datetime @ t[0]) / datetime.timedelta(365,0,0,0)
+        """
         return (self.v.index[-1] - self.v.index[0]) / dt.timedelta(365,0,0,0)
 
 
     @property
-    def ppy(self):
-        return self.v.shape[0] / self.years_forecast
+    def ppy(self) -> float:
+        """Returns a float representing the number of periods per year in the backtest period.
+        Calculated as :py:attr:`~investos.backtest.result.Result.num_periods` / :py:attr:`~investos.backtest.result.Result.years_forecast`
+        """
+        return self.num_periods / self.years_forecast
 
 
     @property

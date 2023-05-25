@@ -8,6 +8,7 @@ Subpackages
    :maxdepth: 4
 
    investos.portfolio_optimization.cost_model
+   investos.portfolio_optimization.constraint_model
    investos.portfolio_optimization.risk_model
    investos.portfolio_optimization.strategy
 
@@ -22,10 +23,10 @@ investos.portfolio\_optimization.backtester module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
+.. Module contents
+.. ---------------
 
-.. automodule:: investos.portfolio_optimization
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. .. automodule:: investos.portfolio_optimization
+..    :members:
+..    :undoc-members:
+..    :show-inheritance:

@@ -20,10 +20,10 @@ investos.portfolio\_optimization.strategy.rank\_long\_short module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
+.. Module contents
+.. ---------------
 
-.. automodule:: investos.portfolio_optimization.strategy
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. .. automodule:: investos.portfolio_optimization.strategy
+..    :members:
+..    :undoc-members:
+..    :show-inheritance:
