@@ -11,7 +11,8 @@ class BaseConstraint(object):
     Subclass `BaseConstraint`, and create your own `weight_expr` method to create custom constraints.
     """
     def __init__(self, **kwargs):
-        pass
+        self.optimizer = None # Set during Optimizer initialization
+
 
     def weight_expr(self, t, w_plus, z, v):
         raise NotImplementedError

@@ -238,6 +238,83 @@ could have 200MM of (combined long and short) exposure.</p>
 </dd></dl>
 
 </section>
+<section id="module-investos.portfolio_optimization.constraint_model.trade_constraint">
+<span id="investos-portfolio-optimization-constraint-model-trade-constraint-module"></span><h2>investos.portfolio_optimization.constraint_model.trade_constraint module<a class="headerlink" href="#module-investos.portfolio_optimization.constraint_model.trade_constraint" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.constraint_model.trade_constraint.MaxTradeConstraint">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">investos.portfolio_optimization.constraint_model.trade_constraint.</span></span><span class="sig-name descname"><span class="pre">MaxTradeConstraint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.constraint_model.trade_constraint.MaxTradeConstraint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#investos.portfolio_optimization.constraint_model.base_constraint.BaseConstraint" title="investos.portfolio_optimization.constraint_model.base_constraint.BaseConstraint"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseConstraint</span></code></a></p>
+<p>A constraint that enforces a limit on the (absolute) max trade size (as a weight, or fraction, of daily volume).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>limit</strong> (<em>float</em><em>, </em><em>optional</em>) – The limit on the (absolute) max trade size (as a weight, or fraction, of volume for period <cite>t</cite>).</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.constraint_model.trade_constraint.MaxTradeConstraint.weight_expr">
+<span class="sig-name descname"><span class="pre">weight_expr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_plus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.constraint_model.trade_constraint.MaxTradeConstraint.weight_expr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a series of holding constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>datetime</em>) – The current time.</p></li>
+<li><p><strong>w_plus</strong> (<em>series</em>) – Portfolio weights after trades z.</p></li>
+<li><p><strong>z</strong> (<em>series</em>) – Trades for period t</p></li>
+<li><p><strong>v</strong> (<em>float</em>) – Value of portfolio at period t</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The holding constraints based on the max trade constraint.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>series</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-investos.portfolio_optimization.constraint_model.long_constraint">
+<span id="investos-portfolio-optimization-constraint-model-long-constraint-module"></span><h2>investos.portfolio_optimization.constraint_model.long_constraint module<a class="headerlink" href="#module-investos.portfolio_optimization.constraint_model.long_constraint" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.constraint_model.long_constraint.LongOnlyConstraint">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">investos.portfolio_optimization.constraint_model.long_constraint.</span></span><span class="sig-name descname"><span class="pre">LongOnlyConstraint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.constraint_model.long_constraint.LongOnlyConstraint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#investos.portfolio_optimization.constraint_model.base_constraint.BaseConstraint" title="investos.portfolio_optimization.constraint_model.base_constraint.BaseConstraint"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseConstraint</span></code></a></p>
+<p>A constraint that enforces no short trades.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>**kwargs</strong> – Additional keyword arguments.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="investos.portfolio_optimization.constraint_model.long_constraint.LongOnlyConstraint.weight_expr">
+<span class="sig-name descname"><span class="pre">weight_expr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_plus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio_optimization.constraint_model.long_constraint.LongOnlyConstraint.weight_expr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a series of holding constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>datetime</em>) – The current time.</p></li>
+<li><p><strong>w_plus</strong> (<em>series</em>) – Portfolio weights after trades z.</p></li>
+<li><p><strong>z</strong> (<em>series</em>) – Trades for period t</p></li>
+<li><p><strong>v</strong> (<em>float</em>) – Value of portfolio at period t</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The holding constraints based on the no short trades constraint.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>series</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 </section>
 
 

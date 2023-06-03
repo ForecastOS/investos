@@ -19,7 +19,7 @@ class MaxWeightConstraint(BaseConstraint):
         Returns a series of holding constraints based on the portfolio weights after trades.
 
     """
-    def __init__(self, limit: float = 0.05, **kwargs):
+    def __init__(self, limit: float = 0.025, **kwargs):
         self.limit = limit
 
 
@@ -46,7 +46,7 @@ class MaxWeightConstraint(BaseConstraint):
         series
             The holding constraints based on the portfolio weights after trades.
         """
-        return w_plus[:-1] <= values_in_time(self.limit, t)
+        return w_plus[:-1] <= self.limit
 
 
 class MinWeightConstraint(BaseConstraint):
@@ -67,7 +67,7 @@ class MinWeightConstraint(BaseConstraint):
         Returns a series of holding constraints based on the portfolio weights after trades.
 
     """
-    def __init__(self, limit: float = -0.05, **kwargs):
+    def __init__(self, limit: float = -0.025, **kwargs):
         self.limit = limit
 
 
@@ -94,4 +94,4 @@ class MinWeightConstraint(BaseConstraint):
         series
             The holding constraints based on the portfolio weights after trades.
         """
-        return w_plus[:-1] >= values_in_time(self.limit, t)
+        return w_plus[:-1] >= self.limit

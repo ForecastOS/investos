@@ -16,6 +16,7 @@ class BaseStrategy():
     def __init__(self):
         self.costs = []
         self.constraints = []
+        self.risk_model = None
 
     
     def _zerotrade(self, holdings):

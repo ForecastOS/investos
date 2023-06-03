@@ -22,16 +22,8 @@ class Backtester():
         return (float)
     
     df_actual : pd.DataFrame
-        DataFrame of forecast asset returns for backtest period.
+        DataFrame of actual asset returns for backtest period. Used to create forecasts for std_dev, spread, and volume if forecasts not given.
 
-        Expected columns: 
-        asset (unique ID/ticker), 
-        date (datetime), 
-        return (float)
-    
-    df_historical : pd.DataFrame
-        DataFrame of historical asset returns before backtest period. Used to create forecasts for std_dev, spread, and volume if forecasts not given.
-        
         Expected columns: 
         asset (unique ID/ticker), 
         date (datetime), 
@@ -71,9 +63,6 @@ class Backtester():
 
     backtest_model : :py:class:`~investos.backtest.result.Result`
         Stores result from simulated backtest.
-
-    historical : dict
-        Holds the pivoted and filled historical DataFrames.
 
     forecast : dict
         Holds the pivoted and filled forecast DataFrames.
@@ -122,13 +111,13 @@ class Backtester():
     BASE_CONFIG = {
         "forecast": {
             "std_dev": {
-                "calc_from_n_prev_periods": 100, # Calc from historical if not passed in
+                "calc_from_n_prev_periods": 100, # Calc from actual_df if not passed in
             },
-            "spread": {
-                "calc_from_n_prev_periods": 100, # Calc from historical if not passed in
+            "half_spread": {
+                "calc_from_n_prev_periods": 100, # Calc from actual_df if not passed in
             },
             "volume": {
-                "calc_from_n_prev_periods": 100, # Calc from historical if not passed in
+                "calc_from_n_prev_periods": 100, # Calc from actual_df if not passed in
             },
         },
         "borrowing": {
@@ -141,19 +130,22 @@ class Backtester():
         self, 
         df_forecast: pd.DataFrame,
         df_actual: pd.DataFrame = None,
-        df_historical: pd.DataFrame = None, 
         strategy: BaseStrategy = RankLongShort,
         backtest_model: backtest.Result = None,
         initial_portfolio: pd.DataFrame = None, # In dollars (or other currency), not in weights
-        aum: float = 500_000_000,
+        aum: float = 100_000_000,
         df_categories: pd.DataFrame = None, 
+        start_date = None,
+        end_date = None,
         config: dict = {},
         **kwargs):
         
         self.config = util.deep_dict_merge(self.BASE_CONFIG, config)
 
         self.strategy = strategy # Must be initialized first
-        
+        if getattr(self.strategy, 'risk_model', None):
+            self.strategy.costs += [self.strategy.risk_model]
+
         if backtest_model is None:
             if df_actual is not None:
                 self.backtest_model = backtest.Result
@@ -164,29 +156,35 @@ class Backtester():
 
         self.backtest_model.optimizer = self
 
-        if df_historical is not None:
-            self.historical = {}
-            self.historical['return'] = self.pivot_and_fill(df_historical, values='return')
-            self.historical['price'] = self.pivot_and_fill(df_historical, values='price')
-            self.historical['volume'] = self.pivot_and_fill(df_historical, values='volume')
-            self.historical['spread'] = self.pivot_and_fill(df_historical, values='spread')
-
         self.forecast = {}
-        self.forecast['return'] = self.pivot_and_fill(df_forecast, values='return')
-        self.forecast['std_dev'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'std_dev'), values='std_dev')
-        self.forecast['volume'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'volume'), values='volume')
-        self.forecast['half_spread'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'spread'), values='spread') / 2
-        self.forecast['price'] = self.create_price(self.forecast['return'])
-        self._set_cash_return_for_each_period(self.forecast['return'])
-
+        self.forecast['date'] = {
+            "start": start_date or df_forecast.date.min(),
+            "end": end_date or df_forecast.date.max(),
+        }
+        df_forecast = df_forecast[
+            (df_forecast['date'] >= self.forecast['date']['start']) & 
+            (df_forecast['date'] <= self.forecast['date']['end'])
+        ]
+        
         if df_actual is not None:
             self.actual = {}
             self.actual['return'] = self.pivot_and_fill(df_actual, values='return')
+            self.actual['price'] = self.pivot_and_fill(df_actual, values='price')
+            self.actual['volume'] = self.pivot_and_fill(df_actual, values='volume')
+            self.actual['half_spread'] = (
+                self.pivot_and_fill(df_actual, values='spread') / 2
+            ).rename(
+                columns={'spread': 'half_spread'}
+            )
             self.actual['std_dev'] = self.pivot_and_fill(self.create_forecast(df_actual, 'std_dev'), values='std_dev')
-            self.actual['volume'] = self.pivot_and_fill(self.create_forecast(df_actual, 'volume'), values='volume')
-            self.actual['half_spread'] = self.pivot_and_fill(self.create_forecast(df_actual, 'spread'), values='spread') / 2
-            self.actual['price'] = self.create_price(self.actual['return'])
             self._set_cash_return_for_each_period(self.actual['return'])
+
+        self.forecast['return'] = self.pivot_and_fill(df_forecast, values='return')
+        self.forecast['std_dev'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'std_dev'), values='std_dev')
+        self.forecast['volume'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'volume'), values='volume')
+        self.forecast['half_spread'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'half_spread'), values='half_spread')
+        self.forecast['price'] = self.create_price(self.forecast['return'])
+        self._set_cash_return_for_each_period(self.forecast['return'])
 
         self.create_initial_portfolio(initial_portfolio, aum)
 
@@ -204,7 +202,7 @@ class Backtester():
             return df_forecast
         elif col_name == 'std_dev':
             return df_forecast[['date', 'asset']].merge(
-                self.historical['return'].tail(
+                self.actual['return'][self.actual['return'].index < self.forecast['date']['start']].tail(
                     self.config['forecast'][col_name]['calc_from_n_prev_periods']
                 ).std().rename(col_name).reset_index(), 
                 how='left', 
@@ -212,7 +210,7 @@ class Backtester():
             )
         else:
             return df_forecast[['date', 'asset']].merge(
-                self.historical[col_name].tail(
+                 self.actual[col_name][self.actual[col_name].index < self.forecast['date']['start']].tail(
                     self.config['forecast'][col_name]['calc_from_n_prev_periods']
                 ).mean().rename(col_name).reset_index(), 
                 how='left', 
@@ -221,7 +219,10 @@ class Backtester():
 
 
     def create_price(self, df_return):
-        last_historical_prices = self.historical['price'].loc[self.historical['price'].index.max()]
+        last_historical_prices = (
+            self.actual['price']
+                .loc[self.actual['price'][self.actual['price'].index < self.forecast['date']['start']].index.max()]
+            )
         
         # Make geometric - add 1
         df = df_return + 1
@@ -230,7 +231,7 @@ class Backtester():
         df = df.cumprod()
         
         # Multiply geometric return factors by last historical value
-        return df * self.historical['price'].loc[self.historical['price'].index.max()]
+        return df * last_historical_prices
        
 
     def create_initial_portfolio(self, initial_portfolio, aum):
@@ -305,9 +306,5 @@ class Backtester():
         self.strategy.forecast_returns = self.forecast['return']
         self.strategy.optimizer = self
         
-        for c in self.strategy.costs:
+        for c in self.strategy.costs + (self.strategy.constraints or []):
             c.optimizer = self
-
-
-# [ ] Support forecast dividends / distributions (positive or negative)
-# NOTE TO SELF: backtester can AND SHOULD sometimes have different costs than strategy. Strategy costs are for informing trades (i.e. discouraging turnover), backtest costs are ACTUAL expected costs given trades determined by strategy

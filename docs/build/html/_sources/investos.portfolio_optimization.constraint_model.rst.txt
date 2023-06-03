@@ -28,6 +28,22 @@ investos.portfolio\_optimization.constraint\_model.weight\_constraint module
    :undoc-members:
    :show-inheritance:
 
+investos.portfolio\_optimization.constraint\_model.trade\_constraint module
+---------------------------------------------------------------------------
+
+.. automodule:: investos.portfolio_optimization.constraint_model.trade_constraint
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+investos.portfolio\_optimization.constraint\_model.long\_constraint module
+--------------------------------------------------------------------------
+
+.. automodule:: investos.portfolio_optimization.constraint_model.long_constraint
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 .. Module contents
 .. ---------------
 

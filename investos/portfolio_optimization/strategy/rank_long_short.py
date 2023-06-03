@@ -33,7 +33,8 @@ class RankLongShort(BaseStrategy):
         if not self.costs:
             self.costs = [TradingCost(), HoldingCost()]
 
-        self.constraints = [] # TBU
+        self.constraints = []
+        self.risk_model = None
 
         self.percent_short = percent_short
         self.percent_long = percent_long

@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import datetime as dt
+import cvxpy as cvx
 
 from investos.portfolio_optimization.cost_model import BaseCost
 from investos.util import values_in_time
@@ -14,12 +15,68 @@ class TradingCost(BaseCost):
         For scaling transaction cost; 1 assumes 1 day's volume moves price by 1 std_dev in vol
     """
 
-    def __init__(self):
+    def __init__(self, price_movement_sensitivity=1):
         self.optimizer = None # Set during Optimizer initialization
-        
-        # For scaling transaction cost; 1 assumes 1 day's volume moves price by 1 day's vol
+        # For scaling realized transaction cost; 1 assumes 1 day's volume moves price by 1 day's vol
         # --> Eventually support DF for this
-        self.sensitivity_coeff = 1
+        self.sensitivity_coeff = price_movement_sensitivity
+
+        super().__init__()
+
+    
+    def _estimated_cost_for_optimization(self, t, w_plus, z, value):
+        """Estimated trading costs.
+
+        Used by optimization strategy to determine trades. 
+
+        Not used to calculate simulated trade costs for backtest performance.
+        """
+        z = z[:-1]
+        constraints = []
+
+        # Calculate terms for estimated trading cost
+        std_dev = values_in_time(self.optimizer.forecast['std_dev'], t)
+        volume_dollars = (
+            values_in_time(self.optimizer.forecast['volume'], t) *
+            values_in_time(self.optimizer.forecast['price'], t)
+        )
+        percent_volume_traded_pre_trade_weight = np.abs(value) / volume_dollars # Multiplied (using cvx) by trade weight (z) below!
+
+        price_movement_term = (
+            self.sensitivity_coeff * 
+            std_dev * 
+            percent_volume_traded_pre_trade_weight
+        )
+        # END calculate terms for estimated trading cost
+
+        # No trade conditions
+        # if np.isscalar(price_movement_term):
+        #     if np.isnan(price_movement_term):
+        #         constraints += [z == 0]
+        #         price_movement_term = 0
+        # else:  # it is a pd series
+        #     no_trade = price_movement_term.index[price_movement_term.isnull()]
+        #     price_movement_term[no_trade] = 0
+        #     constraints += [z[price_movement_term.index.get_loc(tick)] == 0
+        #                for tick in no_trade]
+        # END no trade conditions
+
+        # Create estimated cost expression
+        try: # Spread (estimated) costs
+            self.estimate_expression = cvx.multiply(
+                values_in_time(self.optimizer.forecast['half_spread'], t), cvx.abs(z))
+        except TypeError:
+            self.estimate_expression = cvx.multiply(
+                values_in_time(self.optimizer.forecast['half_spread'], t).values, cvx.abs(z))
+        
+        try: # Price movement due to volume (estimated) costs
+            self.estimate_expression += cvx.multiply(price_movement_term, cvx.abs(z) ** 2)
+        except TypeError:
+            self.estimate_expression += cvx.multiply(price_movement_term.values, cvx.abs(z) ** 2)
+        # END create estimated cost expression
+
+        return cvx.sum(self.estimate_expression), constraints
+
 
     def value_expr(self, t: dt.datetime, h_plus: pd.Series, u: pd.Series) -> pd.Series:
         """Method that calculates `t` period cost for trades `u`.
@@ -47,7 +104,7 @@ class TradingCost(BaseCost):
         )
         percent_volume_traded = np.abs(u_no_cash) / volume_dollars
 
-        self.tmp_trading_costs = (
+        trading_costs = (
             spread_cost + (
                 self.sensitivity_coeff * 
                 std_dev * 
@@ -56,4 +113,6 @@ class TradingCost(BaseCost):
             )
         )
 
-        return self.tmp_trading_costs.sum()
+        self.optimizer.backtest.save_data('costs_trading', t, trading_costs)
+
+        return trading_costs.sum()
