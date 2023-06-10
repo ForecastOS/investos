@@ -252,6 +252,30 @@ files = [
 test = ["pytest (>=6)"]
 
 [[package]]
+name = "exchange-calendars"
+version = "4.2.8"
+description = "Calendars for securities exchanges"
+category = "dev"
+optional = false
+python-versions = "~=3.8"
+files = [
+    {file = "exchange_calendars-4.2.8-py3-none-any.whl", hash = "sha256:3695afd0608c6507ce3016dfcb68a1698220016a049b45d42b4dfa9ecf85a15c"},
+    {file = "exchange_calendars-4.2.8.tar.gz", hash = "sha256:1598b6219a58e7be218c640f389375e39c9c12513c7db82d7591ae56f64467f9"},
+]
+
+[package.dependencies]
+korean-lunar-calendar = "*"
+numpy = "*"
+pandas = ">=1.1"
+pyluach = "*"
+python-dateutil = "*"
+pytz = "*"
+toolz = "*"
+
+[package.extras]
+dev = ["flake8", "hypothesis", "pip-tools", "pytest", "pytest-benchmark", "pytest-xdist"]
+
+[[package]]
 name = "idna"
 version = "3.4"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -324,6 +348,18 @@ MarkupSafe = ">=2.0"
 
 [package.extras]
 i18n = ["Babel (>=2.7)"]
+
+[[package]]
+name = "korean-lunar-calendar"
+version = "0.3.1"
+description = "Korean Lunar Calendar"
+category = "dev"
+optional = false
+python-versions = "*"
+files = [
+    {file = "korean_lunar_calendar-0.3.1-py3-none-any.whl", hash = "sha256:392757135c492c4f42a604e6038042953c35c6f449dda5f27e3f86a7f9c943e5"},
+    {file = "korean_lunar_calendar-0.3.1.tar.gz", hash = "sha256:eb2c485124a061016926bdea6d89efdf9b9fdbf16db55895b6cf1e5bec17b857"},
+]
 
 [[package]]
 name = "markupsafe"
@@ -544,6 +580,24 @@ test = ["hypothesis (>=6.34.2)", "pytest (>=7.0.0)", "pytest-asyncio (>=0.17.0)"
 xml = ["lxml (>=4.6.3)"]
 
 [[package]]
+name = "pandas-market-calendars"
+version = "4.1.4"
+description = "Market and exchange trading calendars for pandas"
+category = "dev"
+optional = false
+python-versions = ">=3.8.0"
+files = [
+    {file = "pandas_market_calendars-4.1.4-py3-none-any.whl", hash = "sha256:90f331ac12287366eb72c269484965ea4dcfe2ae928d0ad249fc14230fe72d1f"},
+    {file = "pandas_market_calendars-4.1.4.tar.gz", hash = "sha256:552a3ba082e4e316513d86188f32a3075f449947ba3871fc708be64baabd4614"},
+]
+
+[package.dependencies]
+exchange-calendars = ">=3.3"
+pandas = ">=1.1"
+python-dateutil = "*"
+pytz = "*"
+
+[[package]]
 name = "pluggy"
 version = "1.0.0"
 description = "plugin and hook calling mechanisms for python"
@@ -573,6 +627,22 @@ files = [
 
 [package.extras]
 plugins = ["importlib-metadata"]
+
+[[package]]
+name = "pyluach"
+version = "2.2.0"
+description = "A Python package for dealing with Hebrew (Jewish) calendar dates."
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pyluach-2.2.0-py3-none-any.whl", hash = "sha256:d1eb49d6292087e9290f4661ae01b60c8c933704ec8c9cef82673b349ff96adf"},
+    {file = "pyluach-2.2.0.tar.gz", hash = "sha256:9063a25387cd7624276fd0656508bada08aa8a6f22e8db352844cd858e69012b"},
+]
+
+[package.extras]
+doc = ["sphinx (>=6.1.3,<6.2.0)", "sphinx_rtd_theme (>=1.2.0,<1.3.0)"]
+test = ["beautifulsoup4", "flake8", "pytest", "pytest-cov"]
 
 [[package]]
 name = "pytest"
@@ -933,6 +1003,18 @@ files = [
 ]
 
 [[package]]
+name = "toolz"
+version = "0.12.0"
+description = "List processing tools and functional utilities"
+category = "dev"
+optional = false
+python-versions = ">=3.5"
+files = [
+    {file = "toolz-0.12.0-py3-none-any.whl", hash = "sha256:2059bd4148deb1884bb0eb770a3cde70e7f954cfbbdc2285f1f2de01fd21eb6f"},
+    {file = "toolz-0.12.0.tar.gz", hash = "sha256:88c570861c440ee3f2f6037c4654613228ff40c93a6c25e0eba70d17282c6194"},
+]
+
+[[package]]
 name = "tzdata"
 version = "2023.3"
 description = "Provider of IANA time zone data"
@@ -981,4 +1063,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "f52d4202712fd9fa0d49f82309f3c584cfe66c2176b70fb651b0ece6ecccf694"
+content-hash = "bc53e9f74cbab34f6d1d0d2a632be471fb22250e0afaeb99d19938c745582f26"

@@ -3,3 +3,4 @@ examples/data
 .personal_README.md
 **/.doctrees
 .docstring_examples.py
+.pypi_token

@@ -159,6 +159,8 @@ class Result():
         of the portfolio.
 
         Ratio is calculated as mean of :py:attr:`~investos.backtest.result.Result.excess_returns` / standard deviation of :py:attr:`~investos.backtest.result.Result.excess_returns`. Annualized by multiplying ratio by square root of periods per year (:py:attr:`~investos.backtest.result.Result.ppy`).
+        
+        TBU: accept benchmark for long-only portfolios / portfolios tracking benchmark
         """
         return (
             np.sqrt(self.ppy) * np.mean(self.excess_returns) /

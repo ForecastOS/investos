@@ -265,6 +265,8 @@ class Backtester():
 
 
     def propagate(self, h, u, t):
+        # print(f"Propagating for {t}")
+        
         h_plus = h + u
         
         costs = [cost.value_expr(t, h_plus=h_plus, u=u) for cost in self.strategy.costs]
@@ -274,6 +276,7 @@ class Backtester():
 
         h_next = self.actual['return'].loc[t] * h_plus + h_plus
 
+        # TBU - is this needed?
         zero_threshold = 0.00001
         h_next[np.abs(h_next) < zero_threshold] = 0
         u[np.abs(u) < zero_threshold] = 0

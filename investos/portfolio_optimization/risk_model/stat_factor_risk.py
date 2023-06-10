@@ -43,7 +43,7 @@ class StatFactorRisk(BaseRisk):
                 self.factor_variance
             )
         )
-
+        
         return self.expression, []
 
 
