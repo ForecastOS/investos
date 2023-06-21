@@ -36,7 +36,10 @@ class StatFactorRisk(BaseRisk):
             self.create_risk_model()
 
         self.expression = cvx.sum(
-            cvx.multiply(self.idiosyncratic_variance, w_plus)
+            cvx.multiply(
+                self.idiosyncratic_variance, 
+                cvx.square(w_plus)
+            )
         ) + cvx.sum(
             cvx.multiply(
                 w_plus.T @ self.factor_loadings,

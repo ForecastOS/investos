@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import statistics
 import datetime as dt
+from typing import Callable
 
 import investos.portfolio_optimization.strategy as strategy
 from investos.portfolio_optimization.strategy import BaseStrategy, RankLongShort
@@ -73,6 +74,9 @@ class Backtester():
     initial_portfolio : pd.DataFrame
         Initial portfolio values, including cash.
 
+    after_propagate : [Callable]
+        Callable objects, that are passed a reference to Backtester (i.e. self), that run at end of each iteration of propagate
+
     Methods
     -------
     optimize(self):
@@ -137,6 +141,7 @@ class Backtester():
         df_categories: pd.DataFrame = None, 
         start_date = None,
         end_date = None,
+        after_propagate: [Callable] = [],
         config: dict = {},
         **kwargs):
         
@@ -189,6 +194,8 @@ class Backtester():
         self.create_initial_portfolio(initial_portfolio, aum)
 
         self._set_references_back_to_optimizer()
+
+        self.after_propagate = after_propagate
 
 
     def pivot_and_fill(self, df, values, columns='asset', index='date', fill_method='bfill'):
@@ -258,6 +265,9 @@ class Backtester():
             u = self.strategy.generate_trade_list(h_next, t)
             h_next, u = self.propagate(h_next, u, t)
             self.backtest.save_position(t, u, h_next)
+            
+            for func in self.after_propagate:
+                func(self, t, u, h_next)
 
         print("Done simulating.")
         
