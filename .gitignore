@@ -4,3 +4,4 @@ examples/data
 **/.doctrees
 .docstring_examples.py
 .pypi_token
+dist/
