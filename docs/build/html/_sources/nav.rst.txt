@@ -1,6 +1,0 @@
-Quick links
-====================================
-.. toctree::
-   :ref:`genindex`
-   :ref:`modindex`
-   :ref:`search`

@@ -1,5 +1,5 @@
 investos
-================
+========
 
 Subpackages
 -----------
@@ -7,8 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   investos.backtest
-   investos.portfolio_optimization
+   investos.portfolio
 
 Submodules
 ----------

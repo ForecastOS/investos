@@ -36,7 +36,7 @@ class Controller():
     strategy : :py:class:`~investos.portfolio.strategy.base_strategy.BaseStrategy`
         Optimization strategy used by backtester. Used to determine what trades to make at each forecast time period.
     
-    backtest_model : :py:class:`~investos.backtest.result.Result`
+    backtest_model : :py:class:`~investos.portfolio.result.BaseResult`
         Stores result from simulated backtest, and contains convenience properties and methods for reporting.
 
     initial_portfolio : pd.DataFrame, optional
@@ -62,7 +62,7 @@ class Controller():
     strategy : :py:class:`~investos.portfolio.strategy.base_strategy.BaseStrategy`
         Optimization strategy used by backtester.
 
-    backtest_model : :py:class:`~investos.backtest.result.Result`
+    backtest_model : :py:class:`~investos.portfolio.result.BaseResult`
         Stores result from simulated backtest.
 
     forecast : dict
@@ -80,7 +80,7 @@ class Controller():
     Methods
     -------
     generate_positions(self):
-        Optimizes the portfolio and backtests it. Returns :py:class:`~investos.backtest.result.Result` object.
+        Optimizes the portfolio and backtests it. Returns :py:class:`~investos.portfolio.result.BaseResult` object.
     
     pivot_and_fill(self, df: pd.DataFrame, values: str, columns='asset', index='date', fill_method='bfill'):
         Pivots and fills the DataFrame based on the provided values, columns, and index.
@@ -95,8 +95,6 @@ class Controller():
         Creates the initial portfolio based on provided initial portfolio (or aum value if iniitial portfolio not provided).
 
     get_actual_positions_for_t(self, h: pd.Series, u: pd.Series, t: dt.Series):
-        Heavily inspired by CvxPortfolio.
-
         Gets actual portfolio positions and holdings for time period t, given trades u, and associates cost models and returns.
 
         Args:

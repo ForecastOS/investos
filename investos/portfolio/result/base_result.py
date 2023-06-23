@@ -53,15 +53,15 @@ class BaseResult():
     @property
     def summary(self) -> None:
         """Outputs a string summary of backtest result properties and performance 
-        (e.g. :py:attr:`~investos.backtest.result.Result.num_periods`, :py:attr:`~investos.backtest.result.Result.sharpe_ratio`, :py:attr:`~investos.backtest.result.Result.max_drawdown`, etc.).
+        (e.g. :py:attr:`~investos.portfolio.result.base_result.BaseResult.num_periods`, :py:attr:`~investos.portfolio.result.base_result.BaseResult.sharpe_ratio`, :py:attr:`~investos.portfolio.result.base_result.BaseResult.max_drawdown`, etc.).
         """
         print(self._summary_string())
 
     def _summary_string(self) -> str:
         """Returns a string summary of backtest result properties and performance 
-        (e.g. :py:attr:`~investos.backtest.result.Result.num_periods`, :py:attr:`~investos.backtest.result.Result.sharpe_ratio`, :py:attr:`~investos.backtest.result.Result.max_drawdown`, etc.).
+        (e.g. :py:attr:`~investos.portfolio.result.base_result.BaseResult.num_periods`, :py:attr:`~investos.portfolio.result.base_result.BaseResult.sharpe_ratio`, :py:attr:`~investos.portfolio.result.base_result.BaseResult.max_drawdown`, etc.).
 
-        Do not call directly; call :py:attr:`~investos.backtest.result.Result.summary` instead.
+        Do not call directly; call :py:attr:`~investos.portfolio.result.base_result.BaseResult.summary` instead.
         """
         data = collections.OrderedDict({
             'Number of periods':
@@ -150,7 +150,7 @@ class BaseResult():
     @property
     def ppy(self) -> float:
         """Returns a float representing the number of periods per year in the backtest period.
-        Calculated as :py:attr:`~investos.backtest.result.Result.num_periods` / :py:attr:`~investos.backtest.result.Result.years_forecast`
+        Calculated as :py:attr:`~investos.portfolio.result.base_result.BaseResult.num_periods` / :py:attr:`~investos.portfolio.result.base_result.BaseResult.years_forecast`
         """
         return self.num_periods / self.years_forecast
 
@@ -161,7 +161,7 @@ class BaseResult():
         `Sharpe Ratio <https://en.wikipedia.org/wiki/Sharpe_ratio>`_ 
         of the portfolio.
 
-        Ratio is calculated as mean of :py:attr:`~investos.backtest.result.Result.excess_returns` / standard deviation of :py:attr:`~investos.backtest.result.Result.excess_returns`. Annualized by multiplying ratio by square root of periods per year (:py:attr:`~investos.backtest.result.Result.ppy`).
+        Ratio is calculated as mean of :py:attr:`~investos.portfolio.result.base_result.base_result.BaseResult.excess_returns` / standard deviation of :py:attr:`~investos.portfolio.result.base_result.BaseResult.excess_returns`. Annualized by multiplying ratio by square root of periods per year (:py:attr:`~investos.portfolio.result.base_result.BaseResult.ppy`).
         
         TBU: accept benchmark for long-only portfolios / portfolios tracking benchmark
         """
