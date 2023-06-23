@@ -9,6 +9,4 @@ Welcome to InvestOS's documentation!
 .. toctree::
    :maxdepth: 4
 
-   genindex
-   modindex
    investos
