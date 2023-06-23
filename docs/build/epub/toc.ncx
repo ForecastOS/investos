@@ -58,9 +58,9 @@
         </navPoint>
         <navPoint id="navPoint9" playOrder="7">
           <navLabel>
-            <text>investos.portfolio_optimization package</text>
+            <text>investos.portfolio package</text>
           </navLabel>
-          <content src="investos.portfolio_optimization.xhtml" />  
+          <content src="investos.portfolio.xhtml" />  
         </navPoint>
       </navPoint>
       <navPoint id="navPoint10" playOrder="8">

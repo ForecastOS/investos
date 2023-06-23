@@ -3,7 +3,7 @@ import numpy as np
 import datetime as dt
 import cvxpy as cvx
 
-from investos.portfolio_optimization.cost_model import BaseCost
+from investos.portfolio.cost_model import BaseCost
 from investos.util import values_in_time
 
 class TradingCost(BaseCost):
@@ -12,7 +12,7 @@ class TradingCost(BaseCost):
     Attributes
     ----------
     sensitivity_coeff : float
-        For scaling transaction cost; 1 assumes 1 day's volume moves price by 1 std_dev in vol
+        For scaling transaction cost; 1 assumes 1 period's volume moves price by 1 std_dev in vol
     """
 
     def __init__(self, price_movement_sensitivity=1):
@@ -28,8 +28,6 @@ class TradingCost(BaseCost):
         """Estimated trading costs.
 
         Used by optimization strategy to determine trades. 
-
-        Not used to calculate simulated trade costs for backtest performance.
         """
         z = z[:-1]
         constraints = []
@@ -49,18 +47,6 @@ class TradingCost(BaseCost):
         )
         # END calculate terms for estimated trading cost
 
-        # No trade conditions
-        # if np.isscalar(price_movement_term):
-        #     if np.isnan(price_movement_term):
-        #         constraints += [z == 0]
-        #         price_movement_term = 0
-        # else:  # it is a pd series
-        #     no_trade = price_movement_term.index[price_movement_term.isnull()]
-        #     price_movement_term[no_trade] = 0
-        #     constraints += [z[price_movement_term.index.get_loc(tick)] == 0
-        #                for tick in no_trade]
-        # END no trade conditions
-
         # Create estimated cost expression
         try: # Spread (estimated) costs
             self.estimate_expression = cvx.multiply(
@@ -78,7 +64,7 @@ class TradingCost(BaseCost):
         return cvx.sum(self.estimate_expression), constraints
 
 
-    def value_expr(self, t: dt.datetime, h_plus: pd.Series, u: pd.Series) -> pd.Series:
+    def actual_cost(self, t: dt.datetime, h_plus: pd.Series, u: pd.Series) -> pd.Series:
         """Method that calculates `t` period cost for trades `u`.
 
         Trading cost (per asset) is assumed to be half of bid-ask spread, plus (per asset) standard deviation * % of period volume traded. 

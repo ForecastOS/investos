@@ -1,5 +1,5 @@
 from investos.util import values_in_time
-from investos.portfolio_optimization.constraint_model.base_constraint import BaseConstraint
+from investos.portfolio.constraint_model.base_constraint import BaseConstraint
 
 class MaxWeightConstraint(BaseConstraint):
     """

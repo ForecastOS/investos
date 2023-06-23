@@ -4,12 +4,12 @@ import datetime as dt
 class BaseStrategy():
     """Base class for an optimization strategy.
 
-    Must implement :py:meth:`~investos.portfolio_optimization.strategy.base_strategy.BaseStrategy.generate_trade_list` as per below.
+    Must implement :py:meth:`~investos.portfolio.strategy.base_strategy.BaseStrategy.generate_trade_list` as per below.
 
     Attributes
     ----------
     costs : list
-        Cost models evaluated during optimization strategy. Defaults to empty list. See :py:class:`~investos.portfolio_optimization.cost_model.base_cost.BaseCost` for cost model base class.
+        Cost models evaluated during optimization strategy. Defaults to empty list. See :py:class:`~investos.portfolio.cost_model.base_cost.BaseCost` for cost model base class.
     constraints : list
         Constraints applied for optimization strategy. Defaults to empty list. See [TBU] for optimization model base class.
     """

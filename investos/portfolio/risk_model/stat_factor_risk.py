@@ -2,11 +2,11 @@ import pandas as pd
 import numpy as np
 import cvxpy as cvx
 
-from investos.portfolio_optimization.risk_model import BaseRisk
+from investos.portfolio.risk_model import BaseRisk
 
 class StatFactorRisk(BaseRisk):
-    """Base risk model for InvestOS. 
-    Other cost models should subclass BaseRisk. 
+    """PCA-factor based risk model.
+
     The only requirement of custom risk models is that they implement a `_estimated_cost_for_optimization` method.
 
     Note: risk models are like cost models, except they return 0 for their `value_expr` method (because they only influence optimization weights, not actual cash costs).
@@ -15,9 +15,8 @@ class StatFactorRisk(BaseRisk):
     def __init__(self, n_factors=5):
         self.n = n_factors
 
-        self.optimizer = None # Set during Optimizer initialization
+        self.optimizer = None # Set during Controller initialization
 
-        # TBU: create loadings, factor variances, and idiosync variances here!
         self.factor_variance = None
         self.factor_loadings = None
         self.idiosyncratic_variance = None

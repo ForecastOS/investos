@@ -4,13 +4,13 @@ import statistics
 import datetime as dt
 from typing import Callable
 
-import investos.portfolio_optimization.strategy as strategy
-from investos.portfolio_optimization.strategy import BaseStrategy, RankLongShort
-import investos.backtest as backtest
+import investos.portfolio.strategy as strategy
+from investos.portfolio.strategy import BaseStrategy, RankLongShort
+import investos.portfolio.result as result
 import investos.util as util
 
-class Backtester():
-    """Container class that runs backtests using passed-in portfolio optimization `strategy` (see :py:class:`~investos.portfolio_optimization.strategy.base_strategy.BaseStrategy`), then saves results into passed-in `result` (see :py:class:`~investos.backtest.result.Result`) class.
+class Controller():
+    """Container class that runs backtests using passed-in portfolio optimization `strategy` (see :py:class:`~investos.portfolio.strategy.base_strategy.BaseStrategy`), then saves results into passed-in `result` (see :py:class:`~investos.backtest.result.Result`) class.
     
     Parameters
     ----------
@@ -33,7 +33,7 @@ class Backtester():
         volume (of shares traded, float), 
         spread (float)
 
-    strategy : :py:class:`~investos.portfolio_optimization.strategy.base_strategy.BaseStrategy`
+    strategy : :py:class:`~investos.portfolio.strategy.base_strategy.BaseStrategy`
         Optimization strategy used by backtester. Used to determine what trades to make at each forecast time period.
     
     backtest_model : :py:class:`~investos.backtest.result.Result`
@@ -59,7 +59,7 @@ class Backtester():
     config : dict
         Configuration parameters after merging with base configuration.
 
-    strategy : :py:class:`~investos.portfolio_optimization.strategy.base_strategy.BaseStrategy`
+    strategy : :py:class:`~investos.portfolio.strategy.base_strategy.BaseStrategy`
         Optimization strategy used by backtester.
 
     backtest_model : :py:class:`~investos.backtest.result.Result`
@@ -74,12 +74,12 @@ class Backtester():
     initial_portfolio : pd.DataFrame
         Initial portfolio values, including cash.
 
-    after_propagate : [Callable]
-        Callable objects, that are passed a reference to Backtester (i.e. self), that run at end of each iteration of propagate
+    after_step : [Callable]
+        Callable objects, that are passed a reference to Controller (i.e. self), that run at end of each step through time
 
     Methods
     -------
-    optimize(self):
+    generate_positions(self):
         Optimizes the portfolio and backtests it. Returns :py:class:`~investos.backtest.result.Result` object.
     
     pivot_and_fill(self, df: pd.DataFrame, values: str, columns='asset', index='date', fill_method='bfill'):
@@ -94,10 +94,10 @@ class Backtester():
     create_initial_portfolio(self, initial_portfolio, aum):
         Creates the initial portfolio based on provided initial portfolio (or aum value if iniitial portfolio not provided).
 
-    propagate(self, h: pd.Series, u: pd.Series, t: dt.Series):
+    get_actual_positions_for_t(self, h: pd.Series, u: pd.Series, t: dt.Series):
         Heavily inspired by CvxPortfolio.
 
-        Propagates the portfolio forward over time period t, given trades u.
+        Gets actual portfolio positions and holdings for time period t, given trades u, and associates cost models and returns.
 
         Args:
             h: pandas Series object describing current portfolio
@@ -135,67 +135,32 @@ class Backtester():
         df_forecast: pd.DataFrame,
         df_actual: pd.DataFrame = None,
         strategy: BaseStrategy = RankLongShort,
-        backtest_model: backtest.Result = None,
+        backtest_model: result.BaseResult = None,
         initial_portfolio: pd.DataFrame = None, # In dollars (or other currency), not in weights
         aum: float = 100_000_000,
         df_categories: pd.DataFrame = None, 
         start_date = None,
         end_date = None,
-        after_propagate: [Callable] = [],
+        after_step: [Callable] = [],
         config: dict = {},
         **kwargs):
         
         self.config = util.deep_dict_merge(self.BASE_CONFIG, config)
 
-        self.strategy = strategy # Must be initialized first
-        if getattr(self.strategy, 'risk_model', None):
-            self.strategy.costs += [self.strategy.risk_model]
-
-        if backtest_model is None:
-            if df_actual is not None:
-                self.backtest_model = backtest.Result
-            else:
-                self.backtest_model = backtest.ForecastResult
-        else:   
-            self.backtest_model = backtest_model # Not initialized when passed in
-
-        self.backtest_model.optimizer = self
+        self._init_strategy(strategy)
+        self._init_backtest_model(backtest_model, df_actual)
 
         self.forecast = {}
-        self.forecast['date'] = {
-            "start": start_date or df_forecast.date.min(),
-            "end": end_date or df_forecast.date.max(),
-        }
-        df_forecast = df_forecast[
-            (df_forecast['date'] >= self.forecast['date']['start']) & 
-            (df_forecast['date'] <= self.forecast['date']['end'])
-        ]
+        df_forecast = self._clip_forecast_df_for_dates(start_date, end_date, df_forecast)
         
-        if df_actual is not None:
-            self.actual = {}
-            self.actual['return'] = self.pivot_and_fill(df_actual, values='return')
-            self.actual['price'] = self.pivot_and_fill(df_actual, values='price')
-            self.actual['volume'] = self.pivot_and_fill(df_actual, values='volume')
-            self.actual['half_spread'] = (
-                self.pivot_and_fill(df_actual, values='spread') / 2
-            ).rename(
-                columns={'spread': 'half_spread'}
-            )
-            self.actual['std_dev'] = self.pivot_and_fill(self.create_forecast(df_actual, 'std_dev'), values='std_dev')
-            self._set_cash_return_for_each_period(self.actual['return'])
+        self._init_df_actual(df_actual)
+        self._init_df_forecast(df_forecast)
 
-        self.forecast['return'] = self.pivot_and_fill(df_forecast, values='return')
-        self.forecast['std_dev'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'std_dev'), values='std_dev')
-        self.forecast['volume'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'volume'), values='volume')
-        self.forecast['half_spread'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'half_spread'), values='half_spread')
-        self.forecast['price'] = self.create_price(self.forecast['return'])
         self._set_cash_return_for_each_period(self.forecast['return'])
-
         self.create_initial_portfolio(initial_portfolio, aum)
-
         self._set_references_back_to_optimizer()
 
-        self.after_propagate = after_propagate
+        self.after_step = after_step # Hook for callables at end of each step in t
 
 
     def pivot_and_fill(self, df, values, columns='asset', index='date', fill_method='bfill'):
@@ -249,7 +214,7 @@ class Backtester():
         self.initial_portfolio = initial_portfolio
 
 
-    def optimize(self):
+    def generate_positions(self):
         print("Optimizing...")
 
         self.backtest = self.backtest_model()
@@ -260,13 +225,13 @@ class Backtester():
         h_next = self.initial_portfolio # Includes cash
         self.backtest.save_position(t, u, h_next)
 
-        # Propagate through future trades and resulting positions
+        # Walk through time and calculate future trades, estimated and actual costs and returns, and resulting positions
         for t in self.forecast['return'].index:
             u = self.strategy.generate_trade_list(h_next, t)
-            h_next, u = self.propagate(h_next, u, t)
+            h_next, u = self.get_actual_positions_for_t(h_next, u, t)
             self.backtest.save_position(t, u, h_next)
             
-            for func in self.after_propagate:
+            for func in self.after_step: # Run after_step hooks
                 func(self, t, u, h_next)
 
         print("Done simulating.")
@@ -274,19 +239,16 @@ class Backtester():
         return self.backtest
 
 
-    def propagate(self, h, u, t):
-        # print(f"Propagating for {t}")
-        
+    def get_actual_positions_for_t(self, h, u, t):        
         h_plus = h + u
         
-        costs = [cost.value_expr(t, h_plus=h_plus, u=u) for cost in self.strategy.costs]
+        costs = [cost.actual_cost(t, h_plus=h_plus, u=u) for cost in self.strategy.costs]
 
         u["cash"] = -sum(u[u.index != "cash"]) - sum(costs)
         h_plus["cash"] = h["cash"] + u["cash"]
 
         h_next = self.actual['return'].loc[t] * h_plus + h_plus
 
-        # TBU - is this needed?
         zero_threshold = 0.00001
         h_next[np.abs(h_next) < zero_threshold] = 0
         u[np.abs(u) < zero_threshold] = 0
@@ -321,3 +283,55 @@ class Backtester():
         
         for c in self.strategy.costs + (self.strategy.constraints or []):
             c.optimizer = self
+
+
+    def _init_df_actual(self, df_actual):
+        if df_actual is not None:
+            self.actual = {}
+            self.actual['return'] = self.pivot_and_fill(df_actual, values='return')
+            self.actual['price'] = self.pivot_and_fill(df_actual, values='price')
+            self.actual['volume'] = self.pivot_and_fill(df_actual, values='volume')
+            self.actual['half_spread'] = (
+                self.pivot_and_fill(df_actual, values='spread') / 2
+            ).rename(
+                columns={'spread': 'half_spread'}
+            )
+            self.actual['std_dev'] = self.pivot_and_fill(self.create_forecast(df_actual, 'std_dev'), values='std_dev')
+            self._set_cash_return_for_each_period(self.actual['return'])
+
+
+    def _init_backtest_model(self, backtest_model, df_actual):
+        if backtest_model is None:
+            if df_actual is not None:
+                self.backtest_model = result.BaseResult
+            else:
+                self.backtest_model = result.ForecastResult
+        else:   
+            self.backtest_model = backtest_model # Not initialized when passed in
+
+        self.backtest_model.optimizer = self
+
+
+    def _clip_forecast_df_for_dates(self, start_date, end_date, df_forecast):
+        self.forecast['date'] = {
+            "start": start_date or df_forecast.date.min(),
+            "end": end_date or df_forecast.date.max(),
+        }
+        return df_forecast[
+            (df_forecast['date'] >= self.forecast['date']['start']) & 
+            (df_forecast['date'] <= self.forecast['date']['end'])
+        ]
+
+
+    def _init_df_forecast(self, df_forecast):
+        self.forecast['return'] = self.pivot_and_fill(df_forecast, values='return')
+        self.forecast['std_dev'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'std_dev'), values='std_dev')
+        self.forecast['volume'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'volume'), values='volume')
+        self.forecast['half_spread'] = self.pivot_and_fill(self.create_forecast(df_forecast, 'half_spread'), values='half_spread')
+        self.forecast['price'] = self.create_price(self.forecast['return'])
+
+
+    def _init_strategy(self, strategy):
+        self.strategy = strategy # Must be initialized first
+        if getattr(self.strategy, 'risk_model', None):
+            self.strategy.costs += [self.strategy.risk_model]

@@ -7,10 +7,10 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   investos.portfolio_optimization.cost_model
-   investos.portfolio_optimization.constraint_model
-   investos.portfolio_optimization.risk_model
-   investos.portfolio_optimization.strategy
+   investos.portfolio.cost_model
+   investos.portfolio.constraint_model
+   investos.portfolio.risk_model
+   investos.portfolio.strategy
 
 Submodules
 ----------
@@ -18,7 +18,7 @@ Submodules
 investos.portfolio\_optimization.backtester module
 --------------------------------------------------
 
-.. automodule:: investos.portfolio_optimization.backtester
+.. automodule:: investos.portfolio.backtester
    :members:
    :undoc-members:
    :show-inheritance:
@@ -26,7 +26,7 @@ investos.portfolio\_optimization.backtester module
 .. Module contents
 .. ---------------
 
-.. .. automodule:: investos.portfolio_optimization
+.. .. automodule:: investos.portfolio
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:

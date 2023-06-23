@@ -25,10 +25,10 @@
     <item id="epub-0" href="genindex.xhtml" media-type="application/xhtml+xml" />
     <item id="epub-1" href="index.xhtml" media-type="application/xhtml+xml" />
     <item id="epub-2" href="investos.backtest.xhtml" media-type="application/xhtml+xml" />
-    <item id="epub-3" href="investos.portfolio_optimization.cost_model.xhtml" media-type="application/xhtml+xml" />
-    <item id="epub-4" href="investos.portfolio_optimization.risk_model.xhtml" media-type="application/xhtml+xml" />
-    <item id="epub-5" href="investos.portfolio_optimization.strategy.xhtml" media-type="application/xhtml+xml" />
-    <item id="epub-6" href="investos.portfolio_optimization.xhtml" media-type="application/xhtml+xml" />
+    <item id="epub-3" href="investos.portfolio.cost_model.xhtml" media-type="application/xhtml+xml" />
+    <item id="epub-4" href="investos.portfolio.risk_model.xhtml" media-type="application/xhtml+xml" />
+    <item id="epub-5" href="investos.portfolio.strategy.xhtml" media-type="application/xhtml+xml" />
+    <item id="epub-6" href="investos.portfolio.xhtml" media-type="application/xhtml+xml" />
     <item id="epub-7" href="investos.xhtml" media-type="application/xhtml+xml" />
     <item id="epub-8" href="modules.xhtml" media-type="application/xhtml+xml" />
     <item id="epub-9" href="py-modindex.xhtml" media-type="application/xhtml+xml" />

@@ -4,10 +4,10 @@ import numpy as np
 import datetime as dt
 import collections
 
-class Result():
-    """The `Result` class captures portfolio data and performance for each asset over time.
+class BaseResult():
+    """The `Result` class captures portfolio data and performance for each asset and period over time.
 
-    Instances of this object are called by the :py:meth:`investos.portfolio_optimization.backtester.Backtester.propagate` method.
+    Instances of this object are called by the :py:meth:`investos.portfolio.controller.Controller.generate_positions` method.
     """
 
     def __init__(self):
@@ -72,10 +72,8 @@ class Result():
                 self.h.index[-1],
             'Annualized portfolio return (%)':
                 str(round(self.annualized_return * 100, 2)) + '%',
-            # 'Excess return (%)':
-            #     self.excess_returns.mean() * 100 * self.PPY,
-            # 'Excess risk (%)':
-            #     self.excess_returns.std() * 100 * np.sqrt(self.PPY),
+            'Total portfolio return (%)':
+                str(round(self.total_return * 100, 2)) + '%',
             'Sharpe ratio':
                 self.sharpe_ratio,
             'Max drawdown':
@@ -119,13 +117,18 @@ class Result():
 
 
     @property
+    def total_return(self) -> float:
+        """Returns a float representing the total return for the entire period under review.
+        """
+        return self.v[-1] / self.v[0] - 1
+    
+
+    @property
     def annualized_return(self) -> float:
         """Returns a float representing the annualized return of the entire period under review. Uses beginning and ending portfolio values for the calculation (value @ t[-1] and value @ t[0]), as well as the number of years in the forecast.
         """
-        a_return = self.v[-1] / self.v[0]
-
         return (
-            ( a_return ** (1 / self.years_forecast) ) - 1
+            ( (self.total_return + 1) ** (1 / self.years_forecast) ) - 1
         )
 
 

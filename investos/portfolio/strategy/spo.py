@@ -2,19 +2,15 @@ import pandas as pd
 import datetime as dt
 import cvxpy as cvx
 
-from investos.portfolio_optimization.constraint_model import *
-from investos.portfolio_optimization.risk_model import *
-from investos.portfolio_optimization.strategy import BaseStrategy
-from investos.portfolio_optimization.cost_model import TradingCost, HoldingCost, BaseCost
+from investos.portfolio.constraint_model import *
+from investos.portfolio.risk_model import *
+from investos.portfolio.strategy import BaseStrategy
+from investos.portfolio.cost_model import TradingCost, HoldingCost, BaseCost
 from investos.util import values_in_time
 import investos.util as util
 
 class SPO(BaseStrategy):
     """Optimization strategy that builds trade list using single period optimization.
-
-    Attributes
-    ----------
-    TBU
     """
 
     BASE_SOLVER_OPTS = {
@@ -75,9 +71,11 @@ class SPO(BaseStrategy):
         constraints += [item for item in (con.weight_expr(t, wplus, z, value)
                                           for con in self.constraints)]
 
-        for el in costs:
-            if not el.is_convex():
-                print(t, el, "is not convex")
+        # For help debugging: 
+        
+        # for el in costs:
+        #     if not el.is_convex():
+        #         print(t, el, "is not convex")
             # assert (el.is_convex())
 
         # for el in constraints:

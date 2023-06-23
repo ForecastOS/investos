@@ -3,7 +3,7 @@ import numpy as np
 import datetime as dt
 import cvxpy as cvx
 
-from investos.portfolio_optimization.cost_model import BaseCost
+from investos.portfolio.cost_model import BaseCost
 from investos.util import values_in_time
 
 class HoldingCost(BaseCost):
@@ -30,7 +30,7 @@ class HoldingCost(BaseCost):
         return cvx.sum(self.expression), []
 
 
-    def value_expr(self, t: dt.datetime, h_plus: pd.Series, u: pd.Series) -> pd.Series:
+    def actual_cost(self, t: dt.datetime, h_plus: pd.Series, u: pd.Series) -> pd.Series:
         """Method that calculates per-period (short position) holding costs given period `t` holdings and trades.
 
         Parameters

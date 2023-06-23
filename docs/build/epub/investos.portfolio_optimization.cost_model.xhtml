@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>investos.portfolio_optimization.cost_model package</title>
+    <title>investos.portfolio.cost_model package</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/epub.css" />
     <link rel="stylesheet" type="text/css" href="_static/theme_overrides.css" />
@@ -68,21 +68,21 @@
           <div class="body" role="main">
             
   <section id="investos-portfolio-optimization-cost-model-package">
-<h1>investos.portfolio_optimization.cost_model package</h1>
+<h1>investos.portfolio.cost_model package</h1>
 <section id="submodules">
 <h2>Submodules</h2>
 </section>
-<section id="module-investos.portfolio_optimization.cost_model.base_cost">
-<span id="investos-portfolio-optimization-cost-model-base-cost-module"></span><h2>investos.portfolio_optimization.cost_model.base_cost module</h2>
+<section id="module-investos.portfolio.cost_model.base_cost">
+<span id="investos-portfolio-optimization-cost-model-base-cost-module"></span><h2>investos.portfolio.cost_model.base_cost module</h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="investos.portfolio_optimization.cost_model.base_cost.BaseCost">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">investos.portfolio_optimization.cost_model.base_cost.</span></span><span class="sig-name descname"><span class="pre">BaseCost</span></span></dt>
+<dt class="sig sig-object py" id="investos.portfolio.cost_model.base_cost.BaseCost">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">investos.portfolio.cost_model.base_cost.</span></span><span class="sig-name descname"><span class="pre">BaseCost</span></span></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Base cost model for InvestOS.
 Other cost models should subclass BaseCost.
-The only requirement of custom cost models is that they (re)implement <a class="reference internal" href="#investos.portfolio_optimization.cost_model.base_cost.BaseCost.value_expr" title="investos.portfolio_optimization.cost_model.base_cost.BaseCost.value_expr"><code class="xref py py-meth docutils literal notranslate"><span class="pre">value_expr()</span></code></a>.</p>
+The only requirement of custom cost models is that they (re)implement <a class="reference internal" href="#investos.portfolio.cost_model.base_cost.BaseCost.value_expr" title="investos.portfolio.cost_model.base_cost.BaseCost.value_expr"><code class="xref py py-meth docutils literal notranslate"><span class="pre">value_expr()</span></code></a>.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="investos.portfolio_optimization.cost_model.base_cost.BaseCost.value_expr">
+<dt class="sig sig-object py" id="investos.portfolio.cost_model.base_cost.BaseCost.value_expr">
 <span class="sig-name descname"><span class="pre">value_expr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h_plus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Series</span></span></span></dt>
 <dd><p>Method that calculates per-period costs given period <cite>t</cite> holdings and trades.</p>
 <dl class="field-list simple">
@@ -99,15 +99,15 @@ The only requirement of custom cost models is that they (re)implement <a class="
 </dd></dl>
 
 </section>
-<section id="module-investos.portfolio_optimization.cost_model.holding_cost">
-<span id="investos-portfolio-optimization-cost-model-holding-cost-module"></span><h2>investos.portfolio_optimization.cost_model.holding_cost module</h2>
+<section id="module-investos.portfolio.cost_model.holding_cost">
+<span id="investos-portfolio-optimization-cost-model-holding-cost-module"></span><h2>investos.portfolio.cost_model.holding_cost module</h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="investos.portfolio_optimization.cost_model.holding_cost.HoldingCost">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">investos.portfolio_optimization.cost_model.holding_cost.</span></span><span class="sig-name descname"><span class="pre">HoldingCost</span></span></dt>
-<dd><p>Bases: <a class="reference internal" href="#investos.portfolio_optimization.cost_model.base_cost.BaseCost" title="investos.portfolio_optimization.cost_model.base_cost.BaseCost"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCost</span></code></a></p>
+<dt class="sig sig-object py" id="investos.portfolio.cost_model.holding_cost.HoldingCost">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">investos.portfolio.cost_model.holding_cost.</span></span><span class="sig-name descname"><span class="pre">HoldingCost</span></span></dt>
+<dd><p>Bases: <a class="reference internal" href="#investos.portfolio.cost_model.base_cost.BaseCost" title="investos.portfolio.cost_model.base_cost.BaseCost"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCost</span></code></a></p>
 <p>Calculates cost for holding short positions, given customizable short_rate.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="investos.portfolio_optimization.cost_model.holding_cost.HoldingCost.value_expr">
+<dt class="sig sig-object py" id="investos.portfolio.cost_model.holding_cost.HoldingCost.value_expr">
 <span class="sig-name descname"><span class="pre">value_expr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h_plus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Series</span></span></span></dt>
 <dd><p>Method that calculates per-period (short position) holding costs given period <cite>t</cite> holdings and trades.</p>
 <dl class="field-list simple">
@@ -124,15 +124,15 @@ The only requirement of custom cost models is that they (re)implement <a class="
 </dd></dl>
 
 </section>
-<section id="module-investos.portfolio_optimization.cost_model.trading_cost">
-<span id="investos-portfolio-optimization-cost-model-trading-cost-module"></span><h2>investos.portfolio_optimization.cost_model.trading_cost module</h2>
+<section id="module-investos.portfolio.cost_model.trading_cost">
+<span id="investos-portfolio-optimization-cost-model-trading-cost-module"></span><h2>investos.portfolio.cost_model.trading_cost module</h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="investos.portfolio_optimization.cost_model.trading_cost.TradingCost">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">investos.portfolio_optimization.cost_model.trading_cost.</span></span><span class="sig-name descname"><span class="pre">TradingCost</span></span></dt>
-<dd><p>Bases: <a class="reference internal" href="#investos.portfolio_optimization.cost_model.base_cost.BaseCost" title="investos.portfolio_optimization.cost_model.base_cost.BaseCost"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCost</span></code></a></p>
+<dt class="sig sig-object py" id="investos.portfolio.cost_model.trading_cost.TradingCost">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">investos.portfolio.cost_model.trading_cost.</span></span><span class="sig-name descname"><span class="pre">TradingCost</span></span></dt>
+<dd><p>Bases: <a class="reference internal" href="#investos.portfolio.cost_model.base_cost.BaseCost" title="investos.portfolio.cost_model.base_cost.BaseCost"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCost</span></code></a></p>
 <p>Calculates per period cost for trades <cite>u</cite>, based on spread, standard deviation, volume, and price.</p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="investos.portfolio_optimization.cost_model.trading_cost.TradingCost.sensitivity_coeff">
+<dt class="sig sig-object py" id="investos.portfolio.cost_model.trading_cost.TradingCost.sensitivity_coeff">
 <span class="sig-name descname"><span class="pre">sensitivity_coeff</span></span></dt>
 <dd><p>For scaling transaction cost; 1 assumes 1 day’s volume moves price by 1 std_dev in vol</p>
 <dl class="field-list simple">
@@ -143,7 +143,7 @@ The only requirement of custom cost models is that they (re)implement <a class="
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="investos.portfolio_optimization.cost_model.trading_cost.TradingCost.value_expr">
+<dt class="sig sig-object py" id="investos.portfolio.cost_model.trading_cost.TradingCost.value_expr">
 <span class="sig-name descname"><span class="pre">value_expr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h_plus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Series</span></span></span></dt>
 <dd><p>Method that calculates <cite>t</cite> period cost for trades <cite>u</cite>.</p>
 <p>Trading cost (per asset) is assumed to be half of bid-ask spread, plus (per asset) standard deviation * % of period volume traded.
@@ -162,7 +162,7 @@ Assumption is trading 100% of period volume moves price by 1 (default value for 
 </dd></dl>
 
 </section>
-<section id="module-investos.portfolio_optimization.cost_model">
+<section id="module-investos.portfolio.cost_model">
 <span id="module-contents"></span><h2>Module contents</h2>
 </section>
 </section>
