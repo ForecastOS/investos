@@ -5,3 +5,4 @@ examples/data
 .docstring_examples.py
 .pypi_token
 dist/
+node_modules
