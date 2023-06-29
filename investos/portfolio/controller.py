@@ -215,7 +215,10 @@ class Controller():
     def generate_positions(self):
         print("Optimizing...")
 
-        self.backtest = self.backtest_model()
+        self.backtest = self.backtest_model(
+            start_date = self.forecast['date']['start'],
+            end_date = self.forecast['date']['end'],
+        )
 
         # Submit initial position
         t = self.get_initial_t()

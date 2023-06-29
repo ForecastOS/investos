@@ -1,4 +1,5 @@
 import copy
+from functools import wraps
 
 import numpy as np
 import pandas as pd
@@ -62,3 +63,11 @@ def values_in_time(obj, t, tau=None):
             return obj
 
     return obj
+
+
+def clip_for_dates(func):
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            pd_obj = func(self, *args, **kwargs)
+            return pd_obj[(pd_obj.index >= self.start_date) & (pd_obj.index <= self.end_date)]
+        return wrapper

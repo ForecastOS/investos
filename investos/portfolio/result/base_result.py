@@ -3,6 +3,7 @@ import numpy as np
 
 import datetime as dt
 import collections
+from investos.util import clip_for_dates
 
 class BaseResult():
     """The `Result` class captures portfolio data and performance for each asset and period over time.
@@ -10,8 +11,9 @@ class BaseResult():
     Instances of this object are called by the :py:meth:`investos.portfolio.controller.Controller.generate_positions` method.
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, start_date, end_date):
+        self.start_date = start_date
+        self.end_date = end_date
 
     def save_data(self, name: str, t: dt.datetime, entry: pd.Series) -> None:
         """Save `entry` on `Result` object, a (pandas) Series of data as `name` for datetime `t`.
@@ -64,18 +66,24 @@ class BaseResult():
         Do not call directly; call :py:attr:`~investos.portfolio.result.base_result.BaseResult.summary` instead.
         """
         data = collections.OrderedDict({
-            'Number of periods':
-                self.num_periods,
             'Initial timestamp':
                 self.h.index[0],
             'Final timestamp':
                 self.h.index[-1],
-            'Annualized portfolio return (%)':
-                str(round(self.annualized_return * 100, 2)) + '%',
             'Total portfolio return (%)':
                 str(round(self.total_return * 100, 2)) + '%',
-            'Sharpe ratio':
-                self.sharpe_ratio,
+            'Annualized portfolio return (%)':
+                str(round(self.annualized_return * 100, 2)) + '%',
+            'Annualized excess portfolio return (%)':
+                str(round(self.annualized_excess_return * 100, 2)) + '%',
+            'Annualized excess risk (%)':
+                str(round(self.excess_risk_annualized, 2)) + '%',
+            'Information ratio (calc. from per period returns and risk)':
+                str(round(self.information_ratio, 2)) + 'x',
+            'Annualized risk over risk-free (%)':
+                str(round(self.risk_over_cash_annualized, 2)) + '%',
+            'Sharpe ratio (calc. from per period returns and risk)':
+                str(round(self.sharpe_ratio, 2)) + 'x',
             'Max drawdown':
                 f"{round(self.max_drawdown, 2)}%",
             'Annual turnover (x)':
@@ -87,12 +95,20 @@ class BaseResult():
 
 
     @property
+    @clip_for_dates
     def h(self) -> pd.DataFrame:
         """Returns a pandas Dataframe of asset holdings (`h`) at the beginning of each datetime period.
         """
         tmp = self.h_next.copy()
         tmp = self.h_next.shift(1) # Shift h_next to h timing
         return tmp[1:]
+
+
+    @property
+    @clip_for_dates
+    def trades(self) -> pd.DataFrame:
+        "Returns a pandas Series of trades (u)."
+        return self.u
 
 
     @property
@@ -109,6 +125,13 @@ class BaseResult():
 
 
     @property
+    def v_with_benchmark(self) -> pd.Series:
+        """Returns a pandas Dataframe with simulated portfolio and benchmark values.
+        """
+        return pd.DataFrame({'portfolio': self.v, 'benchmark': self.benchmark_v})
+
+
+    @property
     def returns(self) -> pd.Series:
         """Returns a pandas Series of the returns for each datetime period (vs the previous period)."""
         val = self.v
@@ -121,6 +144,20 @@ class BaseResult():
         """Returns a float representing the total return for the entire period under review.
         """
         return self.v[-1] / self.v[0] - 1
+
+
+    @property
+    def total_benchmark_return(self) -> float:
+        """Returns a float representing the total return for the entire period under review.
+        """
+        return self.benchmark_v[-1] / self.benchmark_v[0] - 1
+
+
+    @property
+    def total_excess_return(self) -> float:
+        """Returns a float representing the total return for the entire period under review.
+        """
+        return self.total_return - self.total_benchmark_return
     
 
     @property
@@ -133,10 +170,74 @@ class BaseResult():
 
 
     @property
-    def excess_returns(self) -> pd.Series:
-        """Returns a pandas Series of returns in excess of the (cash) benchmark.
+    def annualized_benchmark_return(self) -> float:
+        """Returns a float representing the annualized benchmark return of the entire period under review. Uses beginning and ending portfolio values for the calculation (value @ t[-1] and value @ t[0]), as well as the number of years in the forecast.
         """
-        return (self.returns - self.optimizer.actual['return']['cash']).dropna()
+        return (
+            ( (self.total_benchmark_return + 1) ** (1 / self.years_forecast) ) - 1
+        )
+ 
+
+    @property
+    def excess_returns(self) -> pd.Series:
+        """Returns a pandas Series of returns in excess of the benchmark.
+        """
+        return (self.returns - self.benchmark_returns).dropna()
+
+
+    @property
+    def returns_over_cash(self) -> pd.Series:
+        """Returns a pandas Series of returns in excess of risk free returns.
+        """
+        return (self.returns - self.risk_free_returns).dropna()
+
+
+    @property
+    def annualized_excess_return(self) -> float:
+        """Returns a float representing the annualized excess return of the entire period under review. Uses beginning and ending portfolio values for the calculation (value @ t[-1] and value @ t[0]), as well as the number of years in the forecast.
+        """
+        return self.annualized_return - self.annualized_benchmark_return
+
+
+    @property
+    def excess_risk_annualized(self) -> pd.Series:
+        """Returns a pandas Series of risk in excess of the benchmark.
+        """
+        return (self.excess_returns.std() * 100 * np.sqrt(self.ppy))
+
+
+    @property
+    def risk_over_cash_annualized(self) -> pd.Series:
+        """Returns a pandas Series of risk in excess of the risk free rate.
+        """
+        return (self.returns_over_cash.std() * 100 * np.sqrt(self.ppy))
+
+
+    @property
+    @clip_for_dates
+    def benchmark_returns(self) -> pd.Series:
+        if not hasattr(self, 'benchmark'):
+            self.benchmark = self.optimizer.actual['return']['cash']
+        
+        return self.benchmark
+
+
+    @property
+    @clip_for_dates
+    def risk_free_returns(self) -> pd.Series:
+        if not hasattr(self, 'risk_free'):
+            self.risk_free = self.optimizer.actual['return']['cash']
+        
+        return self.risk_free
+
+
+    @property
+    def benchmark_v(self) -> pd.Series:
+        """Returns series of simulated portfolio values, if portfolio was invested 100% in benchmark at time 0"""
+        benchmark_factors = self.benchmark_returns + 1
+        benchmark_factors[0] = 1 # No returns for period 0
+        
+        return benchmark_factors.cumprod() * self.v[0] # Calculate values if initial portfolio value was invested 100% in benchmark
 
 
     @property
@@ -156,14 +257,10 @@ class BaseResult():
 
 
     @property
-    def sharpe_ratio(self) -> float:
-        """Returns a float representing the (annualized) 
-        `Sharpe Ratio <https://en.wikipedia.org/wiki/Sharpe_ratio>`_ 
-        of the portfolio.
+    def information_ratio(self) -> float:
+        """Returns a float representing the (annualized) Information Ratio of the portfolio.
 
         Ratio is calculated as mean of :py:attr:`~investos.portfolio.result.base_result.base_result.BaseResult.excess_returns` / standard deviation of :py:attr:`~investos.portfolio.result.base_result.BaseResult.excess_returns`. Annualized by multiplying ratio by square root of periods per year (:py:attr:`~investos.portfolio.result.base_result.BaseResult.ppy`).
-        
-        TBU: accept benchmark for long-only portfolios / portfolios tracking benchmark
         """
         return (
             np.sqrt(self.ppy) * np.mean(self.excess_returns) /
@@ -172,10 +269,22 @@ class BaseResult():
 
 
     @property
+    def sharpe_ratio(self) -> float:
+        """Returns a float representing the (annualized) Sharpe Ratio of the portfolio.
+
+        Ratio is calculated as mean of :py:attr:`~investos.portfolio.result.base_result.base_result.BaseResult.excess_returns` / standard deviation of :py:attr:`~investos.portfolio.result.base_result.BaseResult.excess_returns`. Annualized by multiplying ratio by square root of periods per year (:py:attr:`~investos.portfolio.result.base_result.BaseResult.ppy`).
+        """
+        return (
+            np.sqrt(self.ppy) * np.mean(self.returns_over_cash) /
+            np.std(self.returns_over_cash)
+        )
+
+
+    @property
     def turnover(self):
         """Turnover ||u_t||_1/v_t
         """
-        noncash_trades = self.u.drop(['cash'], axis=1)
+        noncash_trades = self.trades.drop(['cash'], axis=1)
         return np.abs(noncash_trades).sum(axis=1) / self.v
 
 
