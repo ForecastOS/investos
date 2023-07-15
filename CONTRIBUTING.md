@@ -22,3 +22,16 @@ poetry run pytest
 ## Building the documentation
 
 TBD.
+
+## Code formatting
+
+This project uses [Black](https://black.readthedocs.io/en/stable/) to format its code.
+Both Python files (`*.py`) and IPython notebooks (`*.ipynb`) are reformatted.
+
+To reformat the codebase, run:
+
+```sh
+poetry run black .
+```
+
+Black is also supported by most editors, so you should be able to integrate it to your workflow.
