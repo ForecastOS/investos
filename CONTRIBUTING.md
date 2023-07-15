@@ -38,6 +38,20 @@ You can use [pre-commit hooks](#pre-commit-hooks) to ensure your changes are for
 
 Black is also supported by most editors, so you should be able to integrate it to your workflow.
 
+## Linting
+
+This project uses [Ruff](https://beta.ruff.rs/docs/) to lint its code.
+
+To lint the codebase, run:
+
+```sh
+poetry run ruff .
+```
+
+You can use [pre-commit hooks](#pre-commit-hooks) to ensure your changes are linted properly.
+
+Ruff is also supported by some editors, so you might be able to integrate it to your workflow.
+
 ## Pre-commit hooks
 
 This repo uses [pre-commit](https://pre-commit.com/) for contributors to be able to quickly validate their changes.
