@@ -4,6 +4,7 @@ import cvxpy as cvx
 from investos.util import values_in_time
 from investos.portfolio.constraint_model.base_constraint import BaseConstraint
 
+
 class LongOnlyConstraint(BaseConstraint):
     """
     A constraint that enforces no short positions. Including no short cash position.
@@ -13,10 +14,9 @@ class LongOnlyConstraint(BaseConstraint):
     **kwargs :
         Additional keyword arguments.
     """
-    
+
     def __init__(self, **kwargs):
         pass
-
 
     def weight_expr(self, t, w_plus, z, v):
         """
@@ -53,10 +53,9 @@ class LongCashConstraint(BaseConstraint):
     **kwargs :
         Additional keyword arguments.
     """
-    
+
     def __init__(self, **kwargs):
         pass
-
 
     def weight_expr(self, t, w_plus, z, v):
         """
@@ -93,10 +92,9 @@ class EqualLongShortConstraint(BaseConstraint):
     **kwargs :
         Additional keyword arguments.
     """
-    
+
     def __init__(self, **kwargs):
         pass
-
 
     def weight_expr(self, t, w_plus, z, v):
         """

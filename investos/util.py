@@ -4,21 +4,27 @@ from functools import wraps
 import numpy as np
 import pandas as pd
 
+
 def deep_dict_merge(default_d, update_d):
     "Deep copies update_d onto default_d recursively"
-    
+
     default_d = copy.deepcopy(default_d)
     update_d = copy.deepcopy(update_d)
 
     def deep_dict_merge_inner(default_d, update_d):
         for k, v in update_d.items():
-            if (k in default_d and isinstance(default_d[k], dict) and isinstance(update_d[k], dict)):
+            if (
+                k in default_d
+                and isinstance(default_d[k], dict)
+                and isinstance(update_d[k], dict)
+            ):
                 deep_dict_merge_inner(default_d[k], update_d[k])
             else:
                 default_d[k] = update_d[k]
 
     deep_dict_merge_inner(default_d, update_d)
-    return default_d # With update_d values copied onto it
+    return default_d  # With update_d values copied onto it
+
 
 def values_in_time(obj, t, tau=None):
     """
@@ -50,7 +56,7 @@ def values_in_time(obj, t, tau=None):
 
     """
 
-    if hasattr(obj, '__call__'):
+    if hasattr(obj, "__call__"):
         return obj(t, tau)
 
     if isinstance(obj, pd.Series) or isinstance(obj, pd.DataFrame):
@@ -66,8 +72,11 @@ def values_in_time(obj, t, tau=None):
 
 
 def clip_for_dates(func):
-        @wraps(func)
-        def wrapper(self, *args, **kwargs):
-            pd_obj = func(self, *args, **kwargs)
-            return pd_obj[(pd_obj.index >= self.start_date) & (pd_obj.index <= self.end_date)]
-        return wrapper
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        pd_obj = func(self, *args, **kwargs)
+        return pd_obj[
+            (pd_obj.index >= self.start_date) & (pd_obj.index <= self.end_date)
+        ]
+
+    return wrapper
