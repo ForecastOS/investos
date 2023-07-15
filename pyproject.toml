@@ -55,3 +55,10 @@ norecursedirs = [
     "docs",
     "examples",
 ]
+
+[tool.black]
+target-version = [
+    "py39",
+    "py310",
+    "py311",
+]
