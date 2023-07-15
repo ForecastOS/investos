@@ -72,6 +72,7 @@ exclude = [
     ".pytest_cache/",
 ]
 select = [
+    "B004",
     "B007",
     "E",
     "F",

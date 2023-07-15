@@ -55,7 +55,7 @@ def values_in_time(obj, t, tau=None):
 
     """
 
-    if hasattr(obj, "__call__"):
+    if callable(obj):
         return obj(t, tau)
 
     if isinstance(obj, pd.Series) or isinstance(obj, pd.DataFrame):
