@@ -12,3 +12,13 @@ InvestOS welcomes community contributions!
     ```sh
     poetry install --with dev
     ```
+
+## Running the tests
+
+```sh
+poetry run pytest
+```
+
+## Building the documentation
+
+TBD.
