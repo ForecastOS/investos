@@ -27,3 +27,14 @@ pandas-market-calendars = "^4.1.4"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+python_files = [
+    "test_*.py",
+]
+norecursedirs = [
+    "__pycache__",
+    ".git",
+    "docs",
+    "examples",
+]
