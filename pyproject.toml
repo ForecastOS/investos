@@ -71,6 +71,11 @@ exclude = [
     ".git/",
     ".pytest_cache/",
 ]
+select = [
+    "E",
+    "F",
+    "Q",
+]
 ignore = [
     "E501"  # Line too long 
 ]
