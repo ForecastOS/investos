@@ -56,8 +56,7 @@ exclude = [
     ".pytest_cache/",
 ]
 select = [
-    "B004",
-    "B007",
+    "B",
     "E",
     "F",
     "I",
@@ -66,7 +65,9 @@ select = [
     "W",
 ]
 ignore = [
-    "E501"  # Line too long 
+    "B006",  # Mutable argument default
+    "B008",  # Function call in default argument
+    "E501",  # Line too long 
 ]
 target-version = "py39"
 
