@@ -1,12 +1,13 @@
-import pandas as pd
-import numpy as np
-import statistics
 import datetime as dt
+import statistics
 from typing import Callable
 
-from investos.portfolio.strategy import BaseStrategy, RankLongShort
+import numpy as np
+import pandas as pd
+
 import investos.portfolio.result as result
 import investos.util as util
+from investos.portfolio.strategy import BaseStrategy, RankLongShort
 
 
 class Controller:

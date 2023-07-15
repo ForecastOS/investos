@@ -1,7 +1,9 @@
-import pandas as pd
 import datetime as dt
-import cvxpy as cvx
 
+import cvxpy as cvx
+import pandas as pd
+
+import investos.util as util
 from investos.portfolio.constraint_model import (
     BaseConstraint,
     EqualLongShortConstraint,
@@ -9,11 +11,10 @@ from investos.portfolio.constraint_model import (
     MaxWeightConstraint,
     MinWeightConstraint,
 )
+from investos.portfolio.cost_model import BaseCost, HoldingCost, TradingCost
 from investos.portfolio.risk_model import BaseRisk, StatFactorRisk
 from investos.portfolio.strategy import BaseStrategy
-from investos.portfolio.cost_model import TradingCost, HoldingCost, BaseCost
 from investos.util import values_in_time
-import investos.util as util
 
 
 class SPO(BaseStrategy):

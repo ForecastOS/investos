@@ -58,6 +58,7 @@ exclude = [
 select = [
     "E",
     "F",
+    "I",
     "Q",
 ]
 ignore = [
