@@ -1,6 +1,6 @@
-import pandas as pd
-import numpy as np
 import cvxpy as cvx
+import numpy as np
+import pandas as pd
 
 from investos.portfolio.risk_model import BaseRisk
 

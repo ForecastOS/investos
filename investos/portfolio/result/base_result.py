@@ -1,8 +1,9 @@
-import pandas as pd
-import numpy as np
-
-import datetime as dt
 import collections
+import datetime as dt
+
+import numpy as np
+import pandas as pd
+
 from investos.util import clip_for_dates
 from investos.portfolio.result import SaveResult
 
