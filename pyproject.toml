@@ -9,6 +9,7 @@ packages = [{include = "investos"}]
 homepage = "https://investos.io/"
 repository = "https://github.com/charliereese/investos"
 documentation = "https://investos.readthedocs.io/en/latest/"
+keywords = ["investing", "alpha", "backtesting", "portfolio", "optimization"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
