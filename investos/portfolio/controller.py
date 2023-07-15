@@ -4,7 +4,6 @@ import statistics
 import datetime as dt
 from typing import Callable
 
-import investos.portfolio.strategy as strategy
 from investos.portfolio.strategy import BaseStrategy, RankLongShort
 import investos.portfolio.result as result
 import investos.util as util
