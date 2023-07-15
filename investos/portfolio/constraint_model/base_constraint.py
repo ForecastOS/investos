@@ -1,5 +1,5 @@
 # http://web.cvxr.com/cvx/doc/basics.html#constraints
-class BaseConstraint(object):
+class BaseConstraint:
     """
     Base class for constraint objects used in convex portfolio optimization strategies.
 
