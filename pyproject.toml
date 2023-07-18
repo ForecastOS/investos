@@ -9,6 +9,21 @@ packages = [{include = "investos"}]
 homepage = "https://investos.io/"
 repository = "https://github.com/charliereese/investos"
 documentation = "https://investos.readthedocs.io/en/latest/"
+keywords = ["investing", "alpha", "backtesting", "portfolio", "optimization"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: Other/Proprietary License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Topic :: Software Development :: Testing",
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
