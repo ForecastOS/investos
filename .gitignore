@@ -6,3 +6,4 @@ examples/data
 .pypi_token
 dist/
 node_modules
+**/playground_*.ipynb

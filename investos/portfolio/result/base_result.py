@@ -4,8 +4,9 @@ import numpy as np
 import datetime as dt
 import collections
 from investos.util import clip_for_dates
+from investos.portfolio.result import SaveResult
 
-class BaseResult():
+class BaseResult(SaveResult):
     """The `Result` class captures portfolio data and performance for each asset and period over time.
 
     Instances of this object are called by the :py:meth:`investos.portfolio.controller.Controller.generate_positions` method.
@@ -87,7 +88,7 @@ class BaseResult():
             'Max drawdown':
                 f"{round(self.max_drawdown, 2)}%",
             'Annual turnover (x)':
-                str(round(self.turnover.mean() * self.ppy, 2)) + 'x',
+                str(round(self.annual_turnover, 2)) + 'x',
         })
 
         return (pd.Series(data=data).
@@ -211,7 +212,7 @@ class BaseResult():
         """Returns a pandas Series of risk in excess of the risk free rate.
         """
         return (self.returns_over_cash.std() * 100 * np.sqrt(self.ppy))
-
+        
 
     @property
     @clip_for_dates
@@ -289,6 +290,35 @@ class BaseResult():
 
 
     @property
+    def leverage(self):
+        """Turnover ||u_t||_1/v_t
+        """
+        noncash_h = self.h.drop(['cash'], axis=1)
+        return np.abs(noncash_h).sum(axis=1) / self.v
+
+
+    @property
+    def long_leverage(self):
+        """Turnover ||u_t||_1/v_t
+        """
+        noncash_h = self.h.drop(['cash'], axis=1)
+        return np.abs(noncash_h[noncash_h > 0]).sum(axis=1) / self.v
+
+
+    @property
+    def short_leverage(self):
+        """Turnover ||u_t||_1/v_t
+        """
+        noncash_h = self.h.drop(['cash'], axis=1)
+        return np.abs(noncash_h[noncash_h < 0]).sum(axis=1) / self.v
+
+
+    @property
+    def annual_turnover(self):
+        return self.turnover.mean() * self.ppy
+
+
+    @property
     def max_drawdown(self):
         """The maximum peak to trough drawdown in percent.
         """
@@ -298,6 +328,6 @@ class BaseResult():
         for val in val_arr[1:]:
             if val >= cur_max:
                 cur_max = val
-            elif 100 * (cur_max - val) / cur_max > max_dd_so_far:
-                max_dd_so_far = 100 * (cur_max - val) / cur_max
+            elif (cur_max - val) / cur_max > max_dd_so_far:
+                max_dd_so_far = (cur_max - val) / cur_max
         return max_dd_so_far
