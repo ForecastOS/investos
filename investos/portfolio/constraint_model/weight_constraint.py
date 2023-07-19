@@ -1,6 +1,7 @@
 from investos.util import values_in_time
 from investos.portfolio.constraint_model.base_constraint import BaseConstraint
 
+
 class MaxWeightConstraint(BaseConstraint):
     """
     A constraint that enforces a limit on the weight of each asset in a portfolio.
@@ -19,9 +20,9 @@ class MaxWeightConstraint(BaseConstraint):
         Returns a series of holding constraints based on the portfolio weights after trades.
 
     """
+
     def __init__(self, limit: float = 0.025, **kwargs):
         self.limit = limit
-
 
     def weight_expr(self, t, w_plus, z, v):
         """
@@ -67,9 +68,9 @@ class MinWeightConstraint(BaseConstraint):
         Returns a series of holding constraints based on the portfolio weights after trades.
 
     """
+
     def __init__(self, limit: float = -0.025, **kwargs):
         self.limit = limit
-
 
     def weight_expr(self, t, w_plus, z, v):
         """
