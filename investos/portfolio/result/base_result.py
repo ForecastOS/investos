@@ -4,8 +4,8 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 
-from investos.util import clip_for_dates
 from investos.portfolio.result import SaveResult
+from investos.util import clip_for_dates
 
 
 class BaseResult(SaveResult):
