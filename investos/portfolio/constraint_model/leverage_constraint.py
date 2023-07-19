@@ -3,13 +3,14 @@ import cvxpy as cvx
 from investos.util import values_in_time
 from investos.portfolio.constraint_model.base_constraint import BaseConstraint
 
+
 class MaxLeverageConstraint(BaseConstraint):
     """
     A constraint that enforces a limit on the (absolute) leverage of the portfolio.
 
-    E.g. For leverage of 2.0x, a portfolio with 100MM net value 
-    (i.e. the portfolio value if it were converted into cash, 
-    ignoring liquidation / trading costs) 
+    E.g. For leverage of 2.0x, a portfolio with 100MM net value
+    (i.e. the portfolio value if it were converted into cash,
+    ignoring liquidation / trading costs)
     could have 200MM of (combined long and short) exposure.
 
     Parameters
@@ -20,7 +21,7 @@ class MaxLeverageConstraint(BaseConstraint):
     **kwargs :
         Additional keyword arguments.
     """
-    
+
     def __init__(self, limit: float = 2.0, **kwargs):
         self.limit = limit
 

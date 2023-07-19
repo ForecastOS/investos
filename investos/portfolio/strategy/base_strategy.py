@@ -1,7 +1,8 @@
 import pandas as pd
 import datetime as dt
 
-class BaseStrategy():
+
+class BaseStrategy:
     """Base class for an optimization strategy.
 
     Must implement :py:meth:`~investos.portfolio.strategy.base_strategy.BaseStrategy.generate_trade_list` as per below.
@@ -13,15 +14,14 @@ class BaseStrategy():
     constraints : list
         Constraints applied for optimization strategy. Defaults to empty list. See [TBU] for optimization model base class.
     """
+
     def __init__(self):
         self.costs = []
         self.constraints = []
         self.risk_model = None
 
-    
     def _zerotrade(self, holdings):
-        return pd.Series(index=holdings.index, data=0.)
-
+        return pd.Series(index=holdings.index, data=0.0)
 
     def generate_trade_list(self, holdings: pd.Series, t: dt.datetime) -> pd.Series:
         """Calculates and returns trade list (in units of currency passed in), given (added) optimization logic.

@@ -4,6 +4,7 @@ import cvxpy as cvx
 from investos.util import values_in_time
 from investos.portfolio.constraint_model.base_constraint import BaseConstraint
 
+
 class MaxTradeConstraint(BaseConstraint):
     """
     A constraint that enforces a limit on the (absolute) max trade size (as a weight, or fraction, of daily volume).
@@ -16,10 +17,9 @@ class MaxTradeConstraint(BaseConstraint):
     **kwargs :
         Additional keyword arguments.
     """
-    
+
     def __init__(self, limit: float = 1.0, **kwargs):
         self.limit = limit
-
 
     def weight_expr(self, t, w_plus, z, v):
         """
@@ -44,7 +44,11 @@ class MaxTradeConstraint(BaseConstraint):
         series
             The holding constraints based on the max trade constraint.
         """
-        return cvx.abs(z[:-1]) * v <= np.array(
-                values_in_time(self.optimizer.forecast['volume'], t) *
-                values_in_time(self.optimizer.forecast['price'], t)
-            ) * self.limit
+        return (
+            cvx.abs(z[:-1]) * v
+            <= np.array(
+                values_in_time(self.optimizer.forecast["volume"], t)
+                * values_in_time(self.optimizer.forecast["price"], t)
+            )
+            * self.limit
+        )

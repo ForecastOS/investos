@@ -3,8 +3,9 @@ import datetime as dt
 
 from investos.portfolio.cost_model import BaseCost
 
+
 class BaseRisk(BaseCost):
-    """Base risk model for InvestOS. 
+    """Base risk model for InvestOS.
 
     The only requirement of custom risk models is that they implement a `_estimated_cost_for_optimization` method.
 
@@ -12,10 +13,9 @@ class BaseRisk(BaseCost):
     """
 
     def __init__(self):
-        self.optimizer = None # Set during Controller initialization
+        self.optimizer = None  # Set during Controller initialization
 
         super().__init__()
-        
 
     def actual_cost(self, t: dt.datetime, h_plus: pd.Series, u: pd.Series) -> pd.Series:
         """Method that calculates per-period costs given period `t` holdings and trades.
@@ -27,7 +27,7 @@ class BaseRisk(BaseCost):
     def _estimated_cost_for_optimization(self, t, w_plus, z, value):
         """Optimization (non-cash) cost penalty for assuming associated asset risk.
 
-        Used by optimization strategy to determine trades. 
+        Used by optimization strategy to determine trades.
 
         Not used to calculate simulated costs for backtest performance.
         """
