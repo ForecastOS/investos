@@ -36,8 +36,11 @@ pandas = "^2.0.1"
 optional = true
 
 [tool.poetry.group.dev.dependencies]
+black = {version = "^23.7.0", extras = ["jupyter"]}
+jupyter = "^1.0.0"
 pandas-market-calendars = "^4.1.4"
 pytest = "^7.3.1"
+ruff = "^0.0.278"
 sphinx = "^7.0.0"
 
 [build-system]
@@ -53,4 +56,24 @@ norecursedirs = [
     ".git",
     "docs",
     "examples",
+]
+
+[tool.black]
+target-version = [
+    "py39",
+    "py310",
+    "py311",
+]
+
+[tool.ruff]
+exclude = [
+    "__pycache__",
+    ".git/",
+    ".pytest_cache/",
+]
+target-version = "py39"
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = [
+    'F401',
 ]
