@@ -1,7 +1,6 @@
 import copy
 from functools import wraps
 
-import numpy as np
 import pandas as pd
 
 
@@ -12,7 +11,7 @@ def deep_dict_merge(default_d, update_d):
     update_d = copy.deepcopy(update_d)
 
     def deep_dict_merge_inner(default_d, update_d):
-        for k, v in update_d.items():
+        for k in update_d.keys():
             if (
                 k in default_d
                 and isinstance(default_d[k], dict)
@@ -56,7 +55,7 @@ def values_in_time(obj, t, tau=None):
 
     """
 
-    if hasattr(obj, "__call__"):
+    if callable(obj):
         return obj(t, tau)
 
     if isinstance(obj, pd.Series) or isinstance(obj, pd.DataFrame):

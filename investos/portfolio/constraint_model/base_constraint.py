@@ -1,11 +1,5 @@
-from investos.util import values_in_time
-
-import cvxpy as cvx
-import numpy as np
-
-
 # http://web.cvxr.com/cvx/doc/basics.html#constraints
-class BaseConstraint(object):
+class BaseConstraint:
     """
     Base class for constraint objects used in convex portfolio optimization strategies.
 

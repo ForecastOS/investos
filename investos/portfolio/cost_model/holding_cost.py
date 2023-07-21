@@ -1,7 +1,8 @@
-import pandas as pd
-import numpy as np
 import datetime as dt
+
 import cvxpy as cvx
+import numpy as np
+import pandas as pd
 
 from investos.portfolio.cost_model import BaseCost
 from investos.util import values_in_time
