@@ -71,9 +71,24 @@ exclude = [
     ".git/",
     ".pytest_cache/",
 ]
+select = [
+    "B",
+    "E",
+    "F",
+    "I",
+    "Q",
+    "UP",
+    "W",
+]
+ignore = [
+    "B006",  # Mutable argument default
+    "B008",  # Function call in default argument
+    "E501",  # Line too long 
+]
 target-version = "py39"
 
 [tool.ruff.per-file-ignores]
 "__init__.py" = [
-    'F401',
+    'F401',  # Unused import
+    'F403',  # Wildcard import
 ]

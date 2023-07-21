@@ -1,6 +1,3 @@
-import pandas as pd
-import numpy as np
-
 from investos.backtest import Result
 
 
