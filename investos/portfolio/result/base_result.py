@@ -4,7 +4,7 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 
-from investos.portfolio.result import SaveResult
+from investos.portfolio.result.save_result import SaveResult
 from investos.util import clip_for_dates
 
 
