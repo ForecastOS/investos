@@ -5,7 +5,7 @@ InvestOS welcomes community contributions!
 ## Developer environment
 
 1. Install [Python 3](https://www.python.org/downloads/)
-    - We support versions >= 3.8.
+    - We support versions >= 3.9.
 2. Install `poetry` following their [installation guide](https://python-poetry.org/docs/#installation).
 3. Install the package with dev dependencies:
 
@@ -38,19 +38,13 @@ You can use [pre-commit hooks](#pre-commit-hooks) to ensure your changes are for
 
 Black is also supported by most editors, so you should be able to integrate it to your workflow.
 
-## Linting
-
-This project uses [Ruff](https://beta.ruff.rs/docs/) to lint its code.
+This project uses ruff to lint its code.
 
 To lint the codebase, run:
 
 ```sh
-poetry run ruff .
+ruff check .
 ```
-
-You can use [pre-commit hooks](#pre-commit-hooks) to ensure your changes are linted properly.
-
-Ruff is also supported by some editors, so you might be able to integrate it to your workflow.
 
 ## Pre-commit hooks
 

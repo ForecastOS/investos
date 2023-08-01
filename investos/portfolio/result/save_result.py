@@ -5,9 +5,10 @@ class SaveResult:
     def save(
         self,
         description,
-        tags,
         api_key,
         api_endpoint="https://app.forecastos.com/api/v1",
+        tags=[],
+        team_ids=[],
     ):
         self.api_key = api_key
         self.api_endpoint = api_endpoint
@@ -16,6 +17,7 @@ class SaveResult:
             "Content-Type": "application/json",
         }
         self.tags = tags
+        self.team_ids = team_ids
 
         self.save_backtest(description)
         self.save_backtest_charts()
@@ -33,9 +35,8 @@ class SaveResult:
                     "annual_turnover": self.annual_turnover,
                 },
                 "portfolio_id": None,
-                "team_id": None,
-                "project_id": None,
                 "tags": self.tags,
+                "team_ids": self.team_ids,
             }
         }
 
