@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "investos"
-version = "0.1.6"
+version = "0.1.7"
 description = "For investors who want to focus on generating alpha"
 authors = ["Charlie Reese"]
 license = "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
