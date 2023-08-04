@@ -41,3 +41,13 @@ class BaseCost:
     def __rmul__(self, other):
         """Read the gamma parameter as a multiplication; so you can change self.gamma without setting it directly as: gamma * BaseCost()"""
         return self.__mul__(other)
+
+    def metadata_dict(self):
+        metadata_dict = {}
+
+        metadata_dict["gamma"] = self.gamma
+
+        if getattr(self, "price_movement_sensitivity", None):
+            metadata_dict["price_movement_sensitivity"] = self.limit
+
+        return metadata_dict

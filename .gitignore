@@ -7,3 +7,4 @@ examples/data
 dist/
 node_modules
 **/playground_*.ipynb
+**/tmp

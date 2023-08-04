@@ -11,3 +11,11 @@ class BaseConstraint:
 
     def weight_expr(self, t, w_plus, z, v):
         raise NotImplementedError
+
+    def metadata_dict(self):
+        metadata_dict = {}
+
+        if getattr(self, "limit", None):
+            metadata_dict["limit"] = self.limit
+
+        return metadata_dict
