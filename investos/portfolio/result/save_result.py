@@ -9,6 +9,7 @@ class SaveResult:
         api_endpoint="https://app.forecastos.com/api/v1",
         tags=[],
         team_ids=[],
+        strategy=None,
     ):
         self.api_key = api_key
         self.api_endpoint = api_endpoint
@@ -19,10 +20,10 @@ class SaveResult:
         self.tags = tags
         self.team_ids = team_ids
 
-        self.save_backtest(description)
+        self.save_backtest(description, strategy)
         self.save_backtest_charts()
 
-    def save_backtest(self, description):
+    def save_backtest(self, description, strategy):
         json_body = {
             "backtest": {
                 "description": description,
@@ -37,6 +38,7 @@ class SaveResult:
                 "portfolio_id": None,
                 "tags": self.tags,
                 "team_ids": self.team_ids,
+                "portfolio_construction": strategy and strategy.metadata_dict(),
             }
         }
 

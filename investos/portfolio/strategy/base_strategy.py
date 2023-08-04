@@ -35,3 +35,18 @@ class BaseStrategy:
             The datetime for associated holdings `holdings`.
         """
         raise NotImplementedError
+
+    def metadata_dict(self):
+        return {
+            "strategy": self.__class__.__name__,
+            "risk_model": self.risk_model
+            and {self.risk_model.__class__.__name__: self.risk_model.metadata_dict()},
+            "constraint_models": {
+                el.__class__.__name__: el.metadata_dict() for el in self.constraints
+            },
+            "cost_models": {
+                el.__class__.__name__: el.metadata_dict()
+                for el in self.costs
+                if "Risk" not in el.__class__.__name__
+            },
+        }
