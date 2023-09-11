@@ -84,22 +84,19 @@ class BaseResult(SaveResult):
                     round(self.annualized_excess_return * 100, 2)
                 )
                 + "%",
-                "Annualized excess risk (%)": str(round(self.excess_risk_annualized, 2))
-                + "%",
-                "Information ratio (calc. from per period returns and risk)": str(
-                    round(self.information_ratio, 2)
+                "Annualized excess risk (%)": str(
+                    round(self.excess_risk_annualized * 100, 2)
                 )
-                + "x",
+                + "%",
+                "Information ratio (x)": str(round(self.information_ratio, 2)) + "x",
                 "Annualized risk over risk-free (%)": str(
-                    round(self.risk_over_cash_annualized, 2)
+                    round(self.risk_over_cash_annualized * 100, 2)
                 )
                 + "%",
-                "Sharpe ratio (calc. from per period returns and risk)": str(
-                    round(self.sharpe_ratio, 2)
-                )
-                + "x",
-                "Max drawdown": f"{round(self.max_drawdown, 2)}%",
+                "Sharpe ratio (x)": str(round(self.sharpe_ratio, 2)) + "x",
+                "Max drawdown (%)": f"{round(self.max_drawdown * 100, 2)}%",
                 "Annual turnover (x)": str(round(self.annual_turnover, 2)) + "x",
+                "Portfolio hit rate (%)": f"{round(self.portfolio_hit_rate * 100, 2)}%",
             }
         )
 
@@ -143,6 +140,10 @@ class BaseResult(SaveResult):
         ).dropna()
 
     @property
+    def portfolio_hit_rate(self):
+        return (self.returns > 0).mean()
+
+    @property
     def total_return(self) -> float:
         """Returns a float representing the total return for the entire period under review."""
         return self.v[-1] / self.v[0] - 1
@@ -180,17 +181,17 @@ class BaseResult(SaveResult):
     @property
     def annualized_excess_return(self) -> float:
         """Returns a float representing the annualized excess return of the entire period under review. Uses beginning and ending portfolio values for the calculation (value @ t[-1] and value @ t[0]), as well as the number of years in the forecast."""
-        return self.annualized_return - self.annualized_benchmark_return
+        return ((self.total_excess_return + 1) ** (1 / self.years_forecast)) - 1
 
     @property
     def excess_risk_annualized(self) -> pd.Series:
         """Returns a pandas Series of risk in excess of the benchmark."""
-        return self.excess_returns.std() * 100 * np.sqrt(self.ppy)
+        return self.excess_returns.std() * np.sqrt(self.ppy)
 
     @property
     def risk_over_cash_annualized(self) -> pd.Series:
         """Returns a pandas Series of risk in excess of the risk free rate."""
-        return self.returns_over_cash.std() * 100 * np.sqrt(self.ppy)
+        return self.returns_over_cash.std() * np.sqrt(self.ppy)
 
     @property
     @clip_for_dates
@@ -221,9 +222,9 @@ class BaseResult(SaveResult):
     @property
     def years_forecast(self) -> float:
         """Returns a float representing the number of years in the backtest period.
-        Calculated as (datetime @ t[-1] - datetime @ t[0]) / datetime.timedelta(365,0,0,0)
+        Calculated as (datetime @ t[-1] - datetime @ t[0]) / datetime.timedelta(days=365.25)
         """
-        return (self.v.index[-1] - self.v.index[0]) / dt.timedelta(365, 0, 0, 0)
+        return (self.v.index[-1] - self.v.index[0]) / dt.timedelta(days=365.25)
 
     @property
     def ppy(self) -> float:
@@ -296,3 +297,18 @@ class BaseResult(SaveResult):
             elif (cur_max - val) / cur_max > max_dd_so_far:
                 max_dd_so_far = (cur_max - val) / cur_max
         return max_dd_so_far
+
+    def hit_rate(self, returns_df):
+        h = self.h
+        if "cash" in list(h.columns):
+            h = h.drop(["cash"], axis=1)
+        if "cash" in list(returns_df.columns):
+            returns_df = returns_df.drop(["cash"], axis=1)
+
+        h = h.iloc[1:].round(decimals=0).replace(-0.0, 0.0)
+        returns_df = returns_df[returns_df.index.isin(h.index)]
+        sign_agree_df = (np.sign(h) * np.sign(returns_df)).fillna(0).astype(int)
+
+        hit = sign_agree_df[sign_agree_df == 1].sum(axis=1)
+        hit_attempt = sign_agree_df[sign_agree_df.abs() == 1].abs().sum(axis=1)
+        return hit / hit_attempt
