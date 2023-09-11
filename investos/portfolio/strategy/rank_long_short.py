@@ -33,7 +33,7 @@ class RankLongShort(BaseStrategy):
         leverage: float = 1,
         percent_short: float = 0.25,
         percent_long: float = 0.25,
-        costs: list[BaseCost] = [],
+        costs: [BaseCost] = [],
     ):
         self.forecast_returns = None  # Set by Controller in init
         self.optimizer = None  # Set by Controller in init
