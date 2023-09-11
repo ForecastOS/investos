@@ -257,14 +257,6 @@ class BaseResult(SaveResult):
             / np.std(self.returns_over_cash)
         )
 
-    # @property
-    # def sharpe_ratio_simple(self) -> float:
-    #     """Returns a float representing the (annualized) Sharpe Ratio of the portfolio.
-
-    #     Ratio is calculated as mean of :py:attr:`~investos.portfolio.result.base_result.base_result.BaseResult.excess_returns` / standard deviation of :py:attr:`~investos.portfolio.result.base_result.BaseResult.excess_returns`. Annualized by multiplying ratio by square root of periods per year (:py:attr:`~investos.portfolio.result.base_result.BaseResult.ppy`).
-    #     """
-    #     return self.annualized_excess_return /
-
     @property
     def turnover(self):
         """Turnover ||u_t||_1/v_t"""
