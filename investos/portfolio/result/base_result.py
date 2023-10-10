@@ -150,13 +150,22 @@ class BaseResult(SaveResult):
 
     @property
     def total_benchmark_return(self) -> float:
-        """Returns a float representing the total return for the entire period under review."""
+        """Returns a float representing the return over benchmark for the entire period under review."""
         return self.benchmark_v[-1] / self.benchmark_v[0] - 1
+
+    @property
+    def total_risk_free_return(self) -> float:
+        return (1 + self.risk_free_returns).cumprod().iloc[-1] - 1
 
     @property
     def total_excess_return(self) -> float:
         """Returns a float representing the total return for the entire period under review."""
         return self.total_return - self.total_benchmark_return
+
+    @property
+    def total_return_over_cash(self) -> float:
+        """Returns a float representing the total returns over cash for the entire period under review."""
+        return self.total_return - self.total_risk_free_return
 
     @property
     def annualized_return(self) -> float:
@@ -182,6 +191,11 @@ class BaseResult(SaveResult):
     def annualized_excess_return(self) -> float:
         """Returns a float representing the annualized excess return of the entire period under review. Uses beginning and ending portfolio values for the calculation (value @ t[-1] and value @ t[0]), as well as the number of years in the forecast."""
         return ((self.total_excess_return + 1) ** (1 / self.years_forecast)) - 1
+
+    @property
+    def annualized_return_over_cash(self) -> float:
+        """Returns a float representing the annualized return over cash of the entire period under review. Uses beginning and ending portfolio values for the calculation (value @ t[-1] and value @ t[0]), as well as the number of years in the forecast."""
+        return ((self.total_return_over_cash + 1) ** (1 / self.years_forecast)) - 1
 
     @property
     def excess_risk_annualized(self) -> pd.Series:
@@ -234,36 +248,34 @@ class BaseResult(SaveResult):
         return self.num_periods / self.years_forecast
 
     @property
-    def information_ratio(self) -> float:
+    def information_ratio(self, use_annualized_inputs=True) -> float:
         """Returns a float representing the (annualized) Information Ratio of the portfolio.
 
         Ratio is calculated as mean of :py:attr:`~investos.portfolio.result.base_result.base_result.BaseResult.excess_returns` / standard deviation of :py:attr:`~investos.portfolio.result.base_result.BaseResult.excess_returns`. Annualized by multiplying ratio by square root of periods per year (:py:attr:`~investos.portfolio.result.base_result.BaseResult.ppy`).
         """
-        return (
-            np.sqrt(self.ppy)
-            * np.mean(self.excess_returns)
-            / np.std(self.excess_returns)
-        )
+        if use_annualized_inputs:
+            return self.annualized_excess_return / self.excess_risk_annualized
+        else:
+            return (
+                np.sqrt(self.ppy)
+                * np.mean(self.excess_returns)
+                / np.std(self.excess_returns)
+            )
 
     @property
-    def sharpe_ratio(self) -> float:
+    def sharpe_ratio(self, use_annualized_inputs=True) -> float:
         """Returns a float representing the (annualized) Sharpe Ratio of the portfolio.
 
         Ratio is calculated as mean of :py:attr:`~investos.portfolio.result.base_result.base_result.BaseResult.excess_returns` / standard deviation of :py:attr:`~investos.portfolio.result.base_result.BaseResult.excess_returns`. Annualized by multiplying ratio by square root of periods per year (:py:attr:`~investos.portfolio.result.base_result.BaseResult.ppy`).
         """
-        return (
-            np.sqrt(self.ppy)
-            * np.mean(self.returns_over_cash)
-            / np.std(self.returns_over_cash)
-        )
-
-    # @property
-    # def sharpe_ratio_simple(self) -> float:
-    #     """Returns a float representing the (annualized) Sharpe Ratio of the portfolio.
-
-    #     Ratio is calculated as mean of :py:attr:`~investos.portfolio.result.base_result.base_result.BaseResult.excess_returns` / standard deviation of :py:attr:`~investos.portfolio.result.base_result.BaseResult.excess_returns`. Annualized by multiplying ratio by square root of periods per year (:py:attr:`~investos.portfolio.result.base_result.BaseResult.ppy`).
-    #     """
-    #     return self.annualized_excess_return /
+        if use_annualized_inputs:
+            return self.annualized_return_over_cash / self.risk_over_cash_annualized
+        else:
+            return (
+                np.sqrt(self.ppy)
+                * np.mean(self.returns_over_cash)
+                / np.std(self.returns_over_cash)
+            )
 
     @property
     def turnover(self):

@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "investos"
-version = "0.2.1"
+version = "0.2.2"
 description = "For investors who want to focus on generating alpha"
 authors = ["Charlie Reese"]
 license = "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
 readme = "README.md"
 packages = [{include = "investos"}]
 homepage = "https://investos.io/"
-repository = "https://github.com/charliereese/investos"
+repository = "https://github.com/forecastos/investos"
 documentation = "https://investos.readthedocs.io/en/latest/"
 keywords = ["investing", "alpha", "backtesting", "portfolio", "optimization", "forecastos"]
 classifiers = [

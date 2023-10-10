@@ -27,7 +27,7 @@ class WeightsResult(BaseResult):
         for t in trade_weights.index:
             r = returns.loc[t]
             u = trade_weights.loc[t]
-            h_next = h * (1.0 + r) + u
+            h_next = (h + u) * (1.0 + r)
             self.save_position(t, u, h_next)
             h = h_next
 
