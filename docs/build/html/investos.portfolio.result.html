@@ -3,16 +3,16 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>investos.portfolio.result package &#8212; InvestOS 0.1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="_static/theme_overrides.css" />
-    <link rel="stylesheet" type="text/css" href="_static/tailwind_output.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <title>investos.portfolio.result package &#8212; InvestOS 0.2.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b3523f8e" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="_static/theme_overrides.css?v=e95dcf8c" />
+    <link rel="stylesheet" type="text/css" href="_static/tailwind_output.css?v=7bbfae26" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=227644f7"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="investos.portfolio.risk_model package" href="investos.portfolio.risk_model.html" />
@@ -54,13 +54,13 @@
             >
 
             <a
-                href="index.html"
+                href="https://investos.readthedocs.io/en/latest/"
                 class="text-sm font-semibold leading-6 text-gray-900 underline"
                 >Documentation</a
             >
 
             <a
-                href="https://investos.io/coming-soon"
+                href="https://github.com/forecastos/investos"
                 class="text-sm font-semibold leading-6 text-gray-900"
                 >GitHub</a
             >
@@ -93,10 +93,27 @@
 <span id="investos-portfolio-result-base-result-module"></span><h2>investos.portfolio.result.base_result module<a class="headerlink" href="#module-investos.portfolio.result.base_result" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">investos.portfolio.result.base_result.</span></span><span class="sig-name descname"><span class="pre">BaseResult</span></span><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">investos.portfolio.result.base_result.</span></span><span class="sig-name descname"><span class="pre">BaseResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_date</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">SaveResult</span></code></p>
 <p>The <cite>Result</cite> class captures portfolio data and performance for each asset and period over time.</p>
 <p>Instances of this object are called by the <a class="reference internal" href="investos.portfolio.html#investos.portfolio.controller.Controller.generate_positions" title="investos.portfolio.controller.Controller.generate_positions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">investos.portfolio.controller.Controller.generate_positions()</span></code></a> method.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.annual_turnover">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">annual_turnover</span></span><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.annual_turnover" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.annualized_benchmark_return">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">annualized_benchmark_return</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.annualized_benchmark_return" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a float representing the annualized benchmark return of the entire period under review. Uses beginning and ending portfolio values for the calculation (value &#64; t[-1] and value &#64; t[0]), as well as the number of years in the forecast.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.annualized_excess_return">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">annualized_excess_return</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.annualized_excess_return" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a float representing the annualized excess return of the entire period under review. Uses beginning and ending portfolio values for the calculation (value &#64; t[-1] and value &#64; t[0]), as well as the number of years in the forecast.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.annualized_return">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">annualized_return</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.annualized_return" title="Permalink to this definition">¶</a></dt>
@@ -104,15 +121,62 @@
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.annualized_return_over_cash">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">annualized_return_over_cash</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.annualized_return_over_cash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a float representing the annualized return over cash of the entire period under review. Uses beginning and ending portfolio values for the calculation (value &#64; t[-1] and value &#64; t[0]), as well as the number of years in the forecast.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.benchmark_returns">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">benchmark_returns</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.benchmark_returns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.benchmark_v">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">benchmark_v</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.benchmark_v" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns series of simulated portfolio values, if portfolio was invested 100% in benchmark at time 0</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.excess_returns">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">excess_returns</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.excess_returns" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a pandas Series of returns in excess of the (cash) benchmark.</p>
+<dd><p>Returns a pandas Series of returns in excess of the benchmark.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.excess_risk_annualized">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">excess_risk_annualized</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.excess_risk_annualized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pandas Series of risk in excess of the benchmark.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.h">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">h</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.h" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a pandas Dataframe of asset holdings (<cite>h</cite>) at the beginning of each datetime period.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.hit_rate">
+<span class="sig-name descname"><span class="pre">hit_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">returns_df</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.hit_rate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.information_ratio">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">information_ratio</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.information_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a float representing the (annualized) Information Ratio of the portfolio.</p>
+<p>Ratio is calculated as mean of <code class="xref py py-attr docutils literal notranslate"><span class="pre">excess_returns</span></code> / standard deviation of <a class="reference internal" href="#investos.portfolio.result.base_result.BaseResult.excess_returns" title="investos.portfolio.result.base_result.BaseResult.excess_returns"><code class="xref py py-attr docutils literal notranslate"><span class="pre">excess_returns</span></code></a>. Annualized by multiplying ratio by square root of periods per year (<a class="reference internal" href="#investos.portfolio.result.base_result.BaseResult.ppy" title="investos.portfolio.result.base_result.BaseResult.ppy"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ppy</span></code></a>).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.leverage">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">leverage</span></span><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.leverage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turnover ||u_t||_1/v_t</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.long_leverage">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">long_leverage</span></span><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.long_leverage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turnover ||u_t||_1/v_t</p>
 </dd></dl>
 
 <dl class="py property">
@@ -128,6 +192,11 @@
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.portfolio_hit_rate">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">portfolio_hit_rate</span></span><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.portfolio_hit_rate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.ppy">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ppy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.ppy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a float representing the number of periods per year in the backtest period.
@@ -138,6 +207,23 @@ Calculated as <a class="reference internal" href="#investos.portfolio.result.bas
 <dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.returns">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">returns</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.returns" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a pandas Series of the returns for each datetime period (vs the previous period).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.returns_over_cash">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">returns_over_cash</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.returns_over_cash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pandas Series of returns in excess of risk free returns.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.risk_free_returns">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">risk_free_returns</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.risk_free_returns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.risk_over_cash_annualized">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">risk_over_cash_annualized</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.risk_over_cash_annualized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pandas Series of risk in excess of the risk free rate.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -173,11 +259,14 @@ Calculated as <a class="reference internal" href="#investos.portfolio.result.bas
 <dl class="py property">
 <dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.sharpe_ratio">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sharpe_ratio</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.sharpe_ratio" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a float representing the (annualized)
-<a class="reference external" href="https://en.wikipedia.org/wiki/Sharpe_ratio">Sharpe Ratio</a>
-of the portfolio.</p>
+<dd><p>Returns a float representing the (annualized) Sharpe Ratio of the portfolio.</p>
 <p>Ratio is calculated as mean of <code class="xref py py-attr docutils literal notranslate"><span class="pre">excess_returns</span></code> / standard deviation of <a class="reference internal" href="#investos.portfolio.result.base_result.BaseResult.excess_returns" title="investos.portfolio.result.base_result.BaseResult.excess_returns"><code class="xref py py-attr docutils literal notranslate"><span class="pre">excess_returns</span></code></a>. Annualized by multiplying ratio by square root of periods per year (<a class="reference internal" href="#investos.portfolio.result.base_result.BaseResult.ppy" title="investos.portfolio.result.base_result.BaseResult.ppy"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ppy</span></code></a>).</p>
-<p>TBU: accept benchmark for long-only portfolios / portfolios tracking benchmark</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.short_leverage">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">short_leverage</span></span><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.short_leverage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turnover ||u_t||_1/v_t</p>
 </dd></dl>
 
 <dl class="py property">
@@ -188,9 +277,38 @@ of the portfolio.</p>
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.total_benchmark_return">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">total_benchmark_return</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.total_benchmark_return" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a float representing the return over benchmark for the entire period under review.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.total_excess_return">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">total_excess_return</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.total_excess_return" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a float representing the total return for the entire period under review.</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.total_return">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">total_return</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.total_return" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a float representing the total return for the entire period under review.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.total_return_over_cash">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">total_return_over_cash</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.total_return_over_cash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a float representing the total returns over cash for the entire period under review.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.total_risk_free_return">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">total_risk_free_return</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.total_risk_free_return" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.trades">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">trades</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.trades" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pandas Series of trades (u).</p>
 </dd></dl>
 
 <dl class="py property">
@@ -206,10 +324,16 @@ of the portfolio.</p>
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.v_with_benchmark">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">v_with_benchmark</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Series</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.v_with_benchmark" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pandas Dataframe with simulated portfolio and benchmark values.</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="investos.portfolio.result.base_result.BaseResult.years_forecast">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">years_forecast</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#investos.portfolio.result.base_result.BaseResult.years_forecast" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a float representing the number of years in the backtest period.
-Calculated as (datetime &#64; t[-1] - datetime &#64; t[0]) / datetime.timedelta(365,0,0,0)</p>
+Calculated as (datetime &#64; t[-1] - datetime &#64; t[0]) / datetime.timedelta(days=365.25)</p>
 </dd></dl>
 
 </dd></dl>
@@ -249,8 +373,6 @@ Calculated as (datetime &#64; t[-1] - datetime &#64; t[0]) / datetime.timedelta(
 </div><h3>Navigation</h3>
 
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
-<li class="toctree-l1"><a class="reference internal" href="py-modindex.html">Module Index</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="investos.html">investos</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="investos.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="investos.portfolio.html">investos.portfolio package</a><ul class="current">
@@ -263,6 +385,7 @@ Calculated as (datetime &#64; t[-1] - datetime &#64; t[0]) / datetime.timedelta(
 </li>
 <li class="toctree-l2"><a class="reference internal" href="investos.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="investos.html#module-investos.util">investos.util module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="investos.html#investos.util.clip_for_dates"><code class="docutils literal notranslate"><span class="pre">clip_for_dates()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="investos.html#investos.util.deep_dict_merge"><code class="docutils literal notranslate"><span class="pre">deep_dict_merge()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="investos.html#investos.util.values_in_time"><code class="docutils literal notranslate"><span class="pre">values_in_time()</span></code></a></li>
 </ul>
@@ -293,7 +416,7 @@ Calculated as (datetime &#64; t[-1] - datetime &#64; t[0]) / datetime.timedelta(
                         <ul role="list" class="mt-6 space-y-4">
                             <li>
                                 <a
-                                    href="https://investos.io/coming-soon"
+                                    href="https://investos.io"
                                     class="text-sm leading-6 text-gray-600 hover:text-gray-900"
                                     >Home</a
                                 >
@@ -309,7 +432,7 @@ Calculated as (datetime &#64; t[-1] - datetime &#64; t[0]) / datetime.timedelta(
                         <ul role="list" class="mt-6 space-y-4">
                             <li>
                                 <a
-                                    href="https://investos.io/coming-soon"
+                                    href="https://investos.readthedocs.io/en/latest/"
                                     class="text-sm leading-6 text-gray-600 hover:text-gray-900"
                                     >Documentation</a
                                 >
@@ -325,7 +448,7 @@ Calculated as (datetime &#64; t[-1] - datetime &#64; t[0]) / datetime.timedelta(
 
                             <li>
                                 <a
-                                    href="https://investos.io/coming-soon"
+                                    href="https://github.com/forecastos/investos"
                                     class="text-sm leading-6 text-gray-600 hover:text-gray-900"
                                     >GitHub</a
                                 >
@@ -383,7 +506,7 @@ Calculated as (datetime &#64; t[-1] - datetime &#64; t[0]) / datetime.timedelta(
                         <ul role="list" class="mt-6 space-y-4">
                             <li>
                                 <a
-                                    href="https://investos.io/coming-soon"
+                                    href="https://investos.io/privacy"
                                     class="text-sm leading-6 text-gray-600 hover:text-gray-900"
                                     >Privacy</a
                                 >
@@ -391,7 +514,7 @@ Calculated as (datetime &#64; t[-1] - datetime &#64; t[0]) / datetime.timedelta(
 
                             <li>
                                 <a
-                                    href="https://investos.io/coming-soon"
+                                    href="https://investos.io/terms"
                                     class="text-sm leading-6 text-gray-600 hover:text-gray-900"
                                     >Terms</a
                                 >
@@ -424,7 +547,7 @@ Calculated as (datetime &#64; t[-1] - datetime &#64; t[0]) / datetime.timedelta(
         >
             <div class="flex space-x-6 md:order-2">
                 <a
-                    href="https://investos.io/coming-soon"
+                    href="https://github.com/forecastos/investos"
                     class="text-gray-400 hover:text-gray-500"
                 >
                     <span class="sr-only">GitHub</span>
