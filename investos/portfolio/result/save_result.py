@@ -35,6 +35,7 @@ class SaveResult:
                     "max_drawdown": self.max_drawdown,
                     "annual_turnover": self.annual_turnover,
                     "portfolio_hit_rate": self.portfolio_hit_rate,
+                    "annualized_excess_risk": self.excess_risk_annualized,
                 },
                 "tags": self.tags,
                 "team_ids": self.team_ids,
