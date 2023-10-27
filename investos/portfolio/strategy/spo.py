@@ -6,13 +6,11 @@ import pandas as pd
 import investos.util as util
 from investos.portfolio.constraint_model import (
     BaseConstraint,
-    EqualLongShortConstraint,
-    MaxLeverageConstraint,
+    LongOnlyConstraint,
     MaxWeightConstraint,
-    MinWeightConstraint,
 )
-from investos.portfolio.cost_model import BaseCost, HoldingCost, TradingCost
-from investos.portfolio.risk_model import BaseRisk, StatFactorRisk
+from investos.portfolio.cost_model import BaseCost
+from investos.portfolio.risk_model import BaseRisk
 from investos.portfolio.strategy import BaseStrategy
 from investos.util import values_in_time
 
@@ -28,20 +26,20 @@ class SPO(BaseStrategy):
 
     def __init__(
         self,
-        costs: [BaseCost] = [TradingCost(), HoldingCost()],
+        actual_returns: pd.DataFrame,
+        forecast_returns: pd.DataFrame,
+        costs: [BaseCost] = [],
         constraints: [BaseConstraint] = [
-            MinWeightConstraint(),
+            LongOnlyConstraint(),
             MaxWeightConstraint(),
-            MaxLeverageConstraint(),
-            EqualLongShortConstraint(),
         ],
-        risk_model: BaseRisk = StatFactorRisk(),
+        risk_model: BaseRisk = None,
         solver=cvx.OSQP,
         solver_opts=None,
+        **kwargs,
     ):
-        self.forecast_returns = None  # Set by Backtester in init
-        self.optimizer = None  # Set by Backtester in init
-
+        self.actual_returns = actual_returns
+        self.forecast_returns = forecast_returns
         self.costs = costs
         self.risk_model = risk_model
         self.constraints = constraints
@@ -49,6 +47,7 @@ class SPO(BaseStrategy):
         self.solver_opts = util.deep_dict_merge(
             self.BASE_SOLVER_OPTS, solver_opts or {}
         )
+        self.cash_column_name = kwargs.get("cash_column_name", "cash")
 
     def generate_trade_list(self, holdings: pd.Series, t: dt.datetime) -> pd.Series:
         """Calculates and returns trade list (in units of currency passed in) using convex (single period) optimization.
@@ -90,16 +89,15 @@ class SPO(BaseStrategy):
         ]
 
         # For help debugging:
+        for el in costs:
+            if not el.is_convex():
+                print(t, el, "is not convex")
+            # assert el.is_convex()
 
-        # for el in costs:
-        #     if not el.is_convex():
-        #         print(t, el, "is not convex")
-        # assert (el.is_convex())
-
-        # for el in constraints:
-        # if not el.is_dcp():
-        #     print(t, el, "is not dcp")
-        # assert (el.is_dcp())
+        for el in constraints:
+            if not el.is_dcp():
+                print(t, el, "is not dcp")
+            # assert el.is_dcp()
 
         objective = cvx.Maximize(alpha_term - cvx.sum(costs))
         constraints += [cvx.sum(z) == 0]
