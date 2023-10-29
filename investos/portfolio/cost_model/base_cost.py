@@ -1,6 +1,7 @@
 import copy
 import datetime as dt
 
+import numpy as np
 import pandas as pd
 
 
@@ -10,27 +11,22 @@ class BaseCost:
     The only requirement of custom cost models is that they (re)implement :py:meth:`~investos.portfolio.cost_model.base_cost.BaseCost.value_expr`.
     """
 
-    def __init__(self):
-        self.optimizer = None  # Set during Optimizer initialization
+    def __init__(self, **kwargs):
         self.gamma = 1  # Can change without setting directly as: gamma * BaseCost(). Note that gamma doesn't impact actual costs in backtester / simulated performance, just trades in optimization strategy.
+        self.exclude_assets = kwargs.get("exclude_assets", ["cash"])
 
-    def weight_expr(self, t, w_plus, z, value):
+    def weight_expr(self, t, w_plus, z, value, asset_idx):
+        w_plus = self._remove_excluded_columns_np(w_plus, asset_idx)
+        z = self._remove_excluded_columns_np(z, asset_idx)
+
         cost, constraints = self._estimated_cost_for_optimization(t, w_plus, z, value)
         return self.gamma * cost, constraints
 
     def actual_cost(self, t: dt.datetime, h_plus: pd.Series, u: pd.Series) -> pd.Series:
-        """Method that calculates per-period costs given period `t` holdings and trades.
+        h_plus = self._remove_excluded_columns_pd(h_plus)
+        u = self._remove_excluded_columns_pd(u)
 
-        Parameters
-        ----------
-        t : datetime.datetime
-            The datetime for associated trades `u` and holdings plus trades `h_plus`.
-        h_plus : pandas.Series
-            Holdings at beginning of period t, plus trades for period `t` (`u`). Same as `u` + `h` for `t`.
-        u : pandas.Series
-            Trades (as values) for period `t`.
-        """
-        raise NotImplementedError
+        return self.get_actual_cost(t, h_plus, u)
 
     def __mul__(self, other):
         """Read the gamma parameter as a multiplication; so you can change self.gamma without setting it directly as: gamma * BaseCost()"""
@@ -51,3 +47,18 @@ class BaseCost:
             metadata_dict["price_movement_sensitivity"] = self.limit
 
         return metadata_dict
+
+    def _remove_excluded_columns_pd(self, arg):
+        if isinstance(arg, pd.DataFrame) or isinstance(arg, pd.Series):
+            return arg.drop(self.exclude_assets, errors="ignore")
+
+        return arg
+
+    def _remove_excluded_columns_np(self, np_arr, holdings_cols):
+        idx_excl_assets = holdings_cols.get_indexer(self.exclude_assets)
+        # Create a boolean array of True values
+        mask = np.ones(np_arr.shape, dtype=bool)
+        # Set the values at the indices to exclude to False
+        mask[idx_excl_assets] = False
+
+        return np_arr[mask]

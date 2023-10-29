@@ -77,7 +77,7 @@ class SPO(BaseStrategy):
         costs, constraints = [], []
 
         for cost in self.costs:
-            cost_expr, const_expr = cost.weight_expr(t, wplus, z, value)
+            cost_expr, const_expr = cost.weight_expr(t, wplus, z, value, holdings.index)
             costs.append(cost_expr)
             constraints += const_expr
 

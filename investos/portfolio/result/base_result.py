@@ -79,24 +79,24 @@ class BaseResult(SaveResult):
                 "Annualized portfolio return (%)": str(
                     round(self.annualized_return * 100, 2)
                 )
-                + "%",
-                "Annualized excess portfolio return (%)": str(
-                    round(self.annualized_excess_return * 100, 2)
-                )
-                + "%",
-                "Annualized excess risk (%)": str(
-                    round(self.excess_risk_annualized * 100, 2)
-                )
-                + "%",
-                "Information ratio (x)": str(round(self.information_ratio, 2)) + "x",
-                "Annualized risk over risk-free (%)": str(
-                    round(self.risk_over_cash_annualized * 100, 2)
-                )
-                + "%",
-                "Sharpe ratio (x)": str(round(self.sharpe_ratio, 2)) + "x",
-                "Max drawdown (%)": f"{round(self.max_drawdown * 100, 2)}%",
-                "Annual turnover (x)": str(round(self.annual_turnover, 2)) + "x",
-                "Portfolio hit rate (%)": f"{round(self.portfolio_hit_rate * 100, 2)}%",
+                # + "%",
+                # "Annualized excess portfolio return (%)": str(
+                #     round(self.annualized_excess_return * 100, 2)
+                # )
+                # + "%",
+                # "Annualized excess risk (%)": str(
+                #     round(self.excess_risk_annualized * 100, 2)
+                # )
+                # + "%",
+                # "Information ratio (x)": str(round(self.information_ratio, 2)) + "x",
+                # "Annualized risk over risk-free (%)": str(
+                #     round(self.risk_over_cash_annualized * 100, 2)
+                # )
+                # + "%",
+                # "Sharpe ratio (x)": str(round(self.sharpe_ratio, 2)) + "x",
+                # "Max drawdown (%)": f"{round(self.max_drawdown * 100, 2)}%",
+                # "Annual turnover (x)": str(round(self.annual_turnover, 2)) + "x",
+                # "Portfolio hit rate (%)": f"{round(self.portfolio_hit_rate * 100, 2)}%",
             }
         )
 

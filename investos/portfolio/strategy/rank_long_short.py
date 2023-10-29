@@ -2,7 +2,7 @@ import datetime as dt
 
 import pandas as pd
 
-from investos.portfolio.cost_model import BaseCost, HoldingCost, TradingCost
+from investos.portfolio.cost_model import BaseCost
 from investos.portfolio.strategy import BaseStrategy
 from investos.util import values_in_time
 
@@ -39,9 +39,6 @@ class RankLongShort(BaseStrategy):
         self.optimizer = None  # Set by Controller in init
 
         self.costs = costs
-        if not self.costs:
-            self.costs = [TradingCost(), HoldingCost()]
-
         self.constraints = []
         self.risk_model = None
 
