@@ -26,9 +26,10 @@ class BacktestController:
             start_date=self.start_date,
             end_date=self.end_date,
         )
+        self.results.strategy = self.strategy
 
     def generate_positions(self):
-        print("Optimizing...")
+        print("Generating historical portfolio trades and positions...")
 
         # Create t == 0 position (no trades)
         t = self._get_initial_t()

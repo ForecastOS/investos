@@ -41,16 +41,18 @@ class SPO(BaseStrategy):
         solver_opts=None,
         **kwargs,
     ):
-        self.actual_returns = actual_returns
+        super().__init__(
+            actual_returns=actual_returns,
+            costs=costs,
+            constraints=constraints,
+            **kwargs,
+        )
         self.forecast_returns = forecast_returns
-        self.costs = costs
         self.risk_model = risk_model
-        self.constraints = constraints
         self.solver = solver
         self.solver_opts = util.deep_dict_merge(
             self.BASE_SOLVER_OPTS, solver_opts or {}
         )
-        self.cash_column_name = kwargs.get("cash_column_name", "cash")
 
     def generate_trade_list(self, holdings: pd.Series, t: dt.datetime) -> pd.Series:
         """Calculates and returns trade list (in units of currency passed in) using convex (single period) optimization.

@@ -2,6 +2,9 @@ import datetime as dt
 
 import pandas as pd
 
+from investos.portfolio.constraint_model import BaseConstraint
+from investos.portfolio.cost_model import BaseCost
+
 
 class BaseStrategy:
     """Base class for an optimization strategy.
@@ -16,11 +19,16 @@ class BaseStrategy:
         Constraints applied for optimization strategy. Defaults to empty list. See [TBU] for optimization model base class.
     """
 
-    def __init__(self, actual_returns: pd.DataFrame, **kwargs):
+    def __init__(
+        self,
+        actual_returns: pd.DataFrame,
+        costs: [BaseCost] = [],
+        constraints: [BaseConstraint] = [],
+        **kwargs,
+    ):
         self.actual_returns = actual_returns
-        self.costs = []
-        self.constraints = []
-        self.risk_model = None
+        self.costs = costs
+        self.constraints = constraints
 
         self.cash_column_name = kwargs.get("cash_column_name", "cash")
 

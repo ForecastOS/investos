@@ -6,6 +6,7 @@ examples/data
 .pypi_token
 dist/
 node_modules
+**/playground
 **/playground_*.ipynb
 **/tmp
 guides_tmp
