@@ -16,12 +16,15 @@ from investos.util import values_in_time
 
 
 class SPO(BaseStrategy):
-    """Optimization strategy that builds trade list using single period optimization."""
+    """Optimization strategy that builds trade list using single period optimization.
+
+    If you're using OSQP as your solver (the default), view the following for tuning: https://osqp.org/docs/interfaces/solver_settings.html
+    """
 
     BASE_SOLVER_OPTS = {
         "max_iter": 50_000,
-        "eps_rel": 0.0000000001,
-        "eps_abs": 0.0000000001,
+        "eps_rel": 5e-06,
+        "eps_abs": 5e-06,
     }
 
     def __init__(
@@ -116,7 +119,6 @@ class SPO(BaseStrategy):
                 print(f"The problem is infeasible at {t}.")
                 return self._zerotrade(holdings)
 
-            # print("CVX problem at ", t, self.prob)
             u = pd.Series(index=holdings.index, data=(z.value * value))
 
             return u

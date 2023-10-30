@@ -49,10 +49,12 @@ class BaseCost:
         return metadata_dict
 
     def _remove_excluded_columns_pd(self, arg):
-        if isinstance(arg, pd.DataFrame) or isinstance(arg, pd.Series):
+        if isinstance(arg, pd.DataFrame):
+            return arg.drop(columns=self.exclude_assets, errors="ignore")
+        elif isinstance(arg, pd.Series):
             return arg.drop(self.exclude_assets, errors="ignore")
-
-        return arg
+        else:
+            return arg
 
     def _remove_excluded_columns_np(self, np_arr, holdings_cols):
         idx_excl_assets = holdings_cols.get_indexer(self.exclude_assets)

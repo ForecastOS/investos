@@ -18,13 +18,21 @@ class TradingCost(BaseCost):
     """
 
     def __init__(self, forecast_volume, actual_prices, **kwargs):
-        # For scaling realized transaction cost; 1 assumes 1 day's volume moves price by 1 std dev
         super().__init__(**kwargs)
-        self.forecast_volume = forecast_volume
-        self.actual_prices = actual_prices
-        self.sensitivity_coeff = kwargs.get("price_movement_sensitivity", 1)
-        self.forecast_std_dev = kwargs.get("forecast_std_dev", 0.015)
-        self.half_spread = kwargs.get("half_spread", self.actual_prices / 10_000)
+        self.forecast_volume = self._remove_excluded_columns_pd(forecast_volume)
+        self.actual_prices = self._remove_excluded_columns_pd(actual_prices)
+        # For scaling realized transaction cost; 1 assumes trading 1 day's volume moves price by 1 std dev
+        # Defaults to 0.25
+        # Look for better research on this and default value
+        self.sensitivity_coeff = self._remove_excluded_columns_pd(
+            kwargs.get("price_movement_sensitivity", 0.25)
+        )
+        self.forecast_std_dev = self._remove_excluded_columns_pd(
+            kwargs.get("forecast_std_dev", 0.015)
+        )
+        self.half_spread = self._remove_excluded_columns_pd(
+            kwargs.get("half_spread", 1 / 10_000)
+        )
 
     def _estimated_cost_for_optimization(self, t, w_plus, z, value):
         """Estimated trading costs.
