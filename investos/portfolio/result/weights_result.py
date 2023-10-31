@@ -10,13 +10,29 @@ class WeightsResult(BaseResult):
     """
 
     def __init__(
-        self, initial_weights, trade_weights, returns, aum=100_000_000, *args, **kwargs
+        self,
+        initial_weights,
+        trade_weights,
+        actual_returns,
+        aum=100_000_000,
+        *args,
+        **kwargs,
     ):
-        self.set_h_next(initial_weights, trade_weights, returns, aum)
-        self.start_date = kwargs.get("start_date", trade_weights.index[0])
-        self.end_date = kwargs.get("end_date", trade_weights.index[-1])
-        self.risk_free = kwargs.get("risk_free", pd.Series(0.0, index=returns.index))
-        self.benchmark = kwargs.get("benchmark", pd.Series(0.0, index=returns.index))
+        self.set_h_next(initial_weights, trade_weights, actual_returns, aum)
+        self.risk_free = kwargs.get(
+            "risk_free", pd.Series(0.0, index=actual_returns.index)
+        )
+        self.benchmark = kwargs.get(
+            "benchmark", pd.Series(0.0, index=actual_returns.index)
+        )
+        start_date = kwargs.get("start_date", trade_weights.index[0])
+        end_date = kwargs.get("end_date", trade_weights.index[-1])
+        super().__init__(
+            start_date=start_date,
+            end_date=end_date,
+            actual_returns=actual_returns,
+            **kwargs,
+        )
 
     def set_h_next(self, initial_weights, trade_weights, returns, aum):
         print(

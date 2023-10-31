@@ -212,7 +212,7 @@ class BaseResult(SaveResult):
     @property
     def cash_column_name(self) -> str:
         """Returns string of cash column name in holdings and trades."""
-        if self.strategy:
+        if hasattr(self, "strategy"):
             return self.strategy.cash_column_name
         else:
             return self._cash_column_name
@@ -220,7 +220,7 @@ class BaseResult(SaveResult):
     @property
     def actual_returns(self) -> str:
         """Returns a pandas DF of actual returns for assets."""
-        if self.strategy:
+        if hasattr(self, "strategy"):
             return self.strategy.actual_returns
         else:
             return self._actual_returns
