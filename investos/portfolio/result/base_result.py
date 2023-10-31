@@ -14,9 +14,11 @@ class BaseResult(SaveResult):
     Instances of this object are called by the :py:meth:`investos.portfolio.controller.Controller.generate_positions` method.
     """
 
-    def __init__(self, start_date, end_date):
+    def __init__(self, start_date, end_date, **kwargs):
         self.start_date = start_date
         self.end_date = end_date
+        self._cash_column_name = kwargs.get("cash_column_name", "cash")
+        self._actual_returns = kwargs.get("actual_returns", None)
 
     def save_data(self, name: str, t: dt.datetime, entry: pd.Series) -> None:
         """Save `entry` on `Result` object, a (pandas) Series of data as `name` for datetime `t`.
@@ -208,10 +210,26 @@ class BaseResult(SaveResult):
         return self.returns_over_cash.std() * np.sqrt(self.ppy)
 
     @property
+    def cash_column_name(self) -> str:
+        """Returns string of cash column name in holdings and trades."""
+        if self.strategy:
+            return self.strategy.cash_column_name
+        else:
+            return self._cash_column_name
+
+    @property
+    def actual_returns(self) -> str:
+        """Returns a pandas DF of actual returns for assets."""
+        if self.strategy:
+            return self.strategy.actual_returns
+        else:
+            return self._actual_returns
+
+    @property
     @clip_for_dates
     def benchmark_returns(self) -> pd.Series:
         if not hasattr(self, "benchmark"):
-            self.benchmark = self.optimizer.actual["return"]["cash"]
+            self.benchmark = self.actual_returns[self.cash_column_name]
 
         return self.benchmark
 
@@ -219,7 +237,7 @@ class BaseResult(SaveResult):
     @clip_for_dates
     def risk_free_returns(self) -> pd.Series:
         if not hasattr(self, "risk_free"):
-            self.risk_free = self.optimizer.actual["return"]["cash"]
+            self.risk_free = self.actual_returns[self.cash_column_name]
 
         return self.risk_free
 
@@ -280,25 +298,25 @@ class BaseResult(SaveResult):
     @property
     def turnover(self):
         """Turnover ||u_t||_1/v_t"""
-        noncash_trades = self.trades.drop(["cash"], axis=1)
+        noncash_trades = self.trades.drop([self.cash_column_name], axis=1)
         return np.abs(noncash_trades).sum(axis=1) / self.v
 
     @property
     def leverage(self):
         """Turnover ||u_t||_1/v_t"""
-        noncash_h = self.h.drop(["cash"], axis=1)
+        noncash_h = self.h.drop([self.cash_column_name], axis=1)
         return np.abs(noncash_h).sum(axis=1) / self.v
 
     @property
     def long_leverage(self):
         """Turnover ||u_t||_1/v_t"""
-        noncash_h = self.h.drop(["cash"], axis=1)
+        noncash_h = self.h.drop([self.cash_column_name], axis=1)
         return np.abs(noncash_h[noncash_h > 0]).sum(axis=1) / self.v
 
     @property
     def short_leverage(self):
         """Turnover ||u_t||_1/v_t"""
-        noncash_h = self.h.drop(["cash"], axis=1)
+        noncash_h = self.h.drop([self.cash_column_name], axis=1)
         return np.abs(noncash_h[noncash_h < 0]).sum(axis=1) / self.v
 
     @property
@@ -318,12 +336,14 @@ class BaseResult(SaveResult):
                 max_dd_so_far = (cur_max - val) / cur_max
         return max_dd_so_far
 
-    def hit_rate(self, returns_df):
-        h = self.h
-        if "cash" in list(h.columns):
-            h = h.drop(["cash"], axis=1)
-        if "cash" in list(returns_df.columns):
-            returns_df = returns_df.drop(["cash"], axis=1)
+    def hit_rate(self, scale_ignore=10_000):
+        starting_aum = self.h.iloc[0].sum()
+        h = self.h.where(self.h.abs() <= starting_aum / scale_ignore, 0)
+        returns_df = self.actual_returns
+        if self.cash_column_name in list(h.columns):
+            h = h.drop([self.cash_column_name], axis=1)
+        if self.cash_column_name in list(returns_df.columns):
+            returns_df = returns_df.drop([self.cash_column_name], axis=1)
 
         h = h.iloc[1:].round(decimals=0).replace(-0.0, 0.0)
         returns_df = returns_df[returns_df.index.isin(h.index)]
@@ -331,4 +351,4 @@ class BaseResult(SaveResult):
 
         hit = sign_agree_df[sign_agree_df == 1].sum(axis=1)
         hit_attempt = sign_agree_df[sign_agree_df.abs() == 1].abs().sum(axis=1)
-        return hit / hit_attempt
+        return (hit / hit_attempt).dropna()

@@ -11,20 +11,13 @@ class MaxLeverageConstraint(BaseConstraint):
     (i.e. the portfolio value if it were converted into cash,
     ignoring liquidation / trading costs)
     could have 200MM of (combined long and short) exposure.
-
-    Parameters
-    ----------
-    limit : float, optional
-        The minimum weight of each asset in the portfolio. Defaults to -0.05.
-
-    **kwargs :
-        Additional keyword arguments.
     """
 
-    def __init__(self, limit: float = 2.0, **kwargs):
+    def __init__(self, limit: float = 1.0, exclude_assets=["cash"], **kwargs):
+        super().__init__(exclude_assets=exclude_assets, **kwargs)
         self.limit = limit
 
-    def weight_expr(self, t, w_plus, z, v):
+    def _weight_expr(self, t, w_plus, z, v):
         """
         Returns a series of holding constraints.
 
@@ -47,4 +40,74 @@ class MaxLeverageConstraint(BaseConstraint):
         series
             The holding constraints based on the portfolio leverage after trades.
         """
-        return cvx.sum(cvx.abs(w_plus[:-1])) <= self.limit
+        return cvx.sum(cvx.abs(w_plus)) <= self.limit
+
+
+class MaxShortLeverageConstraint(BaseConstraint):
+    """
+    A constraint that enforces a limit on the short leverage of the portfolio.
+    """
+
+    def __init__(self, limit: float = 1.0, exclude_assets=["cash"], **kwargs):
+        super().__init__(exclude_assets=exclude_assets, **kwargs)
+        self.limit = limit
+
+    def _weight_expr(self, t, w_plus, z, v):
+        """
+        Returns a series of holding constraints.
+
+        Parameters
+        ----------
+        t : datetime
+            The current time.
+
+        w_plus : series
+            Portfolio weights after trades z.
+
+        z : series
+            Trades for period t
+
+        v : float
+            Value of portfolio at period t
+
+        Returns
+        -------
+        series
+            The holding constraints based on the portfolio leverage after trades.
+        """
+        return cvx.sum(cvx.abs(cvx.neg(w_plus))) <= self.limit
+
+
+class MaxLongLeverageConstraint(BaseConstraint):
+    """
+    A constraint that enforces a limit on the long leverage of the portfolio.
+    """
+
+    def __init__(self, limit: float = 1.0, exclude_assets=["cash"], **kwargs):
+        super().__init__(exclude_assets=exclude_assets, **kwargs)
+        self.limit = limit
+
+    def _weight_expr(self, t, w_plus, z, v):
+        """
+        Returns a series of holding constraints.
+
+        Parameters
+        ----------
+        t : datetime
+            The current time.
+
+        w_plus : series
+            Portfolio weights after trades z.
+
+        z : series
+            Trades for period t
+
+        v : float
+            Value of portfolio at period t
+
+        Returns
+        -------
+        series
+            The holding constraints based on the portfolio leverage after trades.
+        """
+        return cvx.sum(cvx.pos(w_plus)) <= self.limit

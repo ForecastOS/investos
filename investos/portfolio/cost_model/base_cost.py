@@ -3,6 +3,8 @@ import datetime as dt
 
 import pandas as pd
 
+import investos.util as util
+
 
 class BaseCost:
     """Base cost model for InvestOS.
@@ -10,27 +12,39 @@ class BaseCost:
     The only requirement of custom cost models is that they (re)implement :py:meth:`~investos.portfolio.cost_model.base_cost.BaseCost.value_expr`.
     """
 
-    def __init__(self):
-        self.optimizer = None  # Set during Optimizer initialization
+    def __init__(self, **kwargs):
         self.gamma = 1  # Can change without setting directly as: gamma * BaseCost(). Note that gamma doesn't impact actual costs in backtester / simulated performance, just trades in optimization strategy.
+        self.exclude_assets = kwargs.get("exclude_assets", ["cash"])
+        self.include_assets = kwargs.get("include_assets", [])
 
-    def weight_expr(self, t, w_plus, z, value):
+    def weight_expr(self, t, w_plus, z, value, asset_idx):
+        w_plus = util.remove_excluded_columns_np(
+            w_plus,
+            asset_idx,
+            exclude_assets=self.exclude_assets,
+            include_assets=self.include_assets,
+        )
+        z = util.remove_excluded_columns_np(
+            z,
+            asset_idx,
+            exclude_assets=self.exclude_assets,
+            include_assets=self.include_assets,
+        )
+
         cost, constraints = self._estimated_cost_for_optimization(t, w_plus, z, value)
         return self.gamma * cost, constraints
 
     def actual_cost(self, t: dt.datetime, h_plus: pd.Series, u: pd.Series) -> pd.Series:
-        """Method that calculates per-period costs given period `t` holdings and trades.
+        h_plus = util.remove_excluded_columns_pd(
+            h_plus,
+            exclude_assets=self.exclude_assets,
+            include_assets=self.include_assets,
+        )
+        u = util.remove_excluded_columns_pd(
+            u, exclude_assets=self.exclude_assets, include_assets=self.include_assets
+        )
 
-        Parameters
-        ----------
-        t : datetime.datetime
-            The datetime for associated trades `u` and holdings plus trades `h_plus`.
-        h_plus : pandas.Series
-            Holdings at beginning of period t, plus trades for period `t` (`u`). Same as `u` + `h` for `t`.
-        u : pandas.Series
-            Trades (as values) for period `t`.
-        """
-        raise NotImplementedError
+        return self.get_actual_cost(t, h_plus, u)
 
     def __mul__(self, other):
         """Read the gamma parameter as a multiplication; so you can change self.gamma without setting it directly as: gamma * BaseCost()"""

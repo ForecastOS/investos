@@ -16,10 +16,10 @@ Subpackages
 Submodules
 ----------
 
-investos.portfolio.controller module
-------------------------------------
+investos.portfolio.backtest_controller module
+---------------------------------------------
 
-.. automodule:: investos.portfolio.controller
+.. automodule:: investos.portfolio.backtest_controller
    :members:
    :undoc-members:
    :show-inheritance:

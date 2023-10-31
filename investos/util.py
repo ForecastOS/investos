@@ -1,6 +1,7 @@
 import copy
 from functools import wraps
 
+import numpy as np
 import pandas as pd
 
 
@@ -79,3 +80,45 @@ def clip_for_dates(func):
         ]
 
     return wrapper
+
+
+def remove_excluded_columns_pd(arg, exclude_assets=None, include_assets=None):
+    if include_assets:
+        if isinstance(arg, pd.DataFrame):
+            return arg[[col for col in include_assets if col in arg.columns]]
+        elif isinstance(arg, pd.Series):
+            return arg[[col for col in include_assets if col in arg]]
+        else:
+            return arg
+    else:
+        if isinstance(arg, pd.DataFrame):
+            return arg.drop(columns=exclude_assets, errors="ignore")
+        elif isinstance(arg, pd.Series):
+            return arg.drop(exclude_assets, errors="ignore")
+        else:
+            return arg
+
+
+def remove_excluded_columns_np(
+    np_arr, holdings_cols, exclude_assets=None, include_assets=None
+):
+    if include_assets:
+        idx_incl_assets = holdings_cols.get_indexer(include_assets)
+        # Filter out -1 values (i.e. assets with no match)
+        idx_incl_assets = idx_incl_assets[idx_incl_assets != -1]
+        # Create a boolean array of False values
+        mask = np.zeros(np_arr.shape, dtype=bool)
+        # Set the values at the indices to exclude to False
+        mask[idx_incl_assets] = True
+        return np_arr[mask]
+    elif exclude_assets:
+        idx_excl_assets = holdings_cols.get_indexer(exclude_assets)
+        # Filter out -1 values (i.e. assets with no match)
+        idx_excl_assets = idx_excl_assets[idx_excl_assets != -1]
+        # Create a boolean array of True values
+        mask = np.ones(np_arr.shape, dtype=bool)
+        # Set the values at the indices to exclude to False
+        mask[idx_excl_assets] = False
+        return np_arr[mask]
+    else:
+        return np_arr

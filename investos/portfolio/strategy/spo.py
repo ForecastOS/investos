@@ -6,49 +6,55 @@ import pandas as pd
 import investos.util as util
 from investos.portfolio.constraint_model import (
     BaseConstraint,
-    EqualLongShortConstraint,
-    MaxLeverageConstraint,
+    LongOnlyConstraint,
     MaxWeightConstraint,
-    MinWeightConstraint,
 )
-from investos.portfolio.cost_model import BaseCost, HoldingCost, TradingCost
-from investos.portfolio.risk_model import BaseRisk, StatFactorRisk
+from investos.portfolio.cost_model import BaseCost
+from investos.portfolio.risk_model import BaseRisk
 from investos.portfolio.strategy import BaseStrategy
 from investos.util import values_in_time
 
 
 class SPO(BaseStrategy):
-    """Optimization strategy that builds trade list using single period optimization."""
+    """Optimization strategy that builds trade list using single period optimization.
+
+    If you're using OSQP as your solver (the default), view the following for tuning: https://osqp.org/docs/interfaces/solver_settings.html
+    """
 
     BASE_SOLVER_OPTS = {
         "max_iter": 50_000,
-        "eps_rel": 0.0000000001,
-        "eps_abs": 0.0000000001,
+        "eps_rel": 5e-06,
+        "eps_abs": 5e-06,
     }
 
     def __init__(
         self,
-        costs: [BaseCost] = [TradingCost(), HoldingCost()],
+        actual_returns: pd.DataFrame,
+        forecast_returns: pd.DataFrame,
+        costs: [BaseCost] = [],
         constraints: [BaseConstraint] = [
-            MinWeightConstraint(),
+            LongOnlyConstraint(),
             MaxWeightConstraint(),
-            MaxLeverageConstraint(),
-            EqualLongShortConstraint(),
         ],
-        risk_model: BaseRisk = StatFactorRisk(),
+        risk_model: BaseRisk = None,
         solver=cvx.OSQP,
         solver_opts=None,
+        **kwargs,
     ):
-        self.forecast_returns = None  # Set by Backtester in init
-        self.optimizer = None  # Set by Backtester in init
-
-        self.costs = costs
+        super().__init__(
+            actual_returns=actual_returns,
+            costs=costs,
+            constraints=constraints,
+            **kwargs,
+        )
+        self.forecast_returns = forecast_returns
         self.risk_model = risk_model
-        self.constraints = constraints
         self.solver = solver
         self.solver_opts = util.deep_dict_merge(
             self.BASE_SOLVER_OPTS, solver_opts or {}
         )
+
+        self.metadata_properties = ["solver", "solver_opts"]
 
     def generate_trade_list(self, holdings: pd.Series, t: dt.datetime) -> pd.Series:
         """Calculates and returns trade list (in units of currency passed in) using convex (single period) optimization.
@@ -78,28 +84,28 @@ class SPO(BaseStrategy):
         costs, constraints = [], []
 
         for cost in self.costs:
-            cost_expr, const_expr = cost.weight_expr(t, wplus, z, value)
+            cost_expr, const_expr = cost.weight_expr(t, wplus, z, value, holdings.index)
             costs.append(cost_expr)
             constraints += const_expr
 
         constraints += [
             item
             for item in (
-                con.weight_expr(t, wplus, z, value) for con in self.constraints
+                con.weight_expr(t, wplus, z, value, holdings.index)
+                for con in self.constraints
             )
         ]
 
         # For help debugging:
+        for el in costs:
+            if not el.is_convex():
+                print(t, el, "is not convex")
+            # assert el.is_convex()
 
-        # for el in costs:
-        #     if not el.is_convex():
-        #         print(t, el, "is not convex")
-        # assert (el.is_convex())
-
-        # for el in constraints:
-        # if not el.is_dcp():
-        #     print(t, el, "is not dcp")
-        # assert (el.is_dcp())
+        for el in constraints:
+            if not el.is_dcp():
+                print(t, el, "is not dcp")
+            # assert el.is_dcp()
 
         objective = cvx.Maximize(alpha_term - cvx.sum(costs))
         constraints += [cvx.sum(z) == 0]
@@ -118,7 +124,6 @@ class SPO(BaseStrategy):
                 print(f"The problem is infeasible at {t}.")
                 return self._zerotrade(holdings)
 
-            # print("CVX problem at ", t, self.prob)
             u = pd.Series(index=holdings.index, data=(z.value * value))
 
             return u

@@ -20,10 +20,11 @@ class MaxWeightConstraint(BaseConstraint):
 
     """
 
-    def __init__(self, limit: float = 0.025, **kwargs):
+    def __init__(self, limit: float = 0.025, exclude_assets=["cash"], **kwargs):
+        super().__init__(exclude_assets=exclude_assets, **kwargs)
         self.limit = limit
 
-    def weight_expr(self, t, w_plus, z, v):
+    def _weight_expr(self, t, w_plus, z, v):
         """
         Returns a series of holding constraints.
 
@@ -46,7 +47,7 @@ class MaxWeightConstraint(BaseConstraint):
         series
             The holding constraints based on the portfolio weights after trades.
         """
-        return w_plus[:-1] <= self.limit
+        return w_plus <= self.limit
 
 
 class MinWeightConstraint(BaseConstraint):
@@ -68,10 +69,11 @@ class MinWeightConstraint(BaseConstraint):
 
     """
 
-    def __init__(self, limit: float = -0.025, **kwargs):
+    def __init__(self, limit: float = -0.025, exclude_assets=["cash"], **kwargs):
+        super().__init__(exclude_assets=exclude_assets, **kwargs)
         self.limit = limit
 
-    def weight_expr(self, t, w_plus, z, v):
+    def _weight_expr(self, t, w_plus, z, v):
         """
         Returns a series of holding constraints.
 
@@ -94,4 +96,4 @@ class MinWeightConstraint(BaseConstraint):
         series
             The holding constraints based on the portfolio weights after trades.
         """
-        return w_plus[:-1] >= self.limit
+        return w_plus >= self.limit

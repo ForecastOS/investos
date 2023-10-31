@@ -5,12 +5,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>investos &#8212; InvestOS 0.2.2 documentation</title>
+    <title>investos &#8212; InvestOS 0.3.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b3523f8e" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=039e1c02" />
     <link rel="stylesheet" type="text/css" href="_static/theme_overrides.css?v=e95dcf8c" />
     <link rel="stylesheet" type="text/css" href="_static/tailwind_output.css?v=7bbfae26" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=227644f7"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=645b84c4"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -95,7 +95,7 @@
 <li class="toctree-l3"><a class="reference internal" href="investos.portfolio.cost_model.html">investos.portfolio.cost_model package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="investos.portfolio.cost_model.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="investos.portfolio.cost_model.html#module-investos.portfolio.cost_model.base_cost">investos.portfolio.cost_model.base_cost module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.cost_model.html#module-investos.portfolio.cost_model.holding_cost">investos.portfolio.cost_model.holding_cost module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.cost_model.html#module-investos.portfolio.cost_model.short_holding_cost">investos.portfolio.cost_model.short_holding_cost module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="investos.portfolio.cost_model.html#module-investos.portfolio.cost_model.trading_cost">investos.portfolio.cost_model.trading_cost module</a></li>
 </ul>
 </li>
@@ -104,8 +104,7 @@
 <li class="toctree-l4"><a class="reference internal" href="investos.portfolio.constraint_model.html#module-investos.portfolio.constraint_model.base_constraint">investos.portfolio.constraint_model.base_constraint module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="investos.portfolio.constraint_model.html#module-investos.portfolio.constraint_model.leverage_constraint">investos.portfolio.constraint_model.leverage_constraint module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="investos.portfolio.constraint_model.html#module-investos.portfolio.constraint_model.weight_constraint">investos.portfolio.constraint_model.weight_constraint module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.constraint_model.html#module-investos.portfolio.constraint_model.trade_constraint">investos.portfolio.constraint_model.trade_constraint module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.constraint_model.html#module-investos.portfolio.constraint_model.long_constraint">investos.portfolio.constraint_model.long_constraint module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.constraint_model.html#module-investos.portfolio.constraint_model.long_constraint">investos.portfolio.constraint_model.trade_constraint module</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="investos.portfolio.result.html">investos.portfolio.result package</a><ul>
@@ -126,23 +125,9 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="investos.portfolio.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="investos.portfolio.html#module-investos.portfolio.controller">investos.portfolio.controller module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="investos.portfolio.html#investos.portfolio.controller.Controller"><code class="docutils literal notranslate"><span class="pre">Controller</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#investos.portfolio.controller.Controller.config"><code class="docutils literal notranslate"><span class="pre">Controller.config</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#investos.portfolio.controller.Controller.strategy"><code class="docutils literal notranslate"><span class="pre">Controller.strategy</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#investos.portfolio.controller.Controller.backtest_model"><code class="docutils literal notranslate"><span class="pre">Controller.backtest_model</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#investos.portfolio.controller.Controller.forecast"><code class="docutils literal notranslate"><span class="pre">Controller.forecast</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#investos.portfolio.controller.Controller.actual"><code class="docutils literal notranslate"><span class="pre">Controller.actual</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#investos.portfolio.controller.Controller.initial_portfolio"><code class="docutils literal notranslate"><span class="pre">Controller.initial_portfolio</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#investos.portfolio.controller.Controller.after_step"><code class="docutils literal notranslate"><span class="pre">Controller.after_step</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#investos.portfolio.controller.Controller.BASE_CONFIG"><code class="docutils literal notranslate"><span class="pre">Controller.BASE_CONFIG</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#investos.portfolio.controller.Controller.create_forecast"><code class="docutils literal notranslate"><span class="pre">Controller.create_forecast()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#investos.portfolio.controller.Controller.create_initial_portfolio"><code class="docutils literal notranslate"><span class="pre">Controller.create_initial_portfolio()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#investos.portfolio.controller.Controller.create_price"><code class="docutils literal notranslate"><span class="pre">Controller.create_price()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#investos.portfolio.controller.Controller.generate_positions"><code class="docutils literal notranslate"><span class="pre">Controller.generate_positions()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#investos.portfolio.controller.Controller.get_actual_positions_for_t"><code class="docutils literal notranslate"><span class="pre">Controller.get_actual_positions_for_t()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#investos.portfolio.controller.Controller.get_initial_t"><code class="docutils literal notranslate"><span class="pre">Controller.get_initial_t()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#investos.portfolio.controller.Controller.pivot_and_fill"><code class="docutils literal notranslate"><span class="pre">Controller.pivot_and_fill()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="investos.portfolio.html#module-investos.portfolio.backtest_controller">investos.portfolio.backtest_controller module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="investos.portfolio.html#investos.portfolio.backtest_controller.BacktestController"><code class="docutils literal notranslate"><span class="pre">BacktestController</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#investos.portfolio.backtest_controller.BacktestController.generate_positions"><code class="docutils literal notranslate"><span class="pre">BacktestController.generate_positions()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -167,6 +152,16 @@
 <span class="sig-prename descclassname"><span class="pre">investos.util.</span></span><span class="sig-name descname"><span class="pre">deep_dict_merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default_d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_d</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.util.deep_dict_merge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Deep copies update_d onto default_d recursively</p>
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="investos.util.remove_excluded_columns_np">
+<span class="sig-prename descclassname"><span class="pre">investos.util.</span></span><span class="sig-name descname"><span class="pre">remove_excluded_columns_np</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">np_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">holdings_cols</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_assets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_assets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.util.remove_excluded_columns_np" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="investos.util.remove_excluded_columns_pd">
+<span class="sig-prename descclassname"><span class="pre">investos.util.</span></span><span class="sig-name descname"><span class="pre">remove_excluded_columns_pd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_assets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_assets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#investos.util.remove_excluded_columns_pd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="investos.util.values_in_time">
@@ -230,7 +225,7 @@ made today. If None, then it is assumed tau = t.</p>
 <li class="toctree-l3"><a class="reference internal" href="investos.portfolio.html">investos.portfolio package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#subpackages">Subpackages</a></li>
 <li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#module-investos.portfolio.controller">investos.portfolio.controller module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="investos.portfolio.html#module-investos.portfolio.backtest_controller">investos.portfolio.backtest_controller module</a></li>
 </ul>
 </li>
 </ul>
@@ -239,6 +234,8 @@ made today. If None, then it is assumed tau = t.</p>
 <li class="toctree-l2"><a class="reference internal" href="#module-investos.util">investos.util module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#investos.util.clip_for_dates"><code class="docutils literal notranslate"><span class="pre">clip_for_dates()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#investos.util.deep_dict_merge"><code class="docutils literal notranslate"><span class="pre">deep_dict_merge()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#investos.util.remove_excluded_columns_np"><code class="docutils literal notranslate"><span class="pre">remove_excluded_columns_np()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#investos.util.remove_excluded_columns_pd"><code class="docutils literal notranslate"><span class="pre">remove_excluded_columns_pd()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#investos.util.values_in_time"><code class="docutils literal notranslate"><span class="pre">values_in_time()</span></code></a></li>
 </ul>
 </li>

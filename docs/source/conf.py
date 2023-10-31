@@ -11,8 +11,8 @@ import sys
 
 project = "InvestOS"
 copyright = "2023, InvestOS"
-author = "Charlie Reese"
-release = "0.2.2"
+author = "Charlie Reese, ForecastOS"
+release = "0.3.1"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

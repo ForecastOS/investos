@@ -24,7 +24,9 @@ class SaveResult:
         self.save_backtest(description, strategy, forecast_ids)
         self.save_backtest_charts()
 
-    def save_backtest(self, description, strategy, forecast_ids):
+    def save_backtest(self, description, strategy=None, forecast_ids=[]):
+        strategy = getattr(self, "strategy", strategy)
+
         json_body = {
             "backtest": {
                 "description": description,
@@ -156,41 +158,6 @@ class SaveResult:
                         "y_name": "Short",
                         "x_values": [str(el) for el in self.short_leverage.index],
                         "y_values": list(self.short_leverage.values),
-                    },
-                ],
-            }
-        }
-
-        self._save_chart(json_body)
-
-    def save_chart_hit_rate(self, returns_df):
-        hit_rate = self.hit_rate(returns_df)
-        hit_rate_mean = hit_rate.mean()
-        hit_rate_rolling = hit_rate.rolling(window=60, min_periods=1).mean()
-
-        json_body = {
-            "chart": {
-                "title": "Holdings hit rate",
-                "chartable_type": "Backtest",
-                "chartable_id": self.backtest_id,
-                "chart_traces": [
-                    {
-                        "x_name": "Dates",
-                        "y_name": "Current period",
-                        "x_values": [str(el) for el in hit_rate.index],
-                        "y_values": list(hit_rate.values),
-                    },
-                    {
-                        "x_name": "Dates",
-                        "y_name": "Rolling 60 periods",
-                        "x_values": [str(el) for el in hit_rate_rolling.index],
-                        "y_values": list(hit_rate_rolling.values),
-                    },
-                    {
-                        "x_name": "Dates",
-                        "y_name": "Mean",
-                        "x_values": [str(el) for el in hit_rate.index],
-                        "y_values": [hit_rate_mean for el in hit_rate.index],
                     },
                 ],
             }
