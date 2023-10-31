@@ -175,8 +175,8 @@ backtest_result = WeightsResult(
     initial_weights=df_weights.iloc[0],
     trade_weights=df_trades,
     actual_returns=df_returns,
-    risk_free=df_returns["cash"],
-    benchmark=df_returns["cash"],
+    risk_free=df_returns["cash"], # Add any series you want
+    benchmark=df_returns["cash"], # Add any series you want
     aum=100_000_000,
     cash_column_name="cash"
 )
