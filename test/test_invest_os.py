@@ -2,4 +2,4 @@ import investos
 
 
 def test_version():
-    assert investos.__version__ == "0.3.1"
+    assert investos.__version__ == "0.3.2"
