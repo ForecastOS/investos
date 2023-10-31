@@ -21,16 +21,38 @@ We've created examples for both use-cases below.
 If your portfolio was created / optimized using InvestOS, a backtest was automatically run on your behalf. You can access that backtest result as follows:
 
 ```python
+from investos.portfolio.cost_model import *
+from investos.portfolio.constraint_model import *
+from investos.portfolio.risk_model import *
+
 # 1. Initializing the optimization strategy
 # -- and controller for your portfolio
 
-strategy = inv.portfolio.strategy.SPO(**optional_args)
+strategy = inv.portfolio.strategy.SPO(
+    actual_returns = df_actual_returns,
+    forecast_returns = df_forecast_returns,
+    costs = [
+        ShortHoldingCost(short_rates=short_rates, exclude_assets=["cash"]),
+    ],
+    constraints = [
+        MaxShortLeverageConstraint(limit=0.3),
+        MaxLongLeverageConstraint(limit=1.3),
+        MinWeightConstraint(),
+        MaxWeightConstraint(),
+        LongCashConstraint()
+    ],
+    cash_column_name="cash"
+)
 
-portfolio = inv.portfolio.Controller(
-    df_forecast,
-    df_actual,
+portfolio = inv.portfolio.BacktestController(
     strategy=strategy,
-    **optional_args
+    start_date='2022-01-01',
+    end_date='2023-01-01',
+    hooks = {
+        "after_trades": [
+            lambda backtest, t, u, h_next: print(".", end=''),
+        ]
+    }
 )
 
 # 2. Running the optimization and generating your positions,
@@ -38,7 +60,7 @@ portfolio = inv.portfolio.Controller(
 # -- (investos/portfolio/result/base_result)
 # -- instance with backtest results.
 
-result = portfolio.generate_positions()
+backtest_result = portfolio.generate_positions()
 ```
 
 That's all that's required; the `result` object contains your backtest.
@@ -149,13 +171,14 @@ df_trades["cash"] -= df_trades.sum(axis=1)
 # -- 0 (for simplicity), etc.
 df_returns["cash"] = 0.04 / 252 # (4% / 252 trading days)
 
-result = WeightsResult(
+backtest_result = WeightsResult(
     initial_weights=df_weights.iloc[0],
     trade_weights=df_trades,
-    returns=df_returns,
-    risk_free=df_returns["cash"], # Add any series you want
-    benchmark=df_returns["cash"], # Add any series you want
+    actual_returns=df_returns,
+    risk_free=df_returns["cash"],
+    benchmark=df_returns["cash"],
     aum=100_000_000,
+    cash_column_name="cash"
 )
 ```
 
@@ -170,7 +193,7 @@ Let's explore backtest results next.
 You can print summary results for you backtest with the following code:
 
 ```python
-result.summary
+backtest_result.summary
 ```
 
 In an ipynb, you can easily plot:
