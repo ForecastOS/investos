@@ -1,8 +1,9 @@
 import copy
 import datetime as dt
 
-import numpy as np
 import pandas as pd
+
+import investos.util as util
 
 
 class BaseCost:
@@ -14,17 +15,34 @@ class BaseCost:
     def __init__(self, **kwargs):
         self.gamma = 1  # Can change without setting directly as: gamma * BaseCost(). Note that gamma doesn't impact actual costs in backtester / simulated performance, just trades in optimization strategy.
         self.exclude_assets = kwargs.get("exclude_assets", ["cash"])
+        self.include_assets = kwargs.get("include_assets", [])
 
     def weight_expr(self, t, w_plus, z, value, asset_idx):
-        w_plus = self._remove_excluded_columns_np(w_plus, asset_idx)
-        z = self._remove_excluded_columns_np(z, asset_idx)
+        w_plus = util.remove_excluded_columns_np(
+            w_plus,
+            asset_idx,
+            exclude_assets=self.exclude_assets,
+            include_assets=self.include_assets,
+        )
+        z = util.remove_excluded_columns_np(
+            z,
+            asset_idx,
+            exclude_assets=self.exclude_assets,
+            include_assets=self.include_assets,
+        )
 
         cost, constraints = self._estimated_cost_for_optimization(t, w_plus, z, value)
         return self.gamma * cost, constraints
 
     def actual_cost(self, t: dt.datetime, h_plus: pd.Series, u: pd.Series) -> pd.Series:
-        h_plus = self._remove_excluded_columns_pd(h_plus)
-        u = self._remove_excluded_columns_pd(u)
+        h_plus = util.remove_excluded_columns_pd(
+            h_plus,
+            exclude_assets=self.exclude_assets,
+            include_assets=self.include_assets,
+        )
+        u = util.remove_excluded_columns_pd(
+            u, exclude_assets=self.exclude_assets, include_assets=self.include_assets
+        )
 
         return self.get_actual_cost(t, h_plus, u)
 
@@ -47,20 +65,3 @@ class BaseCost:
             metadata_dict["price_movement_sensitivity"] = self.limit
 
         return metadata_dict
-
-    def _remove_excluded_columns_pd(self, arg):
-        if isinstance(arg, pd.DataFrame):
-            return arg.drop(columns=self.exclude_assets, errors="ignore")
-        elif isinstance(arg, pd.Series):
-            return arg.drop(self.exclude_assets, errors="ignore")
-        else:
-            return arg
-
-    def _remove_excluded_columns_np(self, np_arr, holdings_cols):
-        idx_excl_assets = holdings_cols.get_indexer(self.exclude_assets)
-        # Create a boolean array of True values
-        mask = np.ones(np_arr.shape, dtype=bool)
-        # Set the values at the indices to exclude to False
-        mask[idx_excl_assets] = False
-
-        return np_arr[mask]

@@ -12,10 +12,10 @@ investos.portfolio.cost\_model.base\_cost module
    :undoc-members:
    :show-inheritance:
 
-investos.portfolio.cost\_model.holding\_cost module
----------------------------------------------------
+investos.portfolio.cost\_model.short\_holding\_cost module
+-------------------------------------------------------------
 
-.. automodule:: investos.portfolio.cost_model.holding_cost
+.. automodule:: investos.portfolio.cost_model.short_holding_cost
    :members:
    :undoc-members:
    :show-inheritance:

@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from investos.portfolio.cost_model import BaseCost
-from investos.util import values_in_time
+from investos.util import remove_excluded_columns_pd, values_in_time
 
 
 class TradingCost(BaseCost):
@@ -19,19 +19,33 @@ class TradingCost(BaseCost):
 
     def __init__(self, forecast_volume, actual_prices, **kwargs):
         super().__init__(**kwargs)
-        self.forecast_volume = self._remove_excluded_columns_pd(forecast_volume)
-        self.actual_prices = self._remove_excluded_columns_pd(actual_prices)
+        self.forecast_volume = remove_excluded_columns_pd(
+            forecast_volume,
+            exclude_assets=self.exclude_assets,
+            include_assets=self.include_assets,
+        )
+        self.actual_prices = remove_excluded_columns_pd(
+            actual_prices,
+            exclude_assets=self.exclude_assets,
+            include_assets=self.include_assets,
+        )
         # For scaling realized transaction cost; 1 assumes trading 1 day's volume moves price by 1 std dev
         # Defaults to 0.25
         # Look for better research on this and default value
-        self.sensitivity_coeff = self._remove_excluded_columns_pd(
-            kwargs.get("price_movement_sensitivity", 0.25)
+        self.sensitivity_coeff = remove_excluded_columns_pd(
+            kwargs.get("price_movement_sensitivity", 0.25),
+            exclude_assets=self.exclude_assets,
+            include_assets=self.include_assets,
         )
-        self.forecast_std_dev = self._remove_excluded_columns_pd(
-            kwargs.get("forecast_std_dev", 0.015)
+        self.forecast_std_dev = remove_excluded_columns_pd(
+            kwargs.get("forecast_std_dev", 0.015),
+            exclude_assets=self.exclude_assets,
+            include_assets=self.include_assets,
         )
-        self.half_spread = self._remove_excluded_columns_pd(
-            kwargs.get("half_spread", 1 / 10_000)
+        self.half_spread = remove_excluded_columns_pd(
+            kwargs.get("half_spread", 1 / 20_000),
+            exclude_assets=self.exclude_assets,
+            include_assets=self.include_assets,
         )
 
     def _estimated_cost_for_optimization(self, t, w_plus, z, value):

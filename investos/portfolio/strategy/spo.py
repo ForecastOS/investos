@@ -54,6 +54,8 @@ class SPO(BaseStrategy):
             self.BASE_SOLVER_OPTS, solver_opts or {}
         )
 
+        self.metadata_properties = ["solver", "solver_opts"]
+
     def generate_trade_list(self, holdings: pd.Series, t: dt.datetime) -> pd.Series:
         """Calculates and returns trade list (in units of currency passed in) using convex (single period) optimization.
 
@@ -89,7 +91,8 @@ class SPO(BaseStrategy):
         constraints += [
             item
             for item in (
-                con.weight_expr(t, wplus, z, value) for con in self.constraints
+                con.weight_expr(t, wplus, z, value, holdings.index)
+                for con in self.constraints
             )
         ]
 

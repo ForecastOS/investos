@@ -14,9 +14,11 @@ class BaseResult(SaveResult):
     Instances of this object are called by the :py:meth:`investos.portfolio.controller.Controller.generate_positions` method.
     """
 
-    def __init__(self, start_date, end_date):
+    def __init__(self, start_date, end_date, **kwargs):
         self.start_date = start_date
         self.end_date = end_date
+        self._cash_column_name = kwargs.get("cash_column_name", "cash")
+        self._actual_returns = kwargs.get("actual_returns", None)
 
     def save_data(self, name: str, t: dt.datetime, entry: pd.Series) -> None:
         """Save `entry` on `Result` object, a (pandas) Series of data as `name` for datetime `t`.
@@ -209,14 +211,25 @@ class BaseResult(SaveResult):
 
     @property
     def cash_column_name(self) -> str:
-        """Returns a pandas Series of risk in excess of the risk free rate."""
-        return self.strategy.cash_column_name
+        """Returns string of cash column name in holdings and trades."""
+        if self.strategy:
+            return self.strategy.cash_column_name
+        else:
+            return self._cash_column_name
+
+    @property
+    def actual_returns(self) -> str:
+        """Returns a pandas DF of actual returns for assets."""
+        if self.strategy:
+            return self.strategy.actual_returns
+        else:
+            return self._actual_returns
 
     @property
     @clip_for_dates
     def benchmark_returns(self) -> pd.Series:
         if not hasattr(self, "benchmark"):
-            self.benchmark = self.strategy.actual_returns[self.cash_column_name]
+            self.benchmark = self.actual_returns[self.cash_column_name]
 
         return self.benchmark
 
@@ -224,7 +237,7 @@ class BaseResult(SaveResult):
     @clip_for_dates
     def risk_free_returns(self) -> pd.Series:
         if not hasattr(self, "risk_free"):
-            self.risk_free = self.strategy.actual_returns[self.cash_column_name]
+            self.risk_free = self.actual_returns[self.cash_column_name]
 
         return self.risk_free
 
@@ -326,7 +339,7 @@ class BaseResult(SaveResult):
     def hit_rate(self, scale_ignore=10_000):
         starting_aum = self.h.iloc[0].sum()
         h = self.h.where(self.h.abs() <= starting_aum / scale_ignore, 0)
-        returns_df = self.strategy.actual_returns
+        returns_df = self.actual_returns
         if self.cash_column_name in list(h.columns):
             h = h.drop([self.cash_column_name], axis=1)
         if self.cash_column_name in list(returns_df.columns):
@@ -338,4 +351,4 @@ class BaseResult(SaveResult):
 
         hit = sign_agree_df[sign_agree_df == 1].sum(axis=1)
         hit_attempt = sign_agree_df[sign_agree_df.abs() == 1].abs().sum(axis=1)
-        return hit / hit_attempt
+        return (hit / hit_attempt).dropna()

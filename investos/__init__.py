@@ -1,6 +1,6 @@
 import investos.portfolio
 
-__version__ = "0.2.2"
+__version__ = "0.3.1"
 
 import os
 

@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from investos.portfolio.cost_model import BaseCost
-from investos.util import values_in_time
+from investos.util import remove_excluded_columns_pd, values_in_time
 
 
 class ShortHoldingCost(BaseCost):
@@ -13,7 +13,11 @@ class ShortHoldingCost(BaseCost):
 
     def __init__(self, short_rates, **kwargs):
         super().__init__(**kwargs)
-        self.short_rates = self._remove_excluded_columns_pd(short_rates)
+        self.short_rates = remove_excluded_columns_pd(
+            short_rates,
+            exclude_assets=self.exclude_assets,
+            include_assets=self.include_assets,
+        )
 
     def _estimated_cost_for_optimization(self, t, w_plus, z, value):
         """Estimated holding costs.

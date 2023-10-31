@@ -31,14 +31,6 @@ investos.portfolio.constraint\_model.weight\_constraint module
 investos.portfolio.constraint\_model.trade\_constraint module
 -------------------------------------------------------------
 
-.. automodule:: investos.portfolio.constraint_model.trade_constraint
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-investos.portfolio.constraint\_model.long\_constraint module
-------------------------------------------------------------
-
 .. automodule:: investos.portfolio.constraint_model.long_constraint
    :members:
    :undoc-members:

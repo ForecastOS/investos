@@ -31,6 +31,7 @@ class BaseStrategy:
         self.constraints = constraints
 
         self.cash_column_name = kwargs.get("cash_column_name", "cash")
+        self.metadata_properties = ["cash_column_name"]
 
     def _zerotrade(self, holdings):
         return pd.Series(index=holdings.index, data=0.0)
@@ -64,16 +65,32 @@ class BaseStrategy:
         return h_next, u
 
     def metadata_dict(self):
-        return {
+        meta_d = {
             "strategy": self.__class__.__name__,
-            "risk_model": self.risk_model
-            and {self.risk_model.__class__.__name__: self.risk_model.metadata_dict()},
-            "constraint_models": {
+        }
+
+        if getattr(self, "risk_model", False):
+            meta_d[self.risk_model.__class__.__name__] = self.risk_model.metadata_dict()
+
+        if getattr(self, "constraints", False):
+            meta_d["constraint_models"] = {
                 el.__class__.__name__: el.metadata_dict() for el in self.constraints
-            },
-            "cost_models": {
+            }
+
+        if getattr(self, "costs", False):
+            meta_d["cost_models"] = {
                 el.__class__.__name__: el.metadata_dict()
                 for el in self.costs
                 if "Risk" not in el.__class__.__name__
-            },
-        }
+            }
+
+        return self._add_strategy_metadata_params(meta_d)
+
+    def _add_strategy_metadata_params(self, meta_d):
+        metadata_properties = getattr(self, "metadata_properties", [])
+        if metadata_properties:
+            meta_d["strategy_config"] = {}
+            for p in metadata_properties:
+                meta_d["strategy_config"][p] = getattr(self, p, "n.a.")
+
+        return meta_d

@@ -12,9 +12,9 @@ class LongOnlyConstraint(BaseConstraint):
     """
 
     def __init__(self, **kwargs):
-        pass
+        super().__init__(**kwargs)
 
-    def weight_expr(self, t, w_plus, z, v):
+    def _weight_expr(self, t, w_plus, z, v):
         """
         Returns a series of holding constraints.
 
@@ -50,10 +50,10 @@ class LongCashConstraint(BaseConstraint):
         Additional keyword arguments.
     """
 
-    def __init__(self, **kwargs):
-        pass
+    def __init__(self, include_assets=["cash"], **kwargs):
+        super().__init__(include_assets=include_assets, **kwargs)
 
-    def weight_expr(self, t, w_plus, z, v):
+    def _weight_expr(self, t, w_plus, z, v):
         """
         Returns a series of holding constraints.
 
@@ -76,7 +76,7 @@ class LongCashConstraint(BaseConstraint):
         series
             The holding constraints based on the no short cash positions constraint. Assumes cash in last position.
         """
-        return w_plus[-1] >= 0.0
+        return w_plus >= 0.0
 
 
 class EqualLongShortConstraint(BaseConstraint):
@@ -89,10 +89,10 @@ class EqualLongShortConstraint(BaseConstraint):
         Additional keyword arguments.
     """
 
-    def __init__(self, **kwargs):
-        pass
+    def __init__(self, exclude_assets=["cash"], **kwargs):
+        super().__init__(exclude_assets=exclude_assets, **kwargs)
 
-    def weight_expr(self, t, w_plus, z, v):
+    def _weight_expr(self, t, w_plus, z, v):
         """
         Returns a series of holding constraints.
 
@@ -115,4 +115,4 @@ class EqualLongShortConstraint(BaseConstraint):
         series
             The holding constraints based on the equal long and short exposure constraint.
         """
-        return sum(w_plus[:-1]) == 0.0
+        return sum(w_plus) == 0.0
