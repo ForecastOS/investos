@@ -1,8 +1,8 @@
 <h1>Getting Started</h1>
 
-Welcome to InvestOS!
+Welcome to the InvestOS portfolio engineering and backtesting framework!
 
-We built this PyPi module to make institutional-grade backtesting and portfolio optimization simple, extensible, and open-source.
+InvestOS is an opinionated framework for constructing and backtesting portfolios in a consistent, albeit flexible way. We built it to make institutional-grade backtesting and portfolio optimization simple, extensible, and open-source.
 
 This guide covers getting up and running with InvestOS.
 
@@ -47,8 +47,8 @@ At the top of your python file or .ipynb, add:
 import investos as inv
 ```
 
-## Next: portfolio backtesting
+## Next: How InvestOS Works
 
 Congratulations on setting up InvestOS!
 
-Let's move on to our next guide: [portfolio backtesting](/guides/portfolio_engineering/portfolio_backtesting).
+Let's move on to our next guide: [How InvestOS Works](/guides/introduction/how_investos_works).
