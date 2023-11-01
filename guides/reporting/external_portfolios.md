@@ -1,75 +1,8 @@
-<h1>Portfolio Backtesting</h1>
+<h1>External Portfolios</h1>
 
-This guide covers:
+If your portfolio was created outside of InvestOS, you can still use InvestOS to review its performance.
 
-1.  Backtesting your portfolio with InvestOS
-2.  Viewing backtest results
-
-## Backtesting your portfolio
-
-There are generally two types of InvestOS users:
-
-1. Users that create their portfolio _using InvestOS_
-    - i.e. an InvestOS optimized portfolio
-2. Users that create their portfolio _outside of InvestOS_
-    - i.e. a time-series asset weight portfolio
-
-We've created examples for both use-cases below.
-
-### InvestOS optimized portfolio
-
-If your portfolio was created / optimized using InvestOS, a backtest was automatically run on your behalf. You can access that backtest result as follows:
-
-```python
-from investos.portfolio.cost_model import *
-from investos.portfolio.constraint_model import *
-from investos.portfolio.risk_model import *
-
-# 1. Initializing the optimization strategy
-# -- and controller for your portfolio
-
-strategy = inv.portfolio.strategy.SPO(
-    actual_returns = df_actual_returns,
-    forecast_returns = df_forecast_returns,
-    costs = [
-        ShortHoldingCost(short_rates=short_rates, exclude_assets=["cash"]),
-    ],
-    constraints = [
-        MaxShortLeverageConstraint(limit=0.3),
-        MaxLongLeverageConstraint(limit=1.3),
-        MinWeightConstraint(),
-        MaxWeightConstraint(),
-        LongCashConstraint()
-    ],
-    cash_column_name="cash"
-)
-
-portfolio = inv.portfolio.BacktestController(
-    strategy=strategy,
-    start_date='2022-01-01',
-    end_date='2023-01-01',
-    hooks = {
-        "after_trades": [
-            lambda backtest, t, u, h_next: print(".", end=''),
-        ]
-    }
-)
-
-# 2. Running the optimization and generating your positions,
-# -- returning a BaseResult
-# -- (investos/portfolio/result/base_result)
-# -- instance with backtest results.
-
-backtest_result = portfolio.generate_positions()
-```
-
-That's all that's required; the `result` object contains your backtest.
-
-### Time-series asset weight portfolio
-
-Backtesting a portfolio created outside of InvestOS requires several (fairly simple) initial steps.
-
-They are detailed below.
+The several (fairly simple) steps to do so are detailed below.
 
 #### Generate / compile required data
 
@@ -185,8 +118,6 @@ backtest_result = WeightsResult(
 #### Result object
 
 Getting the `result` backtest object takes a few more steps for portfolios created outside of InvestOS, but you end up with the same `result` object.
-
-Let's explore backtest results next.
 
 ## Exploring backtest results
 

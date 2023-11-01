@@ -33,7 +33,7 @@ class TradingCost(BaseCost):
         # Defaults to 0.25
         # Look for better research on this and default value
         self.sensitivity_coeff = remove_excluded_columns_pd(
-            kwargs.get("price_movement_sensitivity", 0.25),
+            kwargs.get("price_movement_sensitivity", 1),
             exclude_assets=self.exclude_assets,
             include_assets=self.include_assets,
         )
@@ -43,7 +43,7 @@ class TradingCost(BaseCost):
             include_assets=self.include_assets,
         )
         self.half_spread = remove_excluded_columns_pd(
-            kwargs.get("half_spread", 1 / 20_000),
+            kwargs.get("half_spread", 1 / 1_000),
             exclude_assets=self.exclude_assets,
             include_assets=self.include_assets,
         )
