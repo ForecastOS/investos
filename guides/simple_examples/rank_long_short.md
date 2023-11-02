@@ -36,6 +36,7 @@ portfolio = inv.portfolio.BacktestController(
     aum=100_000_000
 )
 
+backtest_result = portfolio.generate_positions()
 backtest_result.summary
 ```
 
@@ -83,4 +84,4 @@ In the above example, for simplicity, we:
 
 ## Next: Single Period Optimization
 
-We'll explore adding cost and constraint models in our next guide: [Single Period Optimization](/guides/simple_examples/spo).
+Next, let's explore adding cost and constraint models in our next guide: [Single Period Optimization](/guides/simple_examples/spo).

@@ -74,7 +74,7 @@ class LongCashConstraint(BaseConstraint):
         Returns
         -------
         series
-            The holding constraints based on the no short cash positions constraint. Assumes cash in last position.
+            The holding constraints based on the no short cash positions constraint
         """
         return w_plus >= 0.0
 
