@@ -2,11 +2,6 @@
 
 The following guides are under development:
 
-## Future guides
-
--   WIP: SPO
--   Advanced Investment Strategies
--   Advanced Cost Models
--   Advanced Constraint Models
--   Risk Models
+-   Off-The-Shelf Risk Models
+-   Custom Risk Models
 -   Using ForecastOS

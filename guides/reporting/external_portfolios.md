@@ -1,4 +1,4 @@
-<h1>External Portfolios</h1>
+<h1>Analyzing External Portfolios</h1>
 
 If your portfolio was created outside of InvestOS, you can still use InvestOS to review its performance.
 
@@ -139,6 +139,6 @@ To view all of the reporting functionality available to you, [check out the resu
 
 Looking for more reporting? Consider extending the [BaseResult](https://github.com/ForecastOS/investos/blob/v0.2.2/investos/portfolio/result/base_result.py) class, or opening a pull request for [InvestOS on GitHub](https://github.com/ForecastOS/investos)!
 
-## Next: guides under development
+## Next: Backtest Controller
 
-That's it for now, but if you want to see what guide is next up, check out: [guides under development](/guides/coming_soon/guides_under_development).
+Next, let's explore the BacktestController class, which coordinates backtesting your chosen investment strategy: [Backtest Controller](/guides/off_the_shelf/backtest_controller).
