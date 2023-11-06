@@ -80,11 +80,6 @@ class StatFactorRisk(BaseRisk):
         )
 
     def _drop_excluded_assets(self):
-        self.factor_variance = util.remove_excluded_columns_np(
-            self.factor_variance,
-            holdings_cols=self.actual_returns.columns,
-            exclude_assets=self.exclude_assets,
-        )
         self.factor_loadings = util.remove_excluded_columns_pd(
             self.factor_loadings,
             exclude_assets=self.exclude_assets,
