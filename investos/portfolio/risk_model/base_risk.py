@@ -13,10 +13,8 @@ class BaseRisk(BaseCost):
     Note: risk models are like cost models, except they return 0 for their `value_expr` method (because they only influence optimization weights, not actual cash costs).
     """
 
-    def __init__(self):
-        self.optimizer = None  # Set during Controller initialization
-
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def actual_cost(self, t: dt.datetime, h_plus: pd.Series, u: pd.Series) -> pd.Series:
         """Method that calculates per-period costs given period `t` holdings and trades.

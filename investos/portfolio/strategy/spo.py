@@ -47,8 +47,11 @@ class SPO(BaseStrategy):
             constraints=constraints,
             **kwargs,
         )
-        self.forecast_returns = forecast_returns
         self.risk_model = risk_model
+        if self.risk_model:
+            self.costs.append(self.risk_model)
+
+        self.forecast_returns = forecast_returns
         self.solver = solver
         self.solver_opts = util.deep_dict_merge(
             self.BASE_SOLVER_OPTS, solver_opts or {}
