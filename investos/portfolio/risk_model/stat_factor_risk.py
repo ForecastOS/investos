@@ -2,6 +2,7 @@ import cvxpy as cvx
 import numpy as np
 import pandas as pd
 
+import investos.util as util
 from investos.portfolio.risk_model import BaseRisk
 
 
@@ -13,16 +14,22 @@ class StatFactorRisk(BaseRisk):
     Note: risk models are like cost models, except they return 0 for their `value_expr` method (because they only influence optimization weights, not actual cash costs).
     """
 
-    def __init__(self, n_factors=5):
+    def __init__(self, actual_returns: pd.DataFrame, n_factors=5, **kwargs):
+        super().__init__(**kwargs)
         self.n = n_factors
+        self.actual_returns = util.remove_excluded_columns_pd(
+            actual_returns,
+            exclude_assets=self.exclude_assets,
+        )
+        self.start_date = kwargs.get("start_date", self.actual_returns.index[0])
+        self.end_date = kwargs.get("end_date", self.actual_returns.index[-1])
+        self.recreate_each_period = kwargs.get("recreate_each_period", False)
 
-        self.optimizer = None  # Set during Controller initialization
-
-        self.factor_variance = None
-        self.factor_loadings = None
-        self.idiosyncratic_variance = None
-
-        super().__init__()
+        self.factor_variance = kwargs.get("factor_variance", None)
+        self.factor_loadings = kwargs.get("factor_loadings", None)
+        self.idiosyncratic_variance = kwargs.get("idiosyncratic_variance", None)
+        self.create_risk_model(t=self.start_date)
+        self._drop_excluded_assets()
 
     def _estimated_cost_for_optimization(self, t, w_plus, z, value):
         """Optimization (non-cash) cost penalty for assuming associated asset risk.
@@ -35,25 +42,25 @@ class StatFactorRisk(BaseRisk):
             self.factor_variance is None
             or self.factor_loadings is None
             or self.idiosyncratic_variance is None
+            or self.recreate_each_period
         ):
-            self.create_risk_model()
+            self.create_risk_model(t=t)
 
-        self.expression = cvx.sum(
-            cvx.multiply(self.idiosyncratic_variance, cvx.square(w_plus))
-        ) + cvx.sum(cvx.multiply(w_plus.T @ self.factor_loadings, self.factor_variance))
+        self.expression = cvx.sum_squares(
+            cvx.multiply(np.sqrt(self.idiosyncratic_variance), w_plus)
+        )
+
+        risk_from_factors = (self.factor_loadings @ np.sqrt(self.factor_variance)).T
+
+        self.expression += cvx.sum_squares(w_plus @ risk_from_factors)
 
         return self.expression, []
 
-    def create_risk_model(self):
-        df = self.optimizer.actual["return"]
-        forecast_start_d = self.optimizer.forecast["date"]["start"]
+    def create_risk_model(self, t):
+        df = self.actual_returns
         df = df[
-            (df.index < forecast_start_d)
-            & (
-                df.index
-                >= pd.to_datetime(forecast_start_d)
-                - pd.Timedelta("730 days")  # 2 years
-            )
+            (df.index < t)
+            & (df.index >= pd.to_datetime(t) - pd.Timedelta("730 days"))  # 2 years
         ]
 
         covariance_matrix = df.cov().dropna().values
@@ -63,7 +70,6 @@ class StatFactorRisk(BaseRisk):
         self.factor_loadings = pd.DataFrame(
             data=eigenvector[:, -self.n :], index=df.columns
         )
-        self.factor_loadings.iloc[-1] = 0  # For cash
         self.idiosyncratic_variance = pd.Series(
             data=np.diag(
                 eigenvector[:, : -self.n]
@@ -72,5 +78,18 @@ class StatFactorRisk(BaseRisk):
             ),
             index=df.columns,
         )
-        self.idiosyncratic_variance = self.idiosyncratic_variance.copy()
-        self.idiosyncratic_variance.iloc[-1] = 0
+
+    def _drop_excluded_assets(self):
+        self.factor_variance = util.remove_excluded_columns_np(
+            self.factor_variance,
+            holdings_cols=self.actual_returns.columns,
+            exclude_assets=self.exclude_assets,
+        )
+        self.factor_loadings = util.remove_excluded_columns_pd(
+            self.factor_loadings,
+            exclude_assets=self.exclude_assets,
+        )
+        self.idiosyncratic_variance = util.remove_excluded_columns_pd(
+            self.idiosyncratic_variance,
+            exclude_assets=self.exclude_assets,
+        )
