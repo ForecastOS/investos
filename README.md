@@ -21,7 +21,8 @@
 <br/>
 
 ## Getting Started
-🔗 [Read the full Getting Started guides Here](https://investos.io/guides/introduction/getting_started)
+
+### 🔗 [Read the full Getting Started guides Here](https://investos.io/guides/introduction/getting_started)
 
 ### Prerequisites
 **To run InvestOS you'll need**:
@@ -62,7 +63,7 @@ import investos as inv
 
 Congratulations on setting up InvestOS!
 
-Learn more about [How InvestOS Works](https://investos.io/guides/introduction/how_investos_works)
+### Let's move on to our next guide: [How InvestOS Works](https://investos.io/guides/introduction/how_investos_works)
 
 ## Contributing
 
