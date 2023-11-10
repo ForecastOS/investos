@@ -67,6 +67,7 @@ class StatFactorRisk(BaseRisk):
         eigenvalue, eigenvector = np.linalg.eigh(covariance_matrix)
 
         self.factor_variance = eigenvalue[-self.n :]
+
         self.factor_loadings = pd.DataFrame(
             data=eigenvector[:, -self.n :], index=df.columns
         )
