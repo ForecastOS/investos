@@ -101,7 +101,9 @@ class RankLongShort(BaseStrategy):
         long_trades = prediction_sorted.index[-n_long:]
 
         w = pd.Series(0.0, index=prediction.index)
-        w[short_trades] = -1.0 * self.ratio_short
+        w[short_trades] = (
+            -1.0 * self.ratio_short * (self.percent_long / self.percent_short)
+        )
         w[long_trades] = 1.0 * self.ratio_long
 
         w /= sum(abs(w))
