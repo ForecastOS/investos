@@ -8,5 +8,8 @@ dist/
 node_modules
 **/playground
 **/playground_*.ipynb
+**/*checkpoint.ipynb
 **/tmp
 guides_tmp
+.DS_Store
+false/*
