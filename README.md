@@ -1,5 +1,5 @@
 <div align="center">
-<p align="center"><a href="https://investos.io" target="_blank" rel="noopener noreferrer"><img src="https://investos.io/assets/logo-768e00e841af27909d66151904dcede546937cdab1b5d5fef4d0ac539b9861d4.png" alt="InvestOS Logo" width="20%"></a></p>
+<p align="center"><a href="https://investos.io" target="_blank" rel="noopener noreferrer"><img src="https://investos.io/assets/logo-768e00e841af27909d66151904dcede546937cdab1b5d5fef4d0ac539b9861d4.png" alt="InvestOS Logo" width="15%"></a></p>
   <h1 align="center">InvestOS</h1>
 </div>
 
