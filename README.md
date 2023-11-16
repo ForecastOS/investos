@@ -1,7 +1,9 @@
 <p align="center"><img src="/assets/investos-banner.png" alt="InvestOS Banner"></p>
 <h1 align="center">InvestOS</h1>
 
-**InvestOS** (/InvEst əʊˈes/) is a Python library for investors who want to focus on generating alpha. As it stands today, it provides reliable backtesting and portfolio optimization software for investors... but we have bigger ambitions!
+Welcome to the **InvestOS** portfolio engineering and backtesting framework!
+
+InvestOS is an opinionated framework for constructing and backtesting portfolios in a consistent, albeit flexible way. We built it to make institutional-grade backtesting and portfolio optimization simple, extensible, and open-source.
 
 <br/>
 
