@@ -34,6 +34,7 @@ class SaveResult:
                     "total_return": self.total_return,
                     "annualized_return": self.annualized_return,
                     "sharpe_ratio": self.sharpe_ratio,
+                    "information_ratio": self.information_ratio,
                     "max_drawdown": self.max_drawdown,
                     "annual_turnover": self.annual_turnover,
                     "portfolio_hit_rate": self.portfolio_hit_rate,
