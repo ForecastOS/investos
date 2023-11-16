@@ -65,7 +65,7 @@ class SaveResult:
 
     def save_backtest_charts(self):
         self.save_chart_historical_value()
-        self.save_chart_rolling_sharpe_and_ir()
+        self.save_chart_rolling_sharpe()
         self.save_chart_historical_leverage()
 
     def save_chart_historical_value(self):
@@ -93,7 +93,7 @@ class SaveResult:
 
         self._save_chart(json_body)
 
-    def save_chart_rolling_sharpe_and_ir(self):
+    def save_chart_rolling_sharpe(self):
         num_periods = self.v.shape[0] - 1
         num_a = min(60, num_periods)
         num_b = min(252, num_periods)
