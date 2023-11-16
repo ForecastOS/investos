@@ -280,6 +280,15 @@ class BaseResult(SaveResult):
                 / np.std(self.excess_returns)
             )
 
+    def information_ratio_rolling(self, n=252) -> pd.Series:
+        rolling_cum_return = (1 + self.excess_returns).rolling(window=n).apply(
+            lambda x: x.prod(), raw=True
+        ) - 1
+
+        rolling_std = self.excess_returns.rolling(window=n).std() * np.sqrt(n)
+
+        return rolling_cum_return / rolling_std
+
     @property
     def sharpe_ratio(self, use_annualized_inputs=True) -> float:
         """Returns a float representing the (annualized) Sharpe Ratio of the portfolio.
@@ -294,6 +303,15 @@ class BaseResult(SaveResult):
                 * np.mean(self.returns_over_cash)
                 / np.std(self.returns_over_cash)
             )
+
+    def sharpe_ratio_rolling(self, n=252) -> pd.Series:
+        rolling_cum_return = (1 + self.returns_over_cash).rolling(window=n).apply(
+            lambda x: x.prod(), raw=True
+        ) - 1
+
+        rolling_std = self.returns_over_cash.rolling(window=n).std() * np.sqrt(n)
+
+        return rolling_cum_return / rolling_std
 
     @property
     def turnover(self):

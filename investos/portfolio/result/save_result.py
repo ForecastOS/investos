@@ -34,6 +34,7 @@ class SaveResult:
                     "total_return": self.total_return,
                     "annualized_return": self.annualized_return,
                     "sharpe_ratio": self.sharpe_ratio,
+                    "information_ratio": self.information_ratio,
                     "max_drawdown": self.max_drawdown,
                     "annual_turnover": self.annual_turnover,
                     "portfolio_hit_rate": self.portfolio_hit_rate,
@@ -64,7 +65,7 @@ class SaveResult:
 
     def save_backtest_charts(self):
         self.save_chart_historical_value()
-        self.save_chart_historical_returns()
+        self.save_chart_rolling_sharpe()
         self.save_chart_historical_leverage()
 
     def save_chart_historical_value(self):
@@ -92,6 +93,43 @@ class SaveResult:
 
         self._save_chart(json_body)
 
+    def save_chart_rolling_sharpe(self):
+        num_periods = self.v.shape[0] - 1
+        num_a = min(60, num_periods)
+        num_b = min(252, num_periods)
+
+        json_body = {
+            "chart": {
+                "title": "Rolling Sharpe evolution",
+                "chartable_type": "Backtest",
+                "chartable_id": self.backtest_id,
+                "chart_traces": [
+                    {
+                        "x_name": "Dates",
+                        "y_name": f"Sharpe: {num_a} periods",
+                        "x_values": [str(el) for el in self.v.index],
+                        "y_values": list(
+                            self.sharpe_ratio_rolling(num_a)
+                            .fillna(method="bfill")
+                            .values
+                        ),
+                    },
+                    {
+                        "x_name": "Dates",
+                        "y_name": f"Sharpe: {num_b} periods",
+                        "x_values": [str(el) for el in self.v.index],
+                        "y_values": list(
+                            self.sharpe_ratio_rolling(num_b)
+                            .fillna(method="bfill")
+                            .values
+                        ),
+                    },
+                ],
+            }
+        }
+
+        self._save_chart(json_body)
+
     def save_chart_historical_returns(self):
         num_periods = self.v.shape[0] - 1
         rolling_num_a = min(20, num_periods)
@@ -106,7 +144,7 @@ class SaveResult:
                 "chart_traces": [
                     {
                         "x_name": "Dates",
-                        "y_name": f"{rolling_num_a} trading days",
+                        "y_name": f"{rolling_num_a} periods",
                         "x_values": [str(el) for el in self.v.index],
                         "y_values": list(
                             self.v.pct_change(periods=rolling_num_a)
@@ -116,7 +154,7 @@ class SaveResult:
                     },
                     {
                         "x_name": "Dates",
-                        "y_name": f"{rolling_num_b} trading days",
+                        "y_name": f"{rolling_num_b} periods",
                         "x_values": [str(el) for el in self.v.index],
                         "y_values": list(
                             self.v.pct_change(periods=rolling_num_b)
@@ -126,7 +164,7 @@ class SaveResult:
                     },
                     {
                         "x_name": "Dates",
-                        "y_name": f"{rolling_num_c} trading days",
+                        "y_name": f"{rolling_num_c} periods",
                         "x_values": [str(el) for el in self.v.index],
                         "y_values": list(
                             self.v.pct_change(periods=rolling_num_c)
