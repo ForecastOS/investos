@@ -65,6 +65,7 @@ class SaveResult:
 
     def save_backtest_charts(self):
         self.save_chart_historical_value()
+        self.save_cumulative_returns()
         self.save_chart_rolling_sharpe()
         self.save_chart_historical_leverage()
 
@@ -196,6 +197,41 @@ class SaveResult:
                         "y_name": "Short",
                         "x_values": [str(el) for el in self.short_leverage.index],
                         "y_values": list(self.short_leverage.values),
+                    },
+                ],
+            }
+        }
+
+        self._save_chart(json_body)
+
+    def save_cumulative_returns(self):
+        json_body = {
+            "chart": {
+                "title": "Cumulative returns",
+                "chartable_type": "Backtest",
+                "chartable_id": self.backtest_id,
+                "chart_traces": [
+                    {
+                        "x_name": "Dates",
+                        "y_name": "Returns",
+                        "x_values": [str(el) for el in self.cumulative_return.index],
+                        "y_values": list(self.cumulative_return.values),
+                    },
+                    {
+                        "x_name": "Dates",
+                        "y_name": "Long returns",
+                        "x_values": [
+                            str(el) for el in self.cumulative_return_long.index
+                        ],
+                        "y_values": list(self.cumulative_return_long.values),
+                    },
+                    {
+                        "x_name": "Dates",
+                        "y_name": "Short returns",
+                        "x_values": [
+                            str(el) for el in self.cumulative_return_short.index
+                        ],
+                        "y_values": list(self.cumulative_return_short.values),
                     },
                 ],
             }

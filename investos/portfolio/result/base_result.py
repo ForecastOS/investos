@@ -355,8 +355,7 @@ class BaseResult(SaveResult):
         return max_dd_so_far
 
     def hit_rate(self, scale_ignore=10_000):
-        starting_aum = self.h.iloc[0].sum()
-        h = self.h.where(self.h.abs() <= starting_aum / scale_ignore, 0)
+        h = self.h.where(self.h.abs() <= self.starting_aum / scale_ignore, 0)
         returns_df = self.actual_returns
         if self.cash_column_name in list(h.columns):
             h = h.drop([self.cash_column_name], axis=1)
@@ -370,3 +369,61 @@ class BaseResult(SaveResult):
         hit = sign_agree_df[sign_agree_df == 1].sum(axis=1)
         hit_attempt = sign_agree_df[sign_agree_df.abs() == 1].abs().sum(axis=1)
         return (hit / hit_attempt).dropna()
+
+    @property
+    def starting_aum(self):
+        return self.h.iloc[0].sum()
+
+    # -----------------------------------------------
+    # Aggregate value created over time
+    # -----------------------------------------------
+
+    @property
+    @clip_for_dates
+    def v_created(self) -> pd.Series:
+        """Returns a pandas Series for the value (`v`) of the portfolio for each datetime period."""
+        return self.h.sum(axis=1) - self.starting_aum
+
+    @property
+    @clip_for_dates
+    def cumulative_return(self) -> pd.Series:
+        """Returns a pandas Series for the value (`v`) of the portfolio for each datetime period."""
+        return self.v_created / self.starting_aum
+
+    @property
+    @clip_for_dates
+    def v_created_long(self) -> pd.Series:
+        """Returns a pandas Series for the value (`v`) of the portfolio for each datetime period."""
+        return (
+            ((self.h + self.u)[(self.h + self.u) > 0] * self.actual_returns)
+            .sum(axis=1)
+            .shift(
+                1
+            )  # Uses fwd returns, so shift backwards to match returns and v_created
+            .fillna(0)
+        )
+
+    @property
+    @clip_for_dates
+    def cumulative_return_long(self) -> pd.Series:
+        """Returns a pandas Series for the value (`v`) of the portfolio for each datetime period."""
+        return self.v_created_long.cumsum() / self.starting_aum
+
+    @property
+    @clip_for_dates
+    def v_created_short(self) -> pd.Series:
+        """Returns a pandas Series for the value (`v`) of the portfolio for each datetime period."""
+        return (
+            ((self.h + self.u)[(self.h + self.u) < 0] * self.actual_returns)
+            .sum(axis=1)
+            .shift(
+                1
+            )  # Uses fwd returns, so shift backwards to match returns and v_created
+            .fillna(0)
+        )
+
+    @property
+    @clip_for_dates
+    def cumulative_return_short(self) -> pd.Series:
+        """Returns a pandas Series for the value (`v`) of the portfolio for each datetime period."""
+        return self.v_created_short.cumsum() / self.starting_aum
