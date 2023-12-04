@@ -10,17 +10,10 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.11"
-  jobs:
-    pre_create_environment:
-      - asdf plugin add poetry
-      - asdf install poetry latest
-      - asdf global poetry latest
-      - poetry config virtualenvs.create false
-    post_install:
-      - poetry config virtualenvs.path $READTHEDOCS_VIRTUALENV_PATH
-      - ls -R $READTHEDOCS_VIRTUALENV_PATH
-      - poetry install
-      - ls -R $READTHEDOCS_VIRTUALENV_PATH
+    # You can also specify other tool versions:
+    # nodejs: "19"
+    # rust: "1.64"
+    # golang: "1.19"
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
