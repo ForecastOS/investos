@@ -18,9 +18,9 @@ build:
       - poetry config virtualenvs.create false
     post_install:
       - poetry config virtualenvs.path $READTHEDOCS_VIRTUALENV_PATH
-      - ls $READTHEDOCS_VIRTUALENV_PATH/lib/python3.11
+      - ls -R $READTHEDOCS_VIRTUALENV_PATH
       - poetry install
-      - ls $READTHEDOCS_VIRTUALENV_PATH/lib/python3.11
+      - ls -R $READTHEDOCS_VIRTUALENV_PATH
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
