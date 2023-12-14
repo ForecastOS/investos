@@ -23,13 +23,15 @@ class StatFactorRisk(BaseRisk):
         )
         self.start_date = kwargs.get("start_date", self.actual_returns.index[0])
         self.end_date = kwargs.get("end_date", self.actual_returns.index[-1])
-        self.recreate_each_period = kwargs.get("recreate_each_period", False)
+        self.recalc_each_i_periods = kwargs.get("recalc_each_i_periods", False)
+        self.timedelta = kwargs.get("timedelta", pd.Timedelta("730 days"))
 
         self.factor_variance = kwargs.get("factor_variance", None)
         self.factor_loadings = kwargs.get("factor_loadings", None)
         self.idiosyncratic_variance = kwargs.get("idiosyncratic_variance", None)
-        self.create_risk_model(t=self.start_date)
-        self._drop_excluded_assets()
+
+        if kwargs.get("calc_risk_model_on_init", False):
+            self.create_risk_model(t=self.start_date)
 
     def _estimated_cost_for_optimization(self, t, w_plus, z, value):
         """Optimization (non-cash) cost penalty for assuming associated asset risk.
@@ -42,7 +44,11 @@ class StatFactorRisk(BaseRisk):
             self.factor_variance is None
             or self.factor_loadings is None
             or self.idiosyncratic_variance is None
-            or self.recreate_each_period
+            or (
+                self.recalc_each_i_periods
+                and self.actual_returns.index.get_loc(t) % self.recalc_each_i_periods
+                == 0
+            )
         ):
             self.create_risk_model(t=t)
 
@@ -58,10 +64,7 @@ class StatFactorRisk(BaseRisk):
 
     def create_risk_model(self, t):
         df = self.actual_returns
-        df = df[
-            (df.index < t)
-            & (df.index >= pd.to_datetime(t) - pd.Timedelta("730 days"))  # 2 years
-        ]
+        df = df[(df.index < t) & (df.index >= pd.to_datetime(t) - self.timedelta)]
 
         covariance_matrix = df.cov().dropna().values
         eigenvalue, eigenvector = np.linalg.eigh(covariance_matrix)
@@ -79,6 +82,8 @@ class StatFactorRisk(BaseRisk):
             ),
             index=df.columns,
         )
+
+        self._drop_excluded_assets()
 
     def _drop_excluded_assets(self):
         self.factor_loadings = util.remove_excluded_columns_pd(
