@@ -26,7 +26,7 @@ def deep_dict_merge(default_d, update_d):
     return default_d  # With update_d values copied onto it
 
 
-def values_in_time(obj, t, tau=None):
+def values_in_time(obj, t, tau=None, lookback_for_closest=False):
     """
     From CVXPortfolio:
 
@@ -66,7 +66,17 @@ def values_in_time(obj, t, tau=None):
             else:
                 return obj.loc[t]
         except KeyError:
-            return obj
+            if lookback_for_closest:
+                filtered_idx = obj.index[
+                    obj.index.get_level_values(0) < t
+                ].get_level_values(0)
+
+                if not filtered_idx.empty:
+                    return obj.loc[filtered_idx.max()]
+                else:
+                    return obj
+            else:
+                return obj
 
     return obj
 
@@ -122,3 +132,20 @@ def remove_excluded_columns_np(
         return np_arr[mask]
     else:
         return np_arr
+
+
+def get_max_key_lt_or_eq_value(dictionary, value):
+    """
+    Returns the maximum key in the dictionary that is less than or equal to the given value.
+    If no such key exists, returns None.
+
+    Useful for looking up values by datetime.
+    """
+    # Filter keys that are less than or equal to the value
+    valid_keys = [k for k in dictionary.keys() if k <= value]
+
+    # Return the max of the valid keys if the list is not empty
+    if valid_keys:
+        return max(valid_keys)
+    else:
+        return None
