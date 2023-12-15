@@ -4,7 +4,7 @@
 
 ## Extending BaseConstraint
 
-The [BaseConstraint](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/constraint_model/base_constraint.py) class provides a foundational structure for creating custom constraint models.
+The [BaseConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/base_constraint.py) class provides a foundational structure for creating custom constraint models.
 
 Below is a step-by-step guide for extending BaseConstraint.
 
@@ -46,7 +46,7 @@ def __init__(self, *args, custom_param=None, **kwargs):
 
 Given a datetime `t`, a numpy-like array of asset holding weights `w_plus`, a numpy-like array of trade weights `z`, and a portfolio value `v`, return a `CVXPY` constraint expression.
 
-See [MaxLeverageConstraint](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/constraint_model/leverage_constraint.py) for inspiration:
+See [MaxLeverageConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/leverage_constraint.py) for inspiration:
 
 ```python
 def _weight_expr(self, t, w_plus, z, v):

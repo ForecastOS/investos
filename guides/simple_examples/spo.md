@@ -2,20 +2,20 @@
 
 ## What We Need
 
-In order to backtest a portfolio using [SPO](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/strategy/spo.py), we'll need:
+In order to backtest a portfolio using [SPO](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/strategy/spo.py), we'll need:
 
 -   Forecast stock returns over the time periods we wish to backtest: `forecast_returns`
 -   Actual stock returns over the time periods we wish to backtest: `actual_returns`
 -   Start and end dates: `start_date` and `end_date`
 
-For [TradingCost](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/cost_model/trading_cost.py), we'll need:
+For [TradingCost](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/cost_model/trading_cost.py), we'll need:
 
 -   Actual stock prices over the time periods we want to backtest: `actual_prices`
 -   Forecast volume (perhaps an average of the last year for each asset, for simplicity) over the time periods we want to backtest: `forecast_volume`
 -   Forecast standard deviation in returns (perhaps the standard deviation of the last year for each asset, for simplicity) over the time periods we want to backtest: `forecast_std_dev`
 -   Forecast (half) trading spreads for each asset (we are using 2.5bps for all assets for simplicity in this example) over the time periods we want to backtest: `half_spread`
 
-For [ShortHoldingCost](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/cost_model/short_holding_cost.py): we'll need:
+For [ShortHoldingCost](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/cost_model/short_holding_cost.py): we'll need:
 
 -   Forecast (half) short borrowing rates for each asset (we are using 30bps for all assets for simplicity in this example) over the time periods we want to backtest: `short_rates`
 
@@ -115,7 +115,7 @@ When `backtest_result.summary` is executed, it will output summary backtest resu
 
 What a difference trading costs make vs our previous RankLongShort example!
 
-If you have a charting library installed, like matplotlib, check out [BaseResult](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/result/base_result.py) for the many `backtest_result` metrics you can plot!
+If you have a charting library installed, like matplotlib, check out [BaseResult](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/result/base_result.py) for the many `backtest_result` metrics you can plot!
 
 ## Next: Reporting
 

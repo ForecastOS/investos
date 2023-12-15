@@ -135,9 +135,9 @@ In an ipynb, you can easily plot:
 -   Your trades in a specific asset `result.trades['TSLA'].plot()`
 -   And many more metrics, series, and dataframes provided by the result object
 
-To view all of the reporting functionality available to you, [check out the result class on Github](https://github.com/ForecastOS/investos/blob/v0.2.2/investos/portfolio/result/base_result.py).
+To view all of the reporting functionality available to you, [check out the result class on Github](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/result/base_result.py).
 
-Looking for more reporting? Consider extending the [BaseResult](https://github.com/ForecastOS/investos/blob/v0.2.2/investos/portfolio/result/base_result.py) class, or opening a pull request for [InvestOS on GitHub](https://github.com/ForecastOS/investos)!
+Looking for more reporting? Consider extending the [BaseResult](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/result/base_result.py) class, or opening a pull request for [InvestOS on GitHub](https://github.com/ForecastOS/investos)!
 
 ## Next: Backtest Controller
 

@@ -2,7 +2,7 @@
 
 ## Extending BaseStrategy
 
-The [BaseStrategy](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/strategy/base_strategy.py) class provides a foundational structure for creating custom investment strategies.
+The [BaseStrategy](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/strategy/base_strategy.py) class provides a foundational structure for creating custom investment strategies.
 
 Below is a step-by-step guide for extending BaseStrategy.
 
@@ -98,7 +98,7 @@ If your strategy uses convex optimization, use the `constraints` parameter (in `
 
 ## Customizing Existing Strategies
 
-Both [RankLongShort](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/strategy/rank_long_short.py) and [SPO](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/strategy/spo.py) classes, which extend [BaseStrategy](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/strategy/base_strategy.py), offer a base foundation for implementing investment strategies.
+Both [RankLongShort](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/strategy/rank_long_short.py) and [SPO](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/strategy/spo.py) classes, which extend [BaseStrategy](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/strategy/base_strategy.py), offer a base foundation for implementing investment strategies.
 
 While their structure is designed for general use, for users seeking to implement more advanced and nuanced strategies, their architecture supports customization and extension.
 

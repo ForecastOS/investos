@@ -2,9 +2,9 @@
 
 InvestOS provides the following optimization strategies:
 
--   [RankLongShort](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/strategy/rank_long_short.py)
+-   [RankLongShort](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/strategy/rank_long_short.py)
     -   Builds trade lists based on long and short positions ranked by any (possibly forecasted) metric
--   [SPO](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/strategy/spo.py) (Single Period Optimization)
+-   [SPO](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/strategy/spo.py) (Single Period Optimization)
     -   Builds trade lists using single period convex optimization
     -   Uses [CVXPY](https://www.cvxpy.org/tutorial/intro/index.html)
 

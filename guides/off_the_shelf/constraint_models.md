@@ -37,7 +37,7 @@ InvestOS provides the following constraint models:
 
 ### MaxLeverageConstraint
 
-[MaxLeverageConstraint](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/constraint_model/leverage_constraint.py) enforces a limit on the (absolute) leverage of the portfolio.
+[MaxLeverageConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/leverage_constraint.py) enforces a limit on the (absolute) leverage of the portfolio.
 
 E.g. For leverage of 2.0x, a portfolio with 100MM net value (i.e. the portfolio value if it were converted into cash, ignoring liquidation / trading costs) could have 200MM of (combined long and short) exposure.
 
@@ -47,7 +47,7 @@ To instantiate MaxLeverageConstraint you will need to set the following argument
 
 ### MaxShortLeverageConstraint
 
-[MaxShortLeverageConstraint](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/constraint_model/leverage_constraint.py#L46C6-L46C6) enforces a limit on the short leverage of the portfolio.
+[MaxShortLeverageConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/leverage_constraint.py#L46C6-L46C6) enforces a limit on the short leverage of the portfolio.
 
 To instantiate MaxShortLeverageConstraint you will need to set the following argument:
 
@@ -55,7 +55,7 @@ To instantiate MaxShortLeverageConstraint you will need to set the following arg
 
 ### MaxLongLeverageConstraint
 
-[MaxLongLeverageConstraint](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/constraint_model/leverage_constraint.py#L81) enforces a limit on the long leverage of the portfolio.
+[MaxLongLeverageConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/leverage_constraint.py#L81) enforces a limit on the long leverage of the portfolio.
 
 To instantiate MaxLongLeverageConstraint you will need to set the following argument:
 
@@ -65,11 +65,11 @@ To instantiate MaxLongLeverageConstraint you will need to set the following argu
 
 ### LongOnlyConstraint
 
-[LongOnlyConstraint](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/constraint_model/long_constraint.py#L4) enforces no short positions.
+[LongOnlyConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/long_constraint.py#L4) enforces no short positions.
 
 ### LongCashConstraint
 
-[LongCashConstraint](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/constraint_model/long_constraint.py#L43) enforces no short cash positions.
+[LongCashConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/long_constraint.py#L43) enforces no short cash positions.
 
 To instantiate LongCashConstraint you will need to set the following argument:
 
@@ -77,7 +77,7 @@ To instantiate LongCashConstraint you will need to set the following argument:
 
 ### EqualLongShortConstraint
 
-[EqualLongShortConstraint](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/constraint_model/long_constraint.py#L82) enforces equal long and short exposure.
+[EqualLongShortConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/long_constraint.py#L82) enforces equal long and short exposure.
 
 To instantiate EqualLongShortConstraint you will need to set the following argument:
 
@@ -87,7 +87,7 @@ To instantiate EqualLongShortConstraint you will need to set the following argum
 
 ### MaxWeightConstraint
 
-[MaxWeightConstraint](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/constraint_model/weight_constraint.py#L4) enforces a limit (as a percentage) on the weight of each asset in your portfolio.
+[MaxWeightConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/weight_constraint.py#L4) enforces a limit (as a percentage) on the weight of each asset in your portfolio.
 
 To instantiate MaxWeightConstraint you will need to set the following arguments:
 
@@ -96,7 +96,7 @@ To instantiate MaxWeightConstraint you will need to set the following arguments:
 
 ### MinWeightConstraint
 
-[MinWeightConstraint](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/constraint_model/weight_constraint.py#L53) enforces a limit (as a percentage) on the weight of each asset in your portfolio.
+[MinWeightConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/weight_constraint.py#L53) enforces a limit (as a percentage) on the weight of each asset in your portfolio.
 
 To instantiate MinWeightConstraint you will need to set the following arguments:
 
