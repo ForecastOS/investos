@@ -1,6 +1,6 @@
 <h1>Analyzing Backtest Results</h1>
 
-The [BaseResult](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/result/base_result.py) class captures portfolio data and calculates performance metrics for your investment strategy.
+The [BaseResult](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/result/base_result.py) class captures portfolio data and calculates performance metrics for your investment strategy.
 
 An instance of BaseResult is returned by calling the method `generate_positions()` on an instance of BacktestController.
 

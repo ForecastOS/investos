@@ -39,7 +39,7 @@ InvestOS provides the following cost models:
 
 ## ShortHoldingCost
 
-[ShortHoldingCost](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/cost_model/short_holding_cost.py) calculates per period cost for holding short positions, given customizable short_rate.
+[ShortHoldingCost](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/cost_model/short_holding_cost.py) calculates per period cost for holding short positions, given customizable short_rate.
 
 To instantiate ShortHoldingCost you will need to set the following arguments:
 
@@ -47,7 +47,7 @@ To instantiate ShortHoldingCost you will need to set the following arguments:
 
 ## TradingCost
 
-[TradingCost](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/cost_model/trading_cost.py) calculates per period cost for trades based on forecast spreads, standard deviations, volumes, and actual prices.
+[TradingCost](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/cost_model/trading_cost.py) calculates per period cost for trades based on forecast spreads, standard deviations, volumes, and actual prices.
 
 To instantiate TradingCost you will need to set the following arguments:
 

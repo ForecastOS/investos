@@ -2,7 +2,7 @@
 
 ## What We Need
 
-In order to backtest a portfolio using [RankLongShort](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/strategy/rank_long_short.py), we'll need:
+In order to backtest a portfolio using [RankLongShort](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/strategy/rank_long_short.py), we'll need:
 
 -   A metric to rank assets by over time: `metric_to_rank`
     -   In this example, we'll use forecast returns for stocks, but we could also use LTM sales, age of CEO, etc.
@@ -59,7 +59,7 @@ When `backtest_result.summary` is executed, it will output summary backtest resu
 # Portfolio hit rate (%)                                  61.2%
 ```
 
-If you have a charting library installed, like matplotlib, check out [BaseResult](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/result/base_result.py) for the many metrics you can plot, like portfolio value (`backtest_result.v`):
+If you have a charting library installed, like matplotlib, check out [BaseResult](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/result/base_result.py) for the many metrics you can plot, like portfolio value (`backtest_result.v`):
 
 <img src="/guide_images/rank_long_short_v_evo.png" alt="Portfolio value evolution for RankLongShort" width="400" />
 
@@ -80,7 +80,7 @@ In the above example, for simplicity, we:
 -   Didn't use any cost models
     -   e.g. TradingCost, ShortHoldingCost
 -   Assumed our initial portfolio was all cash
-    -   You can override this by setting the `initial_portfolio` kwarg equal to a (Pandas) series of asset values when initializing [BacktestController](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/backtest_controller.py#L19).
+    -   You can override this by setting the `initial_portfolio` kwarg equal to a (Pandas) series of asset values when initializing [BacktestController](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/backtest_controller.py#L19).
 
 ## Next: Single Period Optimization
 

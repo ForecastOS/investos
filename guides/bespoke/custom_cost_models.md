@@ -2,7 +2,7 @@
 
 ## Extending BaseCost
 
-The [BaseCost](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/cost_model/base_cost.py) class provides a foundational structure for creating custom cost models.
+The [BaseCost](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/cost_model/base_cost.py) class provides a foundational structure for creating custom cost models.
 
 Below is a step-by-step guide for extending BaseCost.
 
@@ -42,7 +42,7 @@ def __init__(self, *args, custom_param=None, **kwargs):
 
 Given a datetime `t`, a series of holdings indexed by asset `h_plus`, and a series of trades indexed by asset `u`, return the sum of costs for all assets.
 
-See [ShortHoldingCost](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/cost_model/short_holding_cost.py) for inspiration:
+See [ShortHoldingCost](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/cost_model/short_holding_cost.py) for inspiration:
 
 ```python
 def get_actual_cost(
@@ -71,7 +71,7 @@ If you're using a convex optimization based investment strategy, `_estimated_cos
 
 Given a datetime `t`, a numpy-like array of holding weights `w_plus`, and a numpy-like array of trade weights `z`, return a two item tuple containing a `cvx.sum(expression)` and a (possibly empty) list of constraints.
 
-See [ShortHoldingCost](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/cost_model/short_holding_cost.py) for inspiration:
+See [ShortHoldingCost](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/cost_model/short_holding_cost.py) for inspiration:
 
 ```python
 def _estimated_cost_for_optimization(self, t, w_plus, z, value):

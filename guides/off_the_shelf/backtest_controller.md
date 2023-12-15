@@ -1,6 +1,6 @@
 <h1>Using the BacktestController Class</h1>
 
-The [BacktestController](https://github.com/ForecastOS/investos/blob/1d5fb91ab2e36f2014b5b26fe0e6001f5b89321d/investos/portfolio/backtest_controller.py) class is responsible for running backtests on your chosen investment strategy and saving the results.
+The [BacktestController](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/backtest_controller.py) class is responsible for running backtests on your chosen investment strategy and saving the results.
 
 A step-by-step guide follows for instantiating this class:
 
