@@ -23,8 +23,6 @@ class SPO(BaseStrategy):
 
     BASE_SOLVER_OPTS = {
         "max_iter": 50_000,
-        "eps_rel": 5e-06,
-        "eps_abs": 5e-06,
     }
 
     def __init__(
