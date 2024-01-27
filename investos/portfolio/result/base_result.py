@@ -140,6 +140,13 @@ class BaseResult(SaveResult):
         return pd.Series(
             data=val.values[1:] / val.values[:-1] - 1, index=val.index[1:]
         ).dropna()
+    
+    def benchmark_returns(self) -> pd.Series:
+        """Returns a pandas Series of the benchmark returns for each datetime period (vs the previous period)."""
+        val = self.benchmark_v
+        return pd.Series(
+            data=val.values[1:] / val.values[:-1] - 1, index=val.index[1:]
+        ).dropna()
 
     @property
     def portfolio_hit_rate(self):
@@ -172,12 +179,14 @@ class BaseResult(SaveResult):
     @property
     def annualized_return(self) -> float:
         """Returns a float representing the annualized return of the entire period under review. Uses beginning and ending portfolio values for the calculation (value @ t[-1] and value @ t[0]), as well as the number of years in the forecast."""
-        return ((self.total_return + 1) ** (1 / self.years_forecast)) - 1
+        #return ((self.total_return + 1) ** (1 / self.years_forecast)) - 1
+        return self.returns.mean()*self.ppy
 
     @property
     def annualized_benchmark_return(self) -> float:
         """Returns a float representing the annualized benchmark return of the entire period under review. Uses beginning and ending portfolio values for the calculation (value @ t[-1] and value @ t[0]), as well as the number of years in the forecast."""
-        return ((self.total_benchmark_return + 1) ** (1 / self.years_forecast)) - 1
+        #return ((self.total_benchmark_return + 1) ** (1 / self.years_forecast)) - 1
+        return self.benchmark_returns.mean()*self.ppy
 
     @property
     def excess_returns(self) -> pd.Series:
@@ -192,12 +201,14 @@ class BaseResult(SaveResult):
     @property
     def annualized_excess_return(self) -> float:
         """Returns a float representing the annualized excess return of the entire period under review. Uses beginning and ending portfolio values for the calculation (value @ t[-1] and value @ t[0]), as well as the number of years in the forecast."""
-        return ((self.total_excess_return + 1) ** (1 / self.years_forecast)) - 1
+        #return ((self.total_excess_return + 1) ** (1 / self.years_forecast)) - 1
+        return self.excess_returns.mean()*self.ppy
 
     @property
     def annualized_return_over_cash(self) -> float:
         """Returns a float representing the annualized return over cash of the entire period under review. Uses beginning and ending portfolio values for the calculation (value @ t[-1] and value @ t[0]), as well as the number of years in the forecast."""
-        return ((self.total_return_over_cash + 1) ** (1 / self.years_forecast)) - 1
+        #return ((self.total_return_over_cash + 1) ** (1 / self.years_forecast)) - 1
+        return self.returns_over_cash.mean()*self.ppy
 
     @property
     def excess_risk_annualized(self) -> pd.Series:
@@ -281,13 +292,13 @@ class BaseResult(SaveResult):
             )
 
     def information_ratio_rolling(self, n=252) -> pd.Series:
-        rolling_cum_return = (1 + self.excess_returns).rolling(window=n).apply(
-            lambda x: x.prod(), raw=True
-        ) - 1
-
+        # rolling_cum_return = (1 + self.excess_returns).rolling(window=n).apply(
+        #     lambda x: x.prod(), raw=True
+        # ) - 1
+        rolling_mean = self.excess_returns.rolling(window=n).mean() * n
         rolling_std = self.excess_returns.rolling(window=n).std() * np.sqrt(n)
 
-        return rolling_cum_return / rolling_std
+        return rolling_mean / rolling_std
 
     @property
     def sharpe_ratio(self, use_annualized_inputs=True) -> float:
@@ -305,13 +316,14 @@ class BaseResult(SaveResult):
             )
 
     def sharpe_ratio_rolling(self, n=252) -> pd.Series:
-        rolling_cum_return = (1 + self.returns_over_cash).rolling(window=n).apply(
-            lambda x: x.prod(), raw=True
-        ) - 1
+        # rolling_cum_return = (1 + self.returns_over_cash).rolling(window=n).apply(
+        #     lambda x: x.prod(), raw=True
+        # ) - 1
 
+        rolling_mean = self.returns_over_cash.rolling(window=n).mean() * n
         rolling_std = self.returns_over_cash.rolling(window=n).std() * np.sqrt(n)
 
-        return rolling_cum_return / rolling_std
+        return rolling_mean / rolling_std
 
     @property
     def turnover(self):
