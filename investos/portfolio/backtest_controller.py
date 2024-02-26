@@ -68,8 +68,11 @@ class BacktestController:
         return initial_portfolio
 
     def _get_initial_t(self):
-        median_time_delta = statistics.median(
-            self.time_periods[1:5] - self.time_periods[0:4]
-        )
+        try:
+            median_time_delta = statistics.median(
+                self.time_periods[1:5] - self.time_periods[0:4]
+            )
+        except ValueError:
+            median_time_delta = self.time_periods[1] - self.time_periods[0]
 
         return pd.to_datetime(self.start_date) - median_time_delta
