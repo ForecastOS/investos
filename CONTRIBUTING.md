@@ -25,26 +25,24 @@ TBD.
 
 ## Code formatting
 
-This project uses [Black](https://black.readthedocs.io/en/stable/) to format its code.
+This project uses [Ruff](https://docs.astral.sh/ruff/) to lint and format its code.
 Both Python files (`*.py`) and IPython notebooks (`*.ipynb`) are reformatted.
 
 To reformat the codebase, run:
 
 ```sh
-poetry run black .
+poetry run ruff format .
 ```
-
-You can use [pre-commit hooks](#pre-commit-hooks) to ensure your changes are formatted properly.
-
-Black is also supported by most editors, so you should be able to integrate it to your workflow.
-
-This project uses ruff to lint its code.
 
 To lint the codebase, run:
 
 ```sh
-ruff check .
+poetry run ruff check .
 ```
+
+You can also use [pre-commit hooks](#pre-commit-hooks) to ensure your changes are formatted properly.
+
+Ruff also has good editor support, so you should be able to integrate it to your workflow.
 
 ## Pre-commit hooks
 

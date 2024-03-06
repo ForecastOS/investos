@@ -1,14 +1,8 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
-  - repo: https://github.com/psf/black
-    rev: '23.7.0'
-    hooks:
-      - id: black-jupyter
-        description: Check the code and notebooks have been formatted with Black
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: 'v0.3.0'
     hooks:
       - id: ruff
-        require_serial: true
-        description: Check the code has been linted with ruff
+      - id: ruff-format

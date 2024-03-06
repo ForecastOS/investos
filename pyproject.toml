@@ -37,7 +37,6 @@ pandas = "^2.0.1"
 optional = true
 
 [tool.poetry.group.dev.dependencies]
-black = {version = "^23.7.0", extras = ["jupyter"]}
 jupyter = "^1.0.0"
 pandas-market-calendars = "^4.1.4"
 pytest = "^7.3.1"
@@ -65,16 +64,11 @@ norecursedirs = [
     "examples",
 ]
 
-[tool.black]
-target-version = [
-    "py38",
-    "py39",
-    "py310",
-    "py311",
-]
-
 [tool.ruff]
 target-version = "py38"
+extend-include = [
+    "*.ipynb",
+]
 exclude = [
     "__pycache__",
     ".git/",
@@ -82,6 +76,7 @@ exclude = [
 ]
 
 [tool.ruff.lint]
+exclude = ["*.ipynb"]  # Only format Jupyter notebooks, for now
 select = [
     "B",
     "E",
