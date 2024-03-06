@@ -7,7 +7,7 @@ repos:
       - id: black-jupyter
         description: Check the code and notebooks have been formatted with Black
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: 'v0.0.278'
+    rev: 'v0.3.0'
     hooks:
       - id: ruff
         require_serial: true
