@@ -37,11 +37,10 @@ pandas = "^2.0.1"
 optional = true
 
 [tool.poetry.group.dev.dependencies]
-black = {version = "^23.7.0", extras = ["jupyter"]}
 jupyter = "^1.0.0"
 pandas-market-calendars = "^4.1.4"
 pytest = "^7.3.1"
-ruff = "^0.0.278"
+ruff = "^0.3.0"
 sphinx = "^7.0.0"
 ipywidgets = "^8.0.7"
 jupyterlab = "^3"
@@ -65,20 +64,19 @@ norecursedirs = [
     "examples",
 ]
 
-[tool.black]
-target-version = [
-    "py38",
-    "py39",
-    "py310",
-    "py311",
-]
-
 [tool.ruff]
+target-version = "py38"
+extend-include = [
+    "*.ipynb",
+]
 exclude = [
     "__pycache__",
     ".git/",
     ".pytest_cache/",
 ]
+
+[tool.ruff.lint]
+exclude = ["*.ipynb"]  # Only format Jupyter notebooks, for now
 select = [
     "B",
     "E",
@@ -93,9 +91,8 @@ ignore = [
     "B008",  # Function call in default argument
     "E501",  # Line too long 
 ]
-target-version = "py39"
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = [
     'F401',  # Unused import
     'F403',  # Wildcard import
