@@ -148,12 +148,12 @@ class BaseResult(SaveResult):
     @property
     def total_return(self) -> float:
         """Returns a float representing the total return for the entire period under review."""
-        return self.v[-1] / self.v[0] - 1
+        return self.v.iloc[-1] / self.v.iloc[0] - 1
 
     @property
     def total_benchmark_return(self) -> float:
         """Returns a float representing the return over benchmark for the entire period under review."""
-        return self.benchmark_v[-1] / self.benchmark_v[0] - 1
+        return self.benchmark_v.iloc[-1] / self.benchmark_v.iloc[0] - 1
 
     @property
     def total_risk_free_return(self) -> float:
@@ -245,10 +245,10 @@ class BaseResult(SaveResult):
     def benchmark_v(self) -> pd.Series:
         """Returns series of simulated portfolio values, if portfolio was invested 100% in benchmark at time 0"""
         benchmark_factors = self.benchmark_returns + 1
-        benchmark_factors[0] = 1  # No returns for period 0
+        benchmark_factors.iloc[0] = 1  # No returns for period 0
 
         return (
-            benchmark_factors.cumprod() * self.v[0]
+            benchmark_factors.cumprod() * self.v.iloc[0]
         )  # Calculate values if initial portfolio value was invested 100% in benchmark
 
     @property
