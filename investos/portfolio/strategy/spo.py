@@ -125,6 +125,8 @@ class SPO(BaseStrategy):
                 print(f"The problem is infeasible at {t}.")
                 return self._zerotrade(holdings)
 
+            print("Unwind here")
+
             u = pd.Series(index=holdings.index, data=(z.value * value))
 
             return u
