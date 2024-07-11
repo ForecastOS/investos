@@ -9,6 +9,7 @@ from sklearn.linear_model import LinearRegression
 from investos.portfolio.risk_model import BaseRisk
 from investos.portfolio.risk_model.factor_utils import *
 from investos.portfolio.risk_model.factor_covariance_adjustment import *
+from investos.portfolio.risk_model.asset_diagonal_variance_adjustment import *
 
 class FactorRisk(BaseRisk):
     """Multi-factor risk model."""
@@ -29,17 +30,24 @@ class FactorRisk(BaseRisk):
         self._regress_col = regress_col
         self._risk_cols = risk_cols
         self._drop_excluded_assets()
+
+        # config for factor return cov
         self.Config_FactorCovESTArgs                     = kwargs.get('FactorCovESTArgs',{'window':21, 'half_life': 360})
         self.Config_NewlyWestAdjustmentArgs              = kwargs.get('NewlyWestAdjustmentArgs', None)
         self.Config_EigenfactorRiskAdjustmentArgs        = kwargs.get('EigenfactorRiskAdjustmentArgs', None)
         self.Config_FactorVolatilityRegimeAdjustmentArgs = kwargs.get('FactorVolatilityRegimeAdjustmentArgs', None)  
 
+        # config for idio return var
+        self.Config_IdioVarEstArgs                       = kwargs.get('Config_IdioVarEstArgs',{'window':21, 'half_life': 360})
+        
         #print(self.Config_FactorCovESTArgs)
         self._factor_returns = None
         self._df_factor_summary = None
         self._df_r2 = None
         self._df_factor_returns = None
         self._df_factor_t_values = None
+
+        self._df_idio_returns = None
 
     @property
     def CrossSectionalRegressionSummary(self):
@@ -89,8 +97,6 @@ class FactorRisk(BaseRisk):
         self._df_loadings[self._df_loadings[datetime_col] >= start_date]
         return
     
-    def _genFactorAndSpecificReturn(self):
-        pass
 
     # Initialization
     def _initInfo(self):
@@ -164,7 +170,8 @@ class FactorRisk(BaseRisk):
             [k, 
              self._factor_returns[k]["r2"], 
              *self._factor_returns[k]["t-values"],
-             *self._factor_returns[k]["coefficients"]]
+             *self._factor_returns[k]["coefficients"]
+            ]
              #self._factor_returns[k]["period"][0]]
             for k in self._factor_returns]    # iterative through the factor returns dict
 
@@ -201,6 +208,7 @@ class FactorRisk(BaseRisk):
         self._df_idio["factor_return_1d_error"] = self._df_idio["factor_return_1d"] - self._df_idio["return_1d"]
         self._df_idio = self._df_idio[["datetime", "id", "return_1d", "factor_return_1d", "factor_return_1d_error"]]
 
+        self._df_idio_returns = self._df_idio[["datetime", "id", "factor_return_1d_error"]].rename({"factor_return_1d_error":'idio_return'})
         return 
 
     def _genFactorCovariance(self):
@@ -208,7 +216,7 @@ class FactorRisk(BaseRisk):
 
         """
         Args = {
-            "FactorCovESTAArgs":                        self.Config_FactorCovESTArgs,
+            "FactorCovESTArgs":                         self.Config_FactorCovESTArgs,
             "NewlyWestAdjustmentArgs":                  self.Config_NewlyWestAdjustmentArgs,
             "EigenfactorRiskAdjustmentArgs":            self.Config_EigenfactorRiskAdjustmentArgs,
             "FactorVolatilityRegimeAdjustmentArgs":     self.Config_FactorVolatilityRegimeAdjustmentArgs
@@ -219,9 +227,9 @@ class FactorRisk(BaseRisk):
         generate factor return covariance and covariance matrix adjustment
         """
         # generate raw covariance matrix. This step will happen for sure
-        if Args["FactorCovESTAArgs"] is not None:
-            factorcovadjuster = FactorCovAdjuster(self._df_factor_returns,window = Args["FactorCovESTAArgs"]['window']) 
-            self._df_cov_raw = factorcovadjuster.calc_fcm_raw(self._df_factor_returns,half_life = Args["FactorCovESTAArgs"]['half_life'])
+        if Args["FactorCovESTArgs"] is not None:
+            factorcovadjuster = FactorCovAdjuster(self._df_factor_returns,window = Args["FactorCovESTArgs"]['window']) 
+            self._df_cov_raw = factorcovadjuster.calc_fcm_raw(self._df_factor_returns,half_life = Args["FactorCovESTArgs"]['half_life'])
         
         # apply newly west covariance adjustment
         if Args["NewlyWestAdjustmentArgs"] is not None:
@@ -249,7 +257,23 @@ class FactorRisk(BaseRisk):
     
 
     def _genSpecificRisk(self):
-        
+
+        """
+
+        """
+        Args = {
+            "IdioVarEstArgs":                           self.Config_IdioVarEstArgs,
+            "NewlyWestAdjustmentArgs":                  self.Config_NewlyWestAdjustmentArgs,
+            }
+        print(Args)
+        # generate raw covariance matrix. This step will happen for sure
+        if Args["IdioVarEstArgs"] is not None:
+
+            delta = AssetDigonalVarAdjuster(self._df_idio_returns,Args['IdioVarEstArgs']['window'])
+            self._df_idio_var_raw = delta.calculate_ewma_idiosyncratic_variance(self._df_idio_returns,half_life = Args["IdioVarEstArgs"]['half_life'])
+
+            
+            #self._df_idio_returns
         return
 
     def run(self) -> None:
@@ -271,7 +295,7 @@ class FactorRisk(BaseRisk):
         self._genFactorCovariance()
         print("Time : %.2f" % (time.perf_counter()-StartT, )+"\n4. Estimate Idiosyncratic Return Matrix")
         StartT = time.perf_counter()
-        #self._genSpecificRisk()
+        self._genSpecificRisk()
         print("Time : %.2f" % (time.perf_counter()-StartT, )+("\nTotal Time : %.2f" % (time.perf_counter()-TotalStartT, ))+"\n"+"="*28)
         return 
     
@@ -282,6 +306,8 @@ class FactorRisk(BaseRisk):
 
         Not used to calculate simulated costs for backtest performance.
         """
+
+        # TODO: need to update this
         factor_covar = util.values_in_time(
             self.factor_covariance, t, lookback_for_closest=True
         )
