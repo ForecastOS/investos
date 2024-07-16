@@ -47,14 +47,13 @@ class FactorRisk(BaseRisk):
             self._factor_loadings = factor_loadings
             self._idiosyncratic_variance = idiosyncratic_variance
 
-
     # Initialization
     def _pull_fos_risk_factor_dfs(self):
         # pull from feature hub
         fos.api_key = os.environ.get("FORECASTOS_API_KEY")                  #.env including my api_key
         if not fos.api_key:
             raise ValueError("Feature hub connection failed. Please check the API key is valid.")
-        dataframes = [fos.Feature.get(factor_uuids[factor]).get_df().rename(columns={'value': factor}) for factor in (self._fos_risk_factor_uuids + self._fos_return_uuid)]
+        dataframes = [fos.Feature.get(self._fos_return_uuid[factor]).get_df().rename(columns={'value': factor}) for factor in (self._fos_risk_factor_uuids + self._fos_return_uuid)]
 
         if dataframes:
             df_merged = reduce(lambda left, right: pd.merge(left, right, how='left', on=['datetime', 'id']), dataframes)
@@ -159,28 +158,6 @@ class FactorRisk(BaseRisk):
 
         return 
         
-    # def _genSpecificRisk(self):
-
-    #     """
-
-    #     """
-    #     Args = {
-    #         "IdioVarEstArgs":                           self.Config_IdioVarEstArgs,
-    #         "NewlyWestAdjustmentArgs":                  self.Config_NewlyWestAdjustmentArgs,
-    #         }
-    #     print(Args)
-    #     # generate raw covariance matrix. This step will happen for sure
-    #     if Args["IdioVarEstArgs"] is not None:
-
-    #         delta = AssetDigonalVarAdjuster(self._df_idio_returns,Args['IdioVarEstArgs']['window'])
-    #         self._df_idio_var_raw = delta.calculate_ewma_idiosyncratic_variance(self._df_idio_returns,half_life = Args["IdioVarEstArgs"]['half_life'])
-    #         #self._df_idio_returns
-    #     return
-
-    # def _genTotalRisk(self):
-    #     # TODO
-    #     pass
-
     def _estimated_cost_for_optimization(self, t, w_plus, z, value):
         """Optimization (non-cash) cost penalty for assuming associated asset risk.
 
