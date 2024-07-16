@@ -7,12 +7,13 @@ InvestOS provides the following optimization strategies:
 -   [SPO](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/strategy/spo.py) (Single Period Optimization)
     -   Builds trade lists using single period convex optimization
     -   Uses [CVXPY](https://www.cvxpy.org/tutorial/intro/index.html)
+-   [SPOTranches](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/strategy/spo_tranches.py) (Single Period Optimization Tranches)
+    -   Like SPO, but builds portfolio in separate, optimized tranches. Tranches are cycled in and out by customizable holding period. Tranches can be analyzed and altered in flight using BacktestController hooks.
+    -   Uses [CVXPY](https://www.cvxpy.org/tutorial/intro/index.html)
 
 This guide will explain how to use either of these classes.
 
 ## RankLongShort
-
-### Using the RankLongShort Class
 
 To use the `RankLongShort` strategy, you will need:
 
@@ -46,8 +47,6 @@ strategy = RankLongShort(
 )
 ```
 
-### Using the RankLongShort and SPO Classes
-
 Once instantiated, you can use the `generate_trade_list` method to get trades for a given datetime:
 
 ```python
@@ -68,8 +67,6 @@ backtest_controller = inv.portfolio.BacktestController(
 ```
 
 ## SPO
-
-### Using the SPO Class
 
 To use the `SPO` strategy, you will need:
 
@@ -97,8 +94,6 @@ strategy = SPO(
 )
 ```
 
-### Using the SPO Class
-
 Like RankLongShort, or any other InvestOS investment strategy, once instantiated, you can use the `generate_trade_list` method to get trades for a given datetime:
 
 ```python
@@ -119,6 +114,12 @@ backtest_controller = inv.portfolio.BacktestController(
 ```
 
 For SPO specifically, if the optimization problem is unbounded, infeasible, or if there's an error with the solver, the `generate_trade_list` method will return a zero trade for all holdings for the given `t` datetime.
+
+## SPOTranches
+
+The `SPOTranches` strategy uses all of the same arguments as `SPO`. It also uses one additional (optional) argument for determining the holding period for each optimized tranche:
+
+-   `n_periods_held`: integer = 5
 
 ## Next: The Choice Is Yours
 

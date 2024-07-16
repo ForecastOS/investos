@@ -63,3 +63,42 @@ class MaxAbsoluteFactorExposureConstraint(BaseConstraint):
             )
             <= self.limit
         )
+
+
+class MaxAbsoluteTradeFactorExposureConstraint(BaseConstraint):
+    def __init__(self, factor_exposure, limit=0.01, **kwargs):
+        self.factor_exposure = factor_exposure
+        self.limit = limit
+        super().__init__(**kwargs)
+
+    def _weight_expr(self, t, w_plus, z, v):
+        return (
+            cvx.sum(cvx.multiply(values_in_time(self.factor_exposure, t), cvx.abs(z)))
+            <= self.limit
+        )
+
+
+class MaxTradeFactorExposureConstraint(BaseConstraint):
+    def __init__(self, factor_exposure, limit=0.05, **kwargs):
+        self.factor_exposure = factor_exposure
+        self.limit = limit
+        super().__init__(**kwargs)
+
+    def _weight_expr(self, t, w_plus, z, v):
+        return (
+            cvx.sum(cvx.multiply(values_in_time(self.factor_exposure, t), z))
+            <= self.limit
+        )
+
+
+class MinTradeFactorExposureConstraint(BaseConstraint):
+    def __init__(self, factor_exposure, limit=-0.05, **kwargs):
+        self.factor_exposure = factor_exposure
+        self.limit = limit
+        super().__init__(**kwargs)
+
+    def _weight_expr(self, t, w_plus, z, v):
+        return (
+            cvx.sum(cvx.multiply(values_in_time(self.factor_exposure, t), z))
+            >= self.limit
+        )

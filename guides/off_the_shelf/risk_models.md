@@ -83,5 +83,3 @@ You may optionally set the following arguments:
 ## Next: The Choice Is Yours
 
 Want to explore an end-to-end example? Check out [Single Period Optimization](/guides/simple_examples/spo).
-
-Want to learn more about what guides are coming next? Check out [Guides Under Development](/guides/coming_soon/guides_under_development).

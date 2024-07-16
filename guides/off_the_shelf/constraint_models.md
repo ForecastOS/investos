@@ -33,6 +33,51 @@ All constraint models take the following optional arguments:
 
 InvestOS provides the following constraint models:
 
+## Factor Constraints
+
+### ZeroFactorExposureConstraint
+
+[ZeroFactorExposureConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/factor_constraint.py) enforces 0 net portfolio weight in a given factor.
+
+Instantiate with the following arguments:
+
+-   `factor_exposure`: pd.DataFrame (asset ID columns and datetime index) or pd.Series (asset ID index, if same value across datetime)
+
+### MaxFactorExposureConstraint
+
+[MaxFactorExposureConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/factor_constraint.py) enforces max portfolio weight in a given factor.
+
+Instantiate with the following arguments:
+
+-   limit: float = 0.05
+-   `factor_exposure`: pd.DataFrame (asset ID columns and datetime index) or pd.Series (asset ID index, if same value across datetime)
+
+### MinFactorExposureConstraint
+
+[MinFactorExposureConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/factor_constraint.py) enforces min portfolio weight in a given factor.
+
+Instantiate with the following arguments:
+
+-   limit: float = -0.05
+-   `factor_exposure`: pd.DataFrame (asset ID columns and datetime index) or pd.Series (asset ID index, if same value across datetime)
+
+### MaxAbsoluteFactorExposureConstraint
+
+[MaxAbsoluteFactorExposureConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/factor_constraint.py) enforces max absolute portfolio weight in a given factor.
+
+Instantiate with the following arguments:
+
+-   limit: float = 0.4
+-   `factor_exposure`: pd.DataFrame (asset ID columns and datetime index) or pd.Series (asset ID index, if same value across datetime)
+
+### ZeroTradeFactorExposureConstraint
+
+[ZeroTradeFactorExposureConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/factor_constraint.py) enforces 0 net **trade** weight in a given factor.
+
+Instantiate with the following arguments:
+
+-   `factor_exposure`: pd.DataFrame (asset ID columns and datetime index) or pd.Series (asset ID index, if same value across datetime)
+
 ## Leverage Constraints
 
 ### MaxLeverageConstraint
