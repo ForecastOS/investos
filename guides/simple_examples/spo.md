@@ -17,7 +17,7 @@ For [TradingCost](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/po
 
 For [ShortHoldingCost](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/cost_model/short_holding_cost.py): we'll need:
 
--   Forecast (half) short borrowing rates for each asset (we are using 30bps for all assets for simplicity in this example) over the time periods we want to backtest: `short_rates`
+-   Forecast short borrowing rates for each asset (we are using 40bps for all assets for simplicity in this example) over the time periods we want to backtest: `short_rates`
 
 In order to make this example as easy as possible, we've prepared, and will use, actual returns and prices and forecast returns, volumes, standard deviations, spreads, and short rates from 2017 - 2018 for a universe of 319 stocks.
 
@@ -50,7 +50,7 @@ half_spread_percent = 2.5 / 10_000 # 2.5 bps
 half_spread = pd.Series(index=forecast_returns.columns, data=half_spread_percent)
 
 # For short holding costs:
-short_cost_percent = 30 / 10_000 # 30 bps
+short_cost_percent = 40 / 10_000 # 40 bps
 trading_days_per_year = 252
 short_rates = pd.Series(index=forecast_returns.columns, data=short_cost_percent/trading_days_per_year)
 ```
@@ -74,9 +74,10 @@ strategy = inv.portfolio.strategy.SPO(
     constraints = [
         MaxShortLeverageConstraint(limit=0.3),
         MaxLongLeverageConstraint(limit=1.3),
-        MinWeightConstraint(),
-        MaxWeightConstraint(),
-        LongCashConstraint()
+        MinWeightConstraint(limit=-0.03),
+        MaxWeightConstraint(limit=0.03),
+        LongCashConstraint(),
+        MaxAbsTurnoverConstraint(limit=0.05),
     ],
     cash_column_name="cash"
 )
