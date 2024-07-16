@@ -139,7 +139,7 @@ To instantiate MaxLongLeverageConstraint you will need to set the following argu
 
 ### MaxLongTradeLeverageConstraint
 
-[MaxLongTradeLeverageConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/leverage_constraint.py) enforces a max on the leverage of the portfolio.
+[MaxLongTradeLeverageConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/leverage_constraint.py) enforces a max on the long leverage of the trade.
 
 Instantiate with the following arguments:
 
@@ -147,7 +147,7 @@ Instantiate with the following arguments:
 
 ### MaxShortTradeLeverageConstraint
 
-[MaxShortTradeLeverageConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/leverage_constraint.py) enforces a min on the leverage of the portfolio.
+[MaxShortTradeLeverageConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/leverage_constraint.py) enforces a max on the short leverage of the trade.
 
 Instantiate with the following arguments:
 
