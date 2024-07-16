@@ -25,10 +25,13 @@ BacktestController will ask (BaseStrategy) investment strategies to `generate_tr
 
 Off-the-shelf investment strategies, which extend BaseStrategy, include:
 
--   [Single Period Optimization](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/strategy/spo.py) (SPO)
+-   [Single Period Optimization](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/strategy/spo.py) (SPO): optimizes for max estimated return after estimated costs and (a utility penalty for) estimated portfolio variance
+-   [Single Period Optimization Tranches](https://github.com/ForecastOS/investos/tree/v0.4.1/investos/portfolio/strategy/spo_tranches.py) (SPO Tranches): Like SPO, but builds portfolio in separate constrained / optimized tranches. Tranches are cycled in and out by customizable holding period. Tranches can be analyzed and altered in flight using BacktestController hooks.
 -   [RankLongShort](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/strategy/rank_long_short.py)
 
 **Note**: `generate_trade_list` can be used to generate a trade list outside of a backtest context (i.e. to implement your investment strategy in the market).
+
+**Note**: we are starting work on new SPO classes for maximizing expected Sharpe ratio (instead of return).
 
 ### BaseResult
 
@@ -40,7 +43,7 @@ It provides performance reporting methods for convenience, allowing you to analy
 
 [BaseCost](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/cost_model/base_cost.py) provides a common interface to extend to create custom cost models.
 
-Cost models are passed into your investment strategy (BaseStrategy) upon initialization of your investment strategy. Your investment strategy will calculate simulated realized costs, based on the logic in your cost model.
+Cost models are passed into your investment strategy (BaseStrategy) upon initialization of your investment strategy. Your investment strategy will calculate estimated (if using SPO) and simulated realized costs, based on the logic in your cost model.
 
 Off-the-shelf costs, which extend BaseCost, include:
 
@@ -51,32 +54,36 @@ Off-the-shelf costs, which extend BaseCost, include:
 
 [BaseConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/base_constraint.py) provides a common interface to extend to create custom constraint models.
 
-**Constraint models are only useful if your investment strategy uses convex portfolio optimization.**
+**Constraint models are only useful if your investment strategy uses convex portfolio optimization** (used by SPO classes).
 
 Constraint models are passed into your investment strategy (BaseStrategy) upon initialization of your investment strategy. Your investment strategy will optimize your trades and resulting positions without breaching any of the constraints you define (e.g. max leverage, max weight, equal long / short, etc.).
 
+If your constraints are overly restrictive (preventing a possible solution), the BacktestController will default to a zero trade (i.e. will hold starting positions with no changes).
+
 Off-the-shelf constraints, which extend BaseConstraint, include:
 
--   [MaxLeverageConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/leverage_constraint.py)
--   [MaxShortLeverageConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/leverage_constraint.py#L46C6-L46C6)
--   [MaxLongLeverageConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/leverage_constraint.py#L81)
--   [LongOnlyConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/long_constraint.py#L4)
--   [LongCashConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/long_constraint.py#L43)
--   [EqualLongShortConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/long_constraint.py#L82)
--   [MaxWeightConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/weight_constraint.py#L4)
--   [MinWeightConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/weight_constraint.py#L53)
+-   [Factor constraints](https://github.com/ForecastOS/investos/tree/v0.4.1/investos/portfolio/constraint_model/factor_constraint.py)
+-   [Leverage constraints](https://github.com/ForecastOS/investos/tree/v0.4.1/investos/portfolio/constraint_model/leverage_constraint.py)
+-   [Long / market-neutral constraints](https://github.com/ForecastOS/investos/tree/v0.4.1/investos/portfolio/constraint_model/long_constraint.py)
+-   [Position weight (max/min) constraints](https://github.com/ForecastOS/investos/tree/v0.4.1/investos/portfolio/constraint_model/weight_constraint.py)
+-   [Turnover constraints](https://github.com/ForecastOS/investos/tree/v0.4.1/investos/portfolio/constraint_model/trade_constraint.py)
+
+**There are +20 off-the-shelf contraint models available.** We regularly release new constraint models as needed / helpful.
 
 ### BaseRisk
 
 [BaseRisk](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/risk_model/base_risk.py) extends BaseCost.
 
-Unlike BaseCost, it does not apply actual costs to your backtest results (BaseResult); realized costs from risk models in your backtest should always be 0.
+Unlike BaseCost, it does not apply actual costs to your backtest results (BaseResult); realized costs from risk models in your backtest will always be 0.
 
-It does, however, apply a (utility) cost during portfolio creation for convex-optimization-based investment strategies (like [SPO](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/strategy/spo.py)). Utility costs can represent anything, but are often used to penalize volatility in mean-variance optimization (MVO).
+It does, however:
+
+1. Optionally apply a (utility) cost during portfolio creation for convex-optimization-based investment strategies (like [SPO](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/strategy/spo.py)) to penalize estimated portfolio volatility
+2. Optionally output a portfolio variance estimate for creating a mean-variance optimized (MVO) portfolio (i.e. minimizing variance for a given return)
 
 ## Extend Base Classes For Custom Use Cases
 
-With the exception of BacktestController and possibly BaseResult, we expect you to extend the above base classes to fit your own use cases (where needed). Following guides will expand on how to customize each class above.
+With the exception of BacktestController, we expect you to extend the above base classes to fit your own use cases (where needed). Following guides will expand on how to customize each class above.
 
 If this is of interest, we also encourage you to review the open-source codebase; we've done our best to make it as simple and understandable as possible. Should you extend one of our base classes in a way that might be useful to other investors, we also encourage you to open a PR!
 
