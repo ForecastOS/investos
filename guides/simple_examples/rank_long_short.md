@@ -9,7 +9,7 @@ In order to backtest a portfolio using [RankLongShort](https://github.com/Foreca
 -   Stock returns over the time periods we wish to backtest: `actual_returns`
 -   Start and end dates: `start_date` and `end_date`
 
-In order to make this example as easy as possible, we've prepared, and will use, forecast and actual returns from 2017 - 2018 for a universe of 319 stocks.
+In order to make this example as easy as possible, we've prepared, and will use, forecast and actual returns from 2017 - 2018 for a universe of 319 stocks. We will also exclude cost models.
 
 ## Sample Code For a RankLongShort Backtest
 
@@ -26,6 +26,9 @@ strategy = inv.portfolio.strategy.RankLongShort(
     leverage=1.6,
     ratio_long=130,
     ratio_short=30,
+    percent_long=0.2,
+    percent_short=0.2,
+    n_periods_held=60,
     cash_column_name="cash"
 )
 
@@ -47,31 +50,25 @@ When `backtest_result.summary` is executed, it will output summary backtest resu
 ```python
 # Initial timestamp                         2017-01-03 00:00:00
 # Final timestamp                           2017-12-29 00:00:00
-# Total portfolio return (%)                             52.06%
-# Annualized portfolio return (%)                        52.99%
-# Annualized excess portfolio return (%)                  49.9%
-# Annualized excess risk (%)                               8.0%
-# Information ratio (x)                                   6.24x
-# Annualized risk over risk-free (%)                       8.0%
-# Sharpe ratio (x)                                        6.24x
-# Max drawdown (%)                                        2.11%
-# Annual turnover (x)                                   609.25x
-# Portfolio hit rate (%)                                  61.2%
+# Total portfolio return (%)                             17.22%
+# Annualized portfolio return (%)                        17.49%
+# Annualized excess portfolio return (%)                 14.42%
+# Annualized excess risk (%)                              6.09%
+# Information ratio (x)                                   2.37x
+# Annualized risk over risk-free (%)                      6.09%
+# Sharpe ratio (x)                                        2.37x
+# Max drawdown (%)                                        3.21%
+# Annual turnover (x)                                     9.97x
+# Portfolio hit rate (%)                                  60.0%
 ```
 
-If you have a charting library installed, like matplotlib, check out [BaseResult](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/result/base_result.py) for the many metrics you can plot, like portfolio value (`backtest_result.v`):
+If you have a charting library installed, like matplotlib, check out [BaseResult](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/result/base_result.py) for the many metrics you can plot, like:
 
-<img src="/guide_images/rank_long_short_v_evo.png" alt="Portfolio value evolution for RankLongShort" width="400" />
-
-long and short leverage (`backtest_result.leverage`):
-
-<img src="/guide_images/rank_long_short_lev_evo.png" alt="Portfolio leverage evolution for RankLongShort" width="400" />
-
-trades in SBUX (`backtest_result.trades['SBUX']`) or holdings in AAPL (`backtest_result.h['AAPL']`):
-
-<img src="/guide_images/rank_long_short_h_aapl_evo.png" alt="Portfolio leverage evolution for RankLongShort" width="400" />
-
-etc.
+-   portfolio value evolution (`backtest_result.v`),
+-   long and short leverage evolution (`backtest_result.leverage`),
+-   trades in SBUX (`backtest_result.trades['SBUX']`),
+-   holdings in AAPL (`backtest_result.h['AAPL']`),
+-   etc.
 
 ## What Could Be Improved
 
