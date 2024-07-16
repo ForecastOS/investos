@@ -102,16 +102,16 @@ When `backtest_result.summary` is executed, it will output summary backtest resu
 ```python
 # Initial timestamp                         2017-01-03 00:00:00
 # Final timestamp                           2017-12-29 00:00:00
-# Total portfolio return (%)                              15.5%
-# Annualized portfolio return (%)                        15.75%
-# Annualized excess portfolio return (%)                 12.68%
-# Annualized excess risk (%)                              7.82%
-# Information ratio (x)                                   1.62x
-# Annualized risk over risk-free (%)                      7.82%
-# Sharpe ratio (x)                                        1.62x
-# Max drawdown (%)                                        3.54%
-# Annual turnover (x)                                   457.36x
-# Portfolio hit rate (%)                                  53.6%
+# Total portfolio return (%)                               5.6%
+# Annualized portfolio return (%)                         5.68%
+# Annualized excess portfolio return (%)                  2.61%
+# Annualized excess risk (%)                              2.47%
+# Information ratio (x)                                   1.06x
+# Annualized risk over risk-free (%)                      2.47%
+# Sharpe ratio (x)                                        1.05x
+# Max drawdown (%)                                        1.05%
+# Annual turnover (x)                                    12.88x
+# Portfolio hit rate (%)                                  60.0%
 ```
 
 What a difference trading costs make vs our previous RankLongShort example!
