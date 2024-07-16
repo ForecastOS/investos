@@ -113,7 +113,7 @@ class MaxLongLeverageConstraint(BaseConstraint):
         return cvx.sum(cvx.pos(w_plus)) <= self.limit
 
 
-class MaxTradeLeverageConstraint(BaseConstraint):
+class MaxLongTradeLeverageConstraint(BaseConstraint):
     def __init__(self, limit=0.025, **kwargs):
         self.limit = limit
         super().__init__(**kwargs)
@@ -122,8 +122,8 @@ class MaxTradeLeverageConstraint(BaseConstraint):
         return cvx.sum(cvx.abs(cvx.pos(z))) <= self.limit
 
 
-class MinTradeLeverageConstraint(BaseConstraint):
-    def __init__(self, limit=-0.025, **kwargs):
+class MaxShortTradeLeverageConstraint(BaseConstraint):
+    def __init__(self, limit=0.025, **kwargs):
         self.limit = limit
         super().__init__(**kwargs)
 
