@@ -31,7 +31,7 @@ class FactorCovAdjuster:
         self.FCM = None
         self.recalc_freq = recalc_freq
         self.second_level_index = FRM.columns
-        self.first_level_index = FRM.index[[idx for idx in range(self.window, len(FRM)-self.window+1,self.recalc_freq)]]
+        self.first_level_index = FRM.index[[idx for idx in range(len(FRM)-1,self.window,-self.recalc_freq)]]
 
     def convert_cov_matrices(self,cov_matrices: list) -> pd.DataFrame:
         """Convert the list of covariance matrix (3D) to 2D pandas DataFrame
@@ -71,7 +71,7 @@ class FactorCovAdjuster:
         if not self.window:
             cov_matrices.append(cov_ewa(FRM.T.to_numpy(), half_life))
         else:
-            for idx in range(self.window,len(FRM)-self.window+1, self.recalc_freq):
+            for idx in range(len(FRM)-1,self.window, -self.recalc_freq):
                 cov_matrices.append(cov_ewa(FRM.iloc[idx-self.window:idx,:].T.to_numpy(), half_life))
 
         self.FCM = self.convert_cov_matrices(cov_matrices)
@@ -96,9 +96,12 @@ class FactorCovAdjuster:
         np.ndarray
             Newey-West adjusted FCM, denoted by `F_NW`
         """
+        #FCM = F_RAW          # update FCM = F_RAW first
         for D in range(1, max_lags + 1):
             C_pos_delta = cov_ewa(FRM, half_life, D)
             FCM += (1 - D / (1 + max_lags)) * (C_pos_delta + C_pos_delta.T)
+
+        #FCM *= forecast_period           # adjustment: forecast_period
         D, U = np.linalg.eigh(FCM * multiplier)
         D[D <= 0] = 1e-14  # fix numerical error
         FCM = U.dot(np.diag(D)).dot(U.T)
@@ -121,7 +124,7 @@ class FactorCovAdjuster:
             for idx,val in enumerate(self.FCM.index.get_level_values(0).unique()):
 
                 cov_matrices.append(self.newey_west_adjust( FCM = self.FCM.loc[val].T.to_numpy(),
-                                                            FRM = self.FRM.iloc[idx*self.recalc_freq:idx*self.recalc_freq + self.window,:].T.to_numpy(),
+                                                            FRM = self.FRM.iloc[self.FRM.shape[0]-idx*self.recalc_freq- self.window:self.FRM.shape[0] - idx*self.recalc_freq,:].T.to_numpy(),
                                                             half_life = half_life,
                                                             max_lags = max_lags,
                                                             multiplier = multiplier))
@@ -208,7 +211,7 @@ class FactorCovAdjuster:
             cov_matrices.append(self.volatility_regime_adjust(self.FCM, self.FRM.T.to_numpy(),half_life))
         else:
             for idx,val in enumerate(self.FCM.index.get_level_values(0).unique()):
-                cov_matrices.append(self.volatility_regime_adjust(self.FCM.loc[val].T.to_numpy(), self.FRM.iloc[idx*self.recalc_freq:idx*self.recalc_freq + self.window,:].T.to_numpy(),half_life))
+                cov_matrices.append(self.volatility_regime_adjust(self.FCM.loc[val].T.to_numpy(), self.FRM.iloc[self.FRM.shape[0]-idx*self.recalc_freq- self.window:self.FRM.shape[0] - idx*self.recalc_freq,:].T.to_numpy(),half_life))
 
         self.FCM = self.convert_cov_matrices(cov_matrices)
         return self.FCM  

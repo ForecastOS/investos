@@ -16,6 +16,7 @@ from investos.portfolio.risk_model.factor_utils import *
 from investos.portfolio.risk_model.factor_covariance_adjustment import *
 from investos.portfolio.risk_model.asset_diagonal_variance_adjustment import *
 
+# will comment out this later
 class FactorRisk(BaseRisk):
     """Multi-factor risk model."""
 
@@ -31,6 +32,8 @@ class FactorRisk(BaseRisk):
         self._fos_risk_factor_uuids = fos_risk_factor_uuids
         self._fos_return_uuid = fos_return_uuid
 
+        self._end_date = end_date
+        self._start_date = start_date
         self._adjustments = adjustments
         #self._drop_excluded_assets()
 
@@ -46,20 +49,33 @@ class FactorRisk(BaseRisk):
             self._factor_covariance = factor_covariance
             self._factor_loadings = factor_loadings
             self._idiosyncratic_variance = idiosyncratic_variance
+        #self._drop_excluded_assets()
 
     # Initialization
     def _pull_fos_risk_factor_dfs(self):
         # pull from feature hub
+        os.environ["FORECASTOS_API_KEY"] = 'Hww7MSwEUxJFH93u64APbaUbcqNAgj' # will delete this later
         fos.api_key = os.environ.get("FORECASTOS_API_KEY")                  #.env including my api_key
         if not fos.api_key:
             raise ValueError("Feature hub connection failed. Please check the API key is valid.")
-        dataframes = [fos.Feature.get(self._fos_return_uuid[factor]).get_df().rename(columns={'value': factor}) for factor in (self._fos_risk_factor_uuids + self._fos_return_uuid)]
+        dataframes = [fos.Feature.get(factor_uuids[factor]).get_df().rename(columns={'value': factor})
+                       for factor in (self._fos_risk_factor_uuids + self._fos_return_uuid)  if factor != 'rbics']
 
         if dataframes:
             df_merged = reduce(lambda left, right: pd.merge(left, right, how='left', on=['datetime', 'id']), dataframes)
         else:
             raise ValueError("factor loading is empty. Please check the risk factor uuids")
+        # special handling industry factors
+        if 'rbics' in self._fos_risk_factor_uuids:
+            df_industry = pd.get_dummies(fos.Feature.get(factor_uuids['rbics']).get_df().rename(columns={'value': 'industry'}),columns = ['industry'])
+            df_industry.iloc[:,1:] = df_industry.iloc[:,1:].astype(int)     # convert bool to int for industry exposure
+            df_merged = df_merged.merge(df_industry,how='left', on='id')
+
+            self._fos_risk_factor_uuids.remove('rbics')
+            self._fos_industry_factors = [col for col in df_industry.columns if col.startswith('industry_')]
+        
         self._df_loadings =df_merged.replace([np.inf, -np.inf], np.nan).dropna()
+        self._df_loadings = self._df_loadings[(self._df_loadings.datetime >= self._end_date) & (self._df_loadings.datetime <= self._start_date)]
         return
     
     def _generate_risk_models(self, timestamp = 'datetime') -> None:
@@ -96,15 +112,15 @@ class FactorRisk(BaseRisk):
             for col in self._fos_return_uuid:
                 df_current.loc[:,col] = mstats.winsorize(df_current.loc[:,col], limits=(0.05, 0.95))
 
-            y,X = df_current.loc[:,self._fos_return_uuid], df_current.loc[:,self._fos_risk_factor_uuids]
+            y,X = df_current.loc[:,self._fos_return_uuid ], df_current.loc[:,(self._fos_risk_factor_uuids + self._fos_industry_factors)]
             X.loc[:,'const'] = 1    # need the intercept column, will convert this to country factor later
             model = sm.OLS(y, X)
             results = model.fit()
             # Store coefficients, intercept, feature_names, r2, and t-values into self._factor_returns based on the date
             self._factor_returns[d] = {"coefficients": results.params,
                                        "intercept":  results.params['const'],  # the intercept needs the X col of all 1
-                                       "feature_names": self._fos_risk_factor_uuids,
-                                       "r2": results.rsquared,
+                                       "feature_names": self._fos_risk_factor_uuids + self._fos_industry_factors,
+                                       "r2": results.rsquared_adj,
                                        "t-values": results.tvalues}
         """
         Generate factor returns 
@@ -112,8 +128,8 @@ class FactorRisk(BaseRisk):
         list_to_insert = [[k, self._factor_returns[k]["r2"], *self._factor_returns[k]["t-values"][:-1],*self._factor_returns[k]["coefficients"][:-1]]for k in self._factor_returns]    # iterative through the factor returns dict
 
         # split the columns into return, t-value and r2
-        cols_with_return = ['returns_' + col for col in self._fos_risk_factor_uuids]
-        cols_with_t_values = ['t_values_' + col for col in self._fos_risk_factor_uuids]
+        cols_with_return = ['returns_' + col for col in (self._fos_risk_factor_uuids + self._fos_industry_factors)]
+        cols_with_t_values = ['t_values_' + col for col in (self._fos_risk_factor_uuids + self._fos_industry_factors)]
         self._df_factor_summary = pd.DataFrame(list_to_insert, columns=["datetime", "r2", *cols_with_t_values, *cols_with_return]).set_index('datetime')
         self._df_factor_returns = self._df_factor_summary[cols_with_return]
         """
@@ -123,12 +139,12 @@ class FactorRisk(BaseRisk):
         self._df_idio = pd.merge(self._df_loadings, self._df_factor_returns.reset_index(), on="datetime", suffixes=("", "_factor_returns"))
 
         # Multiplying matching columns
-        for col in self._fos_risk_factor_uuids:
+        for col in (self._fos_risk_factor_uuids + self._fos_industry_factors):
             self._df_idio[f"calc_f_r_{col}"] = self._df_idio[col] * self._df_idio[f"returns_{col}"]
 
         # # Dropping the extra columns
-        self._df_idio = self._df_idio.drop(columns=self._fos_risk_factor_uuids).drop(columns=cols_with_return)   # drop factor exposure columns
-        self._df_idio["factor_return_1d"] = self._df_idio[[f"calc_f_r_{col}" for col in self._fos_risk_factor_uuids]].sum(axis=1)
+        self._df_idio = self._df_idio.drop(columns=self._fos_risk_factor_uuids).drop(columns = self._fos_industry_factors).drop(columns=cols_with_return)   # drop factor exposure columns
+        self._df_idio["factor_return_1d"] = self._df_idio[[f"calc_f_r_{col}" for col in (self._fos_risk_factor_uuids + self._fos_industry_factors)]].sum(axis=1)
         self._df_idio["factor_return_1d_error"] = self._df_idio["factor_return_1d"] - self._df_idio["return_1d"]
         self._df_idio = self._df_idio[["datetime", "id", "return_1d", "factor_return_1d", "factor_return_1d_error"]]
         self._df_idio_returns = self._df_idio[["datetime", "id", "factor_return_1d_error"]].rename({"factor_return_1d_error":'idio_return'})
@@ -157,7 +173,7 @@ class FactorRisk(BaseRisk):
             self._df_cov_VRA = factorcovadjuster.calc_volatility_regime_frm()                                                       
 
         return 
-        
+
     def _estimated_cost_for_optimization(self, t, w_plus, z, value):
         """Optimization (non-cash) cost penalty for assuming associated asset risk.
 
