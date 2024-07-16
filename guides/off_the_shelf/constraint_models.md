@@ -153,7 +153,7 @@ Instantiate with the following arguments:
 
 -   limit: float = 0.025
 
-## Long Constraints
+## Long Constraints, Portfolio
 
 ### LongOnlyConstraint
 
@@ -175,7 +175,17 @@ To instantiate EqualLongShortConstraint you will need to set the following argum
 
 -   exclude_assets: [str] = ["cash"]
 
-## Weight Constraints
+## Turnover Constraints, Trade
+
+### MaxAbsTurnoverConstraint
+
+[MaxAbsTurnoverConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/trade_constraint.py) enforces an absolute (trade) turnover weight limit.
+
+Instantiate with the following arguments:
+
+-   limit: float = 0.05
+
+## Weight Constraints, Portfolio
 
 ### MaxWeightConstraint
 
@@ -194,6 +204,40 @@ To instantiate MinWeightConstraint you will need to set the following arguments:
 
 -   limit: float = -0.025
 -   exclude_assets: [str] = ["cash"]
+
+### ZeroWeightConstraint
+
+[ZeroWeightConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/weight_constraint.py) enforces zero portfolio weight for included assets.
+
+Instantiate with the following arguments:
+
+-   include_assets: [str] = ["TBU"]
+
+## Weight Constraints, Trade
+
+### ZeroTradeWeightConstraint
+
+[ZeroTradeWeightConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/weight_constraint.py) enforces zero trade weight for included/excluded assets.
+
+Instantiate with the following arguments:
+
+-   include_assets: [str] = ["TBU"]
+
+### MaxTradeWeightConstraint
+
+[MaxTradeWeightConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/weight_constraint.py) enforces max trade weight for included/excluded assets.
+
+Instantiate with the following arguments:
+
+-   limit: float = 0.05
+
+### MinTradeWeightConstraint
+
+[MinTradeWeightConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/weight_constraint.py) enforces min trade weight for included/excluded assets.
+
+Instantiate with the following arguments:
+
+-   limit: float = -0.03
 
 ## A Quick Note
 
