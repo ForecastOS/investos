@@ -6,7 +6,7 @@ from investos.portfolio.risk_model.factor_utils import cov_ewa
 class FactorCovAdjuster:
     """Adjustments on factor covariance matrix"""
 
-    def __init__(self, FRM: pd.DataFrame, recalc_freq: int, window: int | None = None, ) -> None:
+    def __init__(self, FRM: pd.DataFrame, recalc_freq: int, window: int | None = None) -> None:
         """Initialization
 
         Parameters
@@ -96,12 +96,10 @@ class FactorCovAdjuster:
         np.ndarray
             Newey-West adjusted FCM, denoted by `F_NW`
         """
-        #FCM = F_RAW          # update FCM = F_RAW first
         for D in range(1, max_lags + 1):
             C_pos_delta = cov_ewa(FRM, half_life, D)
             FCM += (1 - D / (1 + max_lags)) * (C_pos_delta + C_pos_delta.T)
 
-        #FCM *= forecast_period           # adjustment: forecast_period
         D, U = np.linalg.eigh(FCM * multiplier)
         D[D <= 0] = 1e-14  # fix numerical error
         FCM = U.dot(np.diag(D)).dot(U.T)

@@ -4,7 +4,7 @@ import pandas as pd
 
 class AssetDigonalVarAdjuster:
 
-    def __init__(self, df_idio_returns, window=None):
+    def __init__(self, df_idio_returns,window: int | None = 251, recalc_freq: int = 21):
         """Initialization
 
         Parameters
@@ -23,15 +23,10 @@ class AssetDigonalVarAdjuster:
             self.window = window
             self.first_level_index = df_idio_returns.index[self.window-1:]
         else:
-            #self.first_level_index = df_idio_returns.index
             self.window = 0
-        
-        self._df_idio_returns = df_idio_returns
-        self.second_level_index = df_idio_returns.id.unique()
-        self.first_level_index = df_idio_returns.index[self.window-1:]
-    @property
-    def ids(self):
-        return self._second_level_index
+        self.recalc_freq = recalc_freq        
+        self._df_idio_returns = df_idio_returns.set_index(['datetime','id']).sort_values(by='datetime')
+        self.first_level_index = self._df_idio_returns.index.get_level_values(0).unique()[[idx for idx in range(len(self._df_idio_returns.index.get_level_values(0).unique()) - 1, self.window, -self.recalc_freq)]]
 
     def convert_cov_matrices(self,cov_matrices: list) -> pd.DataFrame:
         """Convert the list of covariance matrix (3D) to 2D pandas DataFrame
@@ -46,22 +41,13 @@ class AssetDigonalVarAdjuster:
         pd.DataFrame
             cov_matrices, 2D pandas.DataFrame with 2 level of index (datetime, factor)
         """
-        #print(cov_matrices)
-        #cov_matrices = np.array(cov_matrices)
-        # for idx in self.first_level_index:
-        #     cov_matrices[idx]['datetime'] = self.first_level_index[idx]
-        #     cov_matrices[idx].set_index('datetime', append = True, inplace = True)
-        #print(len(self.second_level_index))
-        #multi_index = pd.MultiIndex.from_product([self.first_level_index, self.second_level_index], names=['datetime', 'factor'])
-        #print(cov_matrices[0].shape)
-        #return pd.DataFrame(cov_matrices.reshape((-1, cov_matrices.shape[-1])), index = multi_index)
         for idx in range(len(cov_matrices)):
             cov_matrices[idx]['datetime'] = self.first_level_index[idx]
             cov_matrices[idx] = cov_matrices[idx].reset_index().set_index(['datetime','id'])
         return pd.concat(cov_matrices)
 
 
-    def idio_var_emwa(self, df_idio_returns, half_life: int = None):
+    def idio_var_emwa(self, df_idio_returns, half_life: int = 360):
         """
         Calculate the EWMA idiosyncratic return diagonal variance matrix.
         
@@ -98,16 +84,15 @@ class AssetDigonalVarAdjuster:
         
         return pd.DataFrame(ewma_variance, index = ewma_variance.index, columns = ['idio_variance'])    # this is variance
 
-    def calc_idio_var_raw(self,half_life):
+    def calculate_ewma_idiosyncratic_variance(self,half_life: int= 360):
 
         cov_matrices = []
         if not self.window:
 
-            cov_matrices.append(self.idio_var_emwa(self._df_idio_returns,half_life))            
+            cov_matrices.append(self.idio_var_emwa(df_idio_returns = self._df_idio_returns,half_life = half_life))            
         else:
             for date in self.first_level_index:
-
-                cov_matrices.append(self.idio_var_emwa(self._df_idio_returns.loc[date - pd.Timedelta(days = self.window):date,:],half_life))
+                cov_matrices.append(self.idio_var_emwa(df_idio_returns = self._df_idio_returns.loc[date - pd.Timedelta(days = self.window):date,:],half_life = half_life))
 
         self._cov_matrices = cov_matrices
         return self.convert_cov_matrices(cov_matrices)

@@ -54,7 +54,6 @@ class FactorRisk(BaseRisk):
     # Initialization
     def _pull_fos_risk_factor_dfs(self):
         # pull from feature hub
-        os.environ["FORECASTOS_API_KEY"] = 'Hww7MSwEUxJFH93u64APbaUbcqNAgj' # will delete this later
         fos.api_key = os.environ.get("FORECASTOS_API_KEY")                  #.env including my api_key
         if not fos.api_key:
             raise ValueError("Feature hub connection failed. Please check the API key is valid.")
@@ -172,6 +171,13 @@ class FactorRisk(BaseRisk):
             print("\n apply Factor Volatility Regime Adjustment")
             self._df_cov_VRA = factorcovadjuster.calc_volatility_regime_frm()                                                       
 
+        """
+        generate idio return variance and apply adjustment
+        """
+        if "IdioVarEstArgs" in self._adjustments:
+            print("\n Estimate Idio Return Variance")
+            delta = AssetDigonalVarAdjuster(self._df_idio_returns,window = self._risk_model_window, recalc_freq=self._recalc_freq)
+            self._df_idio_var_raw = delta.calculate_ewma_idiosyncratic_variance()             #self._df_idio_returns
         return 
 
     def _estimated_cost_for_optimization(self, t, w_plus, z, value):
