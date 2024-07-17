@@ -97,3 +97,37 @@ class MinWeightConstraint(BaseConstraint):
             The holding constraints based on the portfolio weights after trades.
         """
         return w_plus >= self.limit
+
+
+class ZeroWeightConstraint(BaseConstraint):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def _weight_expr(self, t, w_plus, z, v):
+        return w_plus == 0
+
+
+class ZeroTradeWeightConstraint(BaseConstraint):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def _weight_expr(self, t, w_plus, z, v):
+        return z == 0
+
+
+class MaxTradeWeightConstraint(BaseConstraint):
+    def __init__(self, limit=0.05, **kwargs):
+        self.limit = limit
+        super().__init__(**kwargs)
+
+    def _weight_expr(self, t, w_plus, z, v):
+        return z <= self.limit
+
+
+class MinTradeWeightConstraint(BaseConstraint):
+    def __init__(self, limit=-0.03, **kwargs):
+        self.limit = limit
+        super().__init__(**kwargs)
+
+    def _weight_expr(self, t, w_plus, z, v):
+        return z >= self.limit

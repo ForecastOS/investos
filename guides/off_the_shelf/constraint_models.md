@@ -33,7 +33,81 @@ All constraint models take the following optional arguments:
 
 InvestOS provides the following constraint models:
 
-## Leverage Constraints
+## Factor Constraints, Portfolio
+
+### ZeroFactorExposureConstraint
+
+[ZeroFactorExposureConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/factor_constraint.py) enforces 0 net portfolio weight in a given factor.
+
+Instantiate with the following arguments:
+
+-   `factor_exposure`: pd.DataFrame (asset ID columns and datetime index) or pd.Series (asset ID index, if same value across datetime)
+
+### MaxFactorExposureConstraint
+
+[MaxFactorExposureConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/factor_constraint.py) enforces max portfolio weight in a given factor.
+
+Instantiate with the following arguments:
+
+-   limit: float = 0.05
+-   `factor_exposure`: pd.DataFrame (asset ID columns and datetime index) or pd.Series (asset ID index, if same value across datetime)
+
+### MinFactorExposureConstraint
+
+[MinFactorExposureConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/factor_constraint.py) enforces min portfolio weight in a given factor.
+
+Instantiate with the following arguments:
+
+-   limit: float = -0.05
+-   `factor_exposure`: pd.DataFrame (asset ID columns and datetime index) or pd.Series (asset ID index, if same value across datetime)
+
+### MaxAbsoluteFactorExposureConstraint
+
+[MaxAbsoluteFactorExposureConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/factor_constraint.py) enforces max absolute portfolio weight in a given factor.
+
+Instantiate with the following arguments:
+
+-   limit: float = 0.4
+-   `factor_exposure`: pd.DataFrame (asset ID columns and datetime index) or pd.Series (asset ID index, if same value across datetime)
+
+## Factor Constraints, Trade
+
+### ZeroTradeFactorExposureConstraint
+
+[ZeroTradeFactorExposureConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/factor_constraint.py) enforces 0 net **trade** weight in a given factor.
+
+Instantiate with the following arguments:
+
+-   `factor_exposure`: pd.DataFrame (asset ID columns and datetime index) or pd.Series (asset ID index, if same value across datetime)
+
+### MaxTradeFactorExposureConstraint
+
+[MaxTradeFactorExposureConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/factor_constraint.py) enforces max **trade** weight in a given factor.
+
+Instantiate with the following arguments:
+
+-   limit: float = 0.05
+-   `factor_exposure`: pd.DataFrame (asset ID columns and datetime index) or pd.Series (asset ID index, if same value across datetime)
+
+### MinTradeFactorExposureConstraint
+
+[MinTradeFactorExposureConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/factor_constraint.py) enforces min **trade** weight in a given factor.
+
+Instantiate with the following arguments:
+
+-   limit: float = -0.05
+-   `factor_exposure`: pd.DataFrame (asset ID columns and datetime index) or pd.Series (asset ID index, if same value across datetime)
+
+### MaxAbsoluteTradeFactorExposureConstraint
+
+[MaxAbsoluteTradeFactorExposureConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/factor_constraint.py) enforces max absolute **trade** weight in a given factor.
+
+Instantiate with the following arguments:
+
+-   limit: float = 0.01
+-   `factor_exposure`: pd.DataFrame (asset ID columns and datetime index) or pd.Series (asset ID index, if same value across datetime)
+
+## Leverage Constraints, Portfolio
 
 ### MaxLeverageConstraint
 
@@ -61,7 +135,25 @@ To instantiate MaxLongLeverageConstraint you will need to set the following argu
 
 -   limit: float = 1.0
 
-## Long Constraints
+## Leverage Constraints, Trade
+
+### MaxLongTradeLeverageConstraint
+
+[MaxLongTradeLeverageConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/leverage_constraint.py) enforces a max on the long leverage of the trade.
+
+Instantiate with the following arguments:
+
+-   limit: float = 0.025
+
+### MaxShortTradeLeverageConstraint
+
+[MaxShortTradeLeverageConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/leverage_constraint.py) enforces a max on the short leverage of the trade.
+
+Instantiate with the following arguments:
+
+-   limit: float = 0.025
+
+## Long Constraints, Portfolio
 
 ### LongOnlyConstraint
 
@@ -83,7 +175,17 @@ To instantiate EqualLongShortConstraint you will need to set the following argum
 
 -   exclude_assets: [str] = ["cash"]
 
-## Weight Constraints
+## Turnover Constraints, Trade
+
+### MaxAbsTurnoverConstraint
+
+[MaxAbsTurnoverConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/trade_constraint.py) enforces an absolute (trade) turnover weight limit.
+
+Instantiate with the following arguments:
+
+-   limit: float = 0.05
+
+## Weight Constraints, Portfolio
 
 ### MaxWeightConstraint
 
@@ -102,6 +204,40 @@ To instantiate MinWeightConstraint you will need to set the following arguments:
 
 -   limit: float = -0.025
 -   exclude_assets: [str] = ["cash"]
+
+### ZeroWeightConstraint
+
+[ZeroWeightConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/weight_constraint.py) enforces zero portfolio weight for included assets.
+
+Instantiate with the following arguments:
+
+-   include_assets: [str] = ["TBU"]
+
+## Weight Constraints, Trade
+
+### ZeroTradeWeightConstraint
+
+[ZeroTradeWeightConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/weight_constraint.py) enforces zero trade weight for included/excluded assets.
+
+Instantiate with the following arguments:
+
+-   include_assets: [str] = ["TBU"]
+
+### MaxTradeWeightConstraint
+
+[MaxTradeWeightConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/weight_constraint.py) enforces max trade weight for included/excluded assets.
+
+Instantiate with the following arguments:
+
+-   limit: float = 0.05
+
+### MinTradeWeightConstraint
+
+[MinTradeWeightConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/weight_constraint.py) enforces min trade weight for included/excluded assets.
+
+Instantiate with the following arguments:
+
+-   limit: float = -0.03
 
 ## A Quick Note
 

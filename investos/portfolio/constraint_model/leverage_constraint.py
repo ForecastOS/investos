@@ -111,3 +111,21 @@ class MaxLongLeverageConstraint(BaseConstraint):
             The holding constraints based on the portfolio leverage after trades.
         """
         return cvx.sum(cvx.pos(w_plus)) <= self.limit
+
+
+class MaxLongTradeLeverageConstraint(BaseConstraint):
+    def __init__(self, limit=0.025, **kwargs):
+        self.limit = limit
+        super().__init__(**kwargs)
+
+    def _weight_expr(self, t, w_plus, z, v):
+        return cvx.sum(cvx.abs(cvx.pos(z))) <= self.limit
+
+
+class MaxShortTradeLeverageConstraint(BaseConstraint):
+    def __init__(self, limit=0.025, **kwargs):
+        self.limit = limit
+        super().__init__(**kwargs)
+
+    def _weight_expr(self, t, w_plus, z, v):
+        return cvx.sum(cvx.abs(cvx.neg(z))) <= self.limit
