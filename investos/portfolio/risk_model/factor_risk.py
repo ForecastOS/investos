@@ -10,7 +10,7 @@ from sklearn.preprocessing import StandardScaler
 from investos.portfolio.risk_model import BaseRisk
 from investos.portfolio.risk_model.utils import *
 
-
+# will comment out this later
 class FactorRisk(BaseRisk):
     """Multi-factor risk model."""
 
@@ -20,6 +20,8 @@ class FactorRisk(BaseRisk):
         factor_covariance = None, factor_loadings = None, idiosyncratic_variance = None,
         **kwargs):
         super().__init__(**kwargs)
+        self._risk_model_window = risk_model_window             #pd.Timedelta(days = risk_model_window)
+        self._recalc_freq = recalc_freq                         #pd.Timedelta(days = recalc_freq)
 
         self._risk_model_window = risk_model_window             
         self._recalc_freq = recalc_freq                         

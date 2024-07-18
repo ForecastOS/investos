@@ -140,6 +140,9 @@ class BaseResult(SaveResult):
         return pd.Series(
             data=val.values[1:] / val.values[:-1] - 1, index=val.index[1:]
         ).dropna()
+    @property
+    def log_returns(self):
+        return np.log(self.returns + 1)
 
     @property
     def portfolio_hit_rate(self):
