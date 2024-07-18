@@ -228,7 +228,6 @@ class AssetDigonalVarAdjuster:
 
         if window:
             self.window = window
-            self.datetime_index = df_idio_returns.index[self.window-1:]
         else:
             self.window = 0
         self.recalc_freq = recalc_freq        
