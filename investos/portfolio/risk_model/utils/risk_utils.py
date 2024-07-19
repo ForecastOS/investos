@@ -1,5 +1,5 @@
 from typing import Sequence
-import pandas as pd
+
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.neighbors import KernelDensity
@@ -25,14 +25,17 @@ def get_t_statistics(model, X, y):
     """
     y_hat = model.predict(X)
     residuals = y - y_hat
-    residual_sum_squares = (residuals ** 2).sum()
-    num_of_factors, sample_size= X.shape[1], len(y)
-    root_square_error = (residual_sum_squares / (sample_size - num_of_factors - 1)) ** 0.5
+    residual_sum_squares = (residuals**2).sum()
+    num_of_factors, sample_size = X.shape[1], len(y)
+    root_square_error = (
+        residual_sum_squares / (sample_size - num_of_factors - 1)
+    ) ** 0.5
 
     # temporary use. Current we ignore the warning from the denominator is zero
-    with np.errstate(divide='ignore', invalid='ignore'):
-        t_values = np.divide(model.coef_, (root_square_error / sample_size ** 0.5))
+    with np.errstate(divide="ignore", invalid="ignore"):
+        t_values = np.divide(model.coef_, (root_square_error / sample_size**0.5))
     return t_values
+
 
 def ewa(arr: Sequence, half_life: int | None = None) -> float | np.ndarray:
     """Exponential Weighted Average (EWA)
@@ -59,7 +62,9 @@ def ewa(arr: Sequence, half_life: int | None = None) -> float | np.ndarray:
     return (weights * arr).sum(axis=0) / sum_weight
 
 
-def calc_ewma_cov(data: np.ndarray, half_life: int | None = None, lag: int = 0) -> np.ndarray:
+def calc_ewma_cov(
+    data: np.ndarray, half_life: int | None = None, lag: int = 0
+) -> np.ndarray:
     """Calculate the covariance matrix as an exponential weighted average of range
 
     Parameters
@@ -145,12 +150,12 @@ def draw_eigvals_edf(
     plt.plot(x, probs, label=label)
 
 
-def getExpWeight(window_len: int ,half_life: int ,is_unitized: bool =True):
+def getExpWeight(window_len: int, half_life: int, is_unitized: bool = True):
     """Obtain the list of weights"""
 
-    ExpWeight = (0.5**(1/half_life))**np.arange(window_len)
+    ExpWeight = (0.5 ** (1 / half_life)) ** np.arange(window_len)
     if is_unitized:
-        return np.ndarray(ExpWeight/np.sum(ExpWeight))
+        return np.ndarray(ExpWeight / np.sum(ExpWeight))
     else:
         return np.ndarray(ExpWeight)
 
@@ -164,10 +169,17 @@ class BiasStatsCalculator:
             returns (np.ndarray): returns of K (num_of_factors) assets * (length_of_dates) periods
             volatilities (np.ndarray): volatilities (std) of num_of_factors assets * length_of_dates periods
         """
-        self.num_of_factors, self.length_of_dates = returns.shape if returns.ndim == 2 else (1, len(returns))
-        self.factor_returns = returns.reshape((self.num_of_factors, self.length_of_dates))
+        self.num_of_factors, self.length_of_dates = (
+            returns.shape if returns.ndim == 2 else (1, len(returns))
+        )
+        self.factor_returns = returns.reshape(
+            (self.num_of_factors, self.length_of_dates)
+        )
         self.factor_stds = stds.reshape((self.num_of_factors, -1))
-        if self.factor_stds.shape[1] != 1 and self.factor_stds.shape[1] != self.length_of_dates:
+        if (
+            self.factor_stds.shape[1] != 1
+            and self.factor_stds.shape[1] != self.length_of_dates
+        ):
             raise ValueError("wrong shape of standard deviation")
 
     def single_window(self, half_life: int | None = 42) -> np.ndarray:
@@ -178,7 +190,9 @@ class BiasStatsCalculator:
             np.ndarray: bias statistics value(s) (num_of_factors * 1)
         """
         bias = self.factor_returns / self.factor_stds
-        factor_bias_stats = np.sqrt(np.mean((bias)**2,axis = 0)).reshape(self.length_of_dates,1)
+        factor_bias_stats = np.sqrt(np.mean((bias) ** 2, axis=0)).reshape(
+            self.length_of_dates, 1
+        )
         factor_vol_multiplier = np.sqrt(ewa(factor_bias_stats**2, half_life))
         return factor_vol_multiplier
 
