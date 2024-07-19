@@ -13,12 +13,13 @@ from investos.portfolio.risk_model.utils.risk_adjustments import (
     FactorCovAdjuster,
 )
 
-global factor_uuids
-factor_uuids = {
-    # Industry
-    "industry": "6f8829e2-6424-4c9a-b05d-d0e5c580859b",
+fos_return_uuid_dict = {
     # For momentum and market beta
     "return_1d": "ea4d2557-7f8f-476b-b4d3-55917a941bb5",
+}
+fos_risk_factor_uuids_dict = {
+    # Industry
+    "industry": "6f8829e2-6424-4c9a-b05d-d0e5c580859b",
     # Size
     "market_cap_open_dil": "dfa7e6a3-671d-41b2-89e3-10b7bdcf7af9",
     # For liquidity (probably very correlated with size and not needed)
@@ -49,7 +50,7 @@ class FactorRisk(BaseRisk):
         risk_model_window: int,
         recalc_freq: int,
         fos_risk_factor_uuids: list = [],
-        fos_return_uuid: list = ["return_1d"],
+        fos_return_uuid: str = "return_1d",
         adjustments: dict = {"FactorCovEstArgs": {"window": 21, "half_life": 360}},
         factor_covariance=None,
         factor_loadings=None,
@@ -93,14 +94,14 @@ class FactorRisk(BaseRisk):
 
         # Initialize a DataFrame
         self._df_loadings = (
-            fos.Feature.get(factor_uuids[self._fos_return_uuid[0]])
+            fos.Feature.get(fos_return_uuid_dict[self._fos_return_uuid])
             .get_df()
-            .rename(columns={"value": self._fos_return_uuid[0]})
+            .rename(columns={"value": self._fos_return_uuid})
         )
 
         for factor in self._fos_risk_factor_uuids:
             temp_df = (
-                fos.Feature.get(factor_uuids[factor])
+                fos.Feature.get(fos_risk_factor_uuids_dict[factor])
                 .get_df()
                 .rename(columns={"value": factor})
             )
@@ -157,7 +158,7 @@ class FactorRisk(BaseRisk):
             if col
             not in ["datetime", "id"]
             + self._fos_risk_factor_uuids
-            + self._fos_return_uuid
+            + [self._fos_return_uuid]
         ]
         scaler = StandardScaler()
         self._factor_returns = {}
@@ -174,10 +175,9 @@ class FactorRisk(BaseRisk):
                     df_current.loc[:, col].values.reshape(-1, 1)
                 ).flatten()
             # winsorzie return
-            for col in self._fos_return_uuid:
-                df_current.loc[:, col] = mstats.winsorize(
-                    df_current.loc[:, col], limits=(0.05, 0.95)
-                )
+            df_current.loc[:, self._fos_return_uuid] = mstats.winsorize(
+                df_current.loc[:, self._fos_return_uuid], limits=(0.05, 0.95)
+            )
 
             y, X = (
                 df_current.loc[:, self._fos_return_uuid],
