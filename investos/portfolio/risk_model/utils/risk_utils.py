@@ -33,7 +33,7 @@ def get_t_statistics(model, X, y):
     with np.errstate(divide='ignore', invalid='ignore'):
         t_values = np.divide(model.coef_, (root_square_error / sample_size ** 0.5))
     return t_values
-    
+
 def ewa(arr: Sequence, half_life: int | None = None) -> float | np.ndarray:
     """Exponential Weighted Average (EWA)
 
