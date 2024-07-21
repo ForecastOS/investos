@@ -3,12 +3,12 @@ import pandas as pd
 
 from investos.portfolio.risk_model.utils.risk_utils import (
     BiasStatsCalculator,
-    calc_ewma_cov,
+    calc_exp_weighted_moving_avg_cov,
 )
 
 
-class FactorCovAdjuster:
-    """Adjustments on factor covariance matrix"""
+class FactorCovarianceProcessor:
+    """Generate factor covariance matrix and apply adjustments on it"""
 
     def __init__(
         self,
@@ -16,17 +16,6 @@ class FactorCovAdjuster:
         recalc_freq: int,
         window: int | None = None,
     ) -> None:
-        """Initialization
-
-        Parameters
-        ----------
-        factor_return_matrix : np.ndarray
-            Factor return matrix (num_of_dates * num_of_factors)
-        recalc_freq: int
-
-        window: int
-
-        """
         self.length_of_dates, self.num_of_factors = factor_return_matrix.shape
         if self.num_of_factors > self.length_of_dates:
             raise Exception("number of periods must be larger than number of factors")
@@ -51,18 +40,7 @@ class FactorCovAdjuster:
         ]
 
     def convert_cov_matrices(self, cov_matrices: list) -> pd.DataFrame:
-        """Convert the list of covariance matrix (3D) to 2D pandas DataFrame
-
-        Parameters
-        ----------
-        cov_matrices : list
-            A list of covariance matrix (one or more depends on the window)
-
-        Returns
-        -------
-        pd.DataFrame
-            cov_matrices, 2D pandas.DataFrame with 2 level of index (datetime, factor)
-        """
+        """Convert the list of covariance matrix (3D) to 2D pandas DataFrame"""
         cov_matrices = np.array(cov_matrices)
         multi_index = pd.MultiIndex.from_product(
             [self.datetime_index, self.factor_index], names=["datetime", "factor"]
@@ -76,32 +54,21 @@ class FactorCovAdjuster:
     def est_factor_cov_matrix_raw(
         self, factor_return_matrix: pd.DataFrame, half_life: int | None = None
     ) -> pd.DataFrame:
-        """Calculate the factor covariance matrix, factor_cov_matrix (K*K)
-
-        Parameters
-        ----------
-        factor_return_matrix: pd.DataFrame
-            Factor return matrix (T*K)
-        half_life : int
-            Steps it takes for weight in EWA to reduce to half of the original value
-
-        Returns
-        -------
-        np.ndarray
-            factor_cov_matrix, denoted by `F_Raw`
-        """
+        """Calculate the raw factor covariance matrix"""
         cov_matrices = []
         factor_return_matrix = factor_return_matrix.astype("float64")
         if not self.window:
             cov_matrices.append(
-                calc_ewma_cov(factor_return_matrix.T.to_numpy(), half_life)
+                calc_exp_weighted_moving_avg_cov(
+                    factor_return_matrix.T.to_numpy(), half_life
+                )
             )
         else:
             for idx in range(
                 len(factor_return_matrix) - 1, self.window, -self.recalc_freq
             ):
                 cov_matrices.append(
-                    calc_ewma_cov(
+                    calc_exp_weighted_moving_avg_cov(
                         factor_return_matrix.iloc[
                             idx - self.window : idx, :
                         ].T.to_numpy(),
@@ -120,24 +87,11 @@ class FactorCovAdjuster:
         max_lags: int,
         multiplier: float,
     ) -> np.ndarray:
-        """Apply Newey-West adjustment on `F_Raw`
-
-        Parameters
-        ----------
-        half_life : int
-            Steps it takes for weight in EWA to reduce to half of the original value
-        max_lags : int
-            Maximum Newey-West correlation lags
-        multiplier : int
-            Number of periods a factor_cov_matrix with new frequence contains
-
-        Returns
-        -------
-        np.ndarray
-            Newey-West adjusted factor_cov_matrix, denoted by `F_NW`
-        """
+        """Apply Newey-West adjustment on covariance matrix"""
         for d in range(1, max_lags + 1):
-            cov_pos_delta = calc_ewma_cov(factor_return_matrix, half_life, d)
+            cov_pos_delta = calc_exp_weighted_moving_avg_cov(
+                factor_return_matrix, half_life, d
+            )
             factor_cov_matrix += (1 - d / (1 + max_lags)) * (
                 cov_pos_delta + cov_pos_delta.T
             )
@@ -191,20 +145,7 @@ class FactorCovAdjuster:
     def eigenfactor_risk_adjust(
         self, factor_cov_matrix, coef: float, window: int, num_sim: int = 1000
     ) -> np.ndarray:
-        """Apply eigenfactor risk adjustment on `F_NW`
-
-        Parameters
-        ----------
-        coef : float
-            Adjustment coefficient
-        M : int, optional
-            Times of Monte Carlo simulation, by default 1000
-
-        Returns
-        -------
-        np.ndarray
-            Eigenfactor risk adjusted factor_cov_matrix, denoted by `F_Eigen`
-        """
+        """Apply eigenfactor risk adjustment on factor covariance matrix"""
 
         eigen_vals_0, eigen_vecs_0 = np.linalg.eigh(factor_cov_matrix)  # F_NW
         eigen_vals_0[eigen_vals_0 <= 0] = (
@@ -273,28 +214,11 @@ class FactorCovAdjuster:
     def volatility_regime_adjust(
         self, factor_cov_matrix, factor_return_matrix: np.ndarray, half_life: int
     ) -> np.ndarray:
-        """Apply volatility regime adjustment on `F_Eigen`
-
-        Parameters
-        ----------
-        factor_cov_matrix : np.ndarray
-            Previously estimated factor covariance matrix (last `F_Eigen`, since `F_VRA`
-            could lead to huge fluctuations) on only one period (not aggregated); the
-            order of factors should remain the same
-        half_life : int
-            Steps it takes for weight in EWA to reduce to half of the original value
-
-        factor_return_matrix: np.ndarray
-            Factor return matrix (T*K)
-        Returns
-        -------
-        np.ndarray
-            Volatility regime adjusted factor_cov_matrix, denoted by `F_VRA`
-        """
+        """Apply volatility regime adjustment on factor covariance matrix"""
         factor_std = np.sqrt(np.diag(factor_cov_matrix))
         bias_stats = BiasStatsCalculator(
             factor_return_matrix, factor_std
-        ).single_window(half_life)  # need to be fixed: using rolling window
+        ).apply_single_window(half_life)  # need to be fixed: using rolling window
         factor_cov_matrix = factor_cov_matrix * (
             bias_stats**2
         )  # .mean(axis=0)  # Lambda^2
@@ -332,22 +256,11 @@ class FactorCovAdjuster:
         return self.factor_cov_matrix
 
 
-class AssetDigonalVarAdjuster:
+class IdiosyncraticVarianceProcessor:
     def __init__(
         self, df_idio_returns, window: int | None = 251, recalc_freq: int = 21
     ):
-        """Initialization
-
-        Parameters
-        ----------
-        df_loadings: pd.DataFrame
-        df_factor_returns: pd.DataFrame
-
-        Return
-        ----------
-        IVM (Idiosyncratic Variance Matrix (IVM): pd.DataFrame
-         A matrix that contains the variances of the idiosyncratic (or specific) risks of different assets. This matrix is typically diagonal, where each diagonal element represents the variance of the idiosyncratic risk of an asset.
-        """
+        """Generate idiosyncratic variance matrix"""
 
         if window:
             self.window = window
@@ -370,18 +283,7 @@ class AssetDigonalVarAdjuster:
         ]
 
     def convert_cov_matrices(self, cov_matrices: list) -> pd.DataFrame:
-        """Convert the list of covariance matrix (3D) to 2D pandas DataFrame
-
-        Parameters
-        ----------
-        cov_matrices : list
-            A list of covariance matrix (one or more depends on the window)
-
-        Returns
-        -------
-        pd.DataFrame
-            cov_matrices, 2D pandas.DataFrame with 2 level of index (datetime, factor)
-        """
+        """Convert the list of covariance matrix (3D) to 2D pandas DataFrame"""
         for idx in range(len(cov_matrices)):
             cov_matrices[idx]["datetime"] = self.datetime_index[idx]
             cov_matrices[idx] = (
@@ -390,21 +292,7 @@ class AssetDigonalVarAdjuster:
         return pd.concat(cov_matrices)
 
     def idio_var_emwa(self, df_idio_returns, half_life: int = 360):
-        """
-        Calculate the EWMA idiosyncratic return diagonal variance matrix.
-
-        Parameters:
-        ----------
-        df_idio_returns : pd.DataFrame
-        DataFrame containing columns 'datetime', 'id', and 'returns'.
-
-        half_life : int
-        Half-life for the EWMA calculation.
-
-        Returns:
-        -------
-        pd.DataFrame: Diagonal variance matrix.
-        """
+        """Calculate the exponentially weighted moving average idiosyncratic return diagonal variance matrix."""
         # Convert datetime to pandas datetime format if not already
         df_idio_returns_cp = df_idio_returns.reset_index().copy()
         df_idio_returns_cp.loc[:, "datetime"] = pd.to_datetime(
