@@ -107,7 +107,7 @@ class FactorCovarianceProcessor:
         self,
         max_lags: int = 1,
         multiplier: float = 1.2,
-        half_life: int | None = 480,
+        half_life: int | None = 90,
     ) -> pd.DataFrame:
         cov_matrices = []
         if not self.window:
@@ -183,10 +183,10 @@ class FactorCovarianceProcessor:
         self,
         max_lags: int = 1,
         multiplier: float = 1.2,
-        half_life: int | None = 480,
+        half_life: int | None = 90,
         coef: float = 1.2,
         num_of_sim: int = 1000,
-        window: int = 480,
+        window: int = 252,
     ) -> pd.DataFrame:
         cov_matrices = []
         if not self.window:
@@ -224,7 +224,7 @@ class FactorCovarianceProcessor:
         )  # .mean(axis=0)  # Lambda^2
         return factor_cov_matrix
 
-    def apply_volatility_regime_adjustment(self, half_life: int | None = 480):
+    def apply_volatility_regime_adjustment(self, half_life: int | None = 90):
         cov_matrices = []
         if not self.window:
             cov_matrices.append(
