@@ -311,6 +311,8 @@ class FactorRisk(BaseRisk):
             .sort_index(axis=0)
         )
 
+        self.factor_loadings.columns = self.factor_loadings.columns.droplevel(0)
+
     def _apply_risk_model_adjustments(self):
         pass
 
