@@ -1,8 +1,10 @@
 import datetime as dt
+from datetime import datetime
 
 import cvxpy as cvx
 import numpy as np
 import pandas as pd
+from dask import compute, delayed
 
 import investos.util as util
 from investos.portfolio.constraint_model import (
@@ -13,7 +15,7 @@ from investos.portfolio.constraint_model import (
 from investos.portfolio.cost_model import BaseCost
 from investos.portfolio.risk_model import BaseRisk
 from investos.portfolio.strategy import BaseStrategy
-from investos.util import values_in_time
+from investos.util import _solve_and_extract_z, values_in_time
 
 
 class SPOTranches(BaseStrategy):
@@ -64,20 +66,7 @@ class SPOTranches(BaseStrategy):
         self.n_periods_held = n_periods_held
         self.u_unwind = {}
 
-    def generate_trade_list(self, holdings: pd.Series, t: dt.datetime) -> pd.Series:
-        """Calculates and returns trade list (in units of currency passed in) using convex (single period) optimization.
-
-        Parameters
-        ----------
-        holdings : pandas.Series
-            Holdings at beginning of period `t`.
-        t : datetime.datetime
-            The datetime for associated holdings `holdings`.
-        """
-
-        if t is None:
-            t = dt.datetime.today()
-
+    def formulate_optimization_problem(self, holdings: pd.Series, t: dt.datetime):
         value = sum(holdings)
         w = holdings / value  # Portfolio weights
         z = cvx.Variable(w.size)  # Portfolio trades
@@ -93,7 +82,9 @@ class SPOTranches(BaseStrategy):
         costs, constraints = [], []
 
         for cost in self.costs:
-            cost_expr, const_expr = cost.weight_expr(t, wplus, z, value, holdings.index)
+            cost_expr, const_expr = cost.weight_expr(
+                t, z, z, value, holdings.index
+            )  # z only: only calc costs per tranche, no wplus for tranche opt class
             costs.append(cost_expr)
             constraints += const_expr
 
@@ -118,21 +109,64 @@ class SPOTranches(BaseStrategy):
 
         objective = cvx.Maximize(alpha_term - cvx.sum(costs))
         constraints += [cvx.sum(z) == 0]
-        self.prob = cvx.Problem(
+        prob = cvx.Problem(
             objective, constraints
         )  # Trades need to 0 out, i.e. cash account must adjust to make everything net to 0
 
-        try:
-            self.prob.solve(solver=self.solver, **self.solver_opts)
+        return (prob, z)
 
-            if self.prob.status == "unbounded":
+    def precompute_trades_distributed(self, holdings: pd.Series, time_periods):
+        delayed_tasks = []
+        z_variables = []
+
+        for t in time_periods:
+            # Create convex optimization problem
+            prob, z = self.formulate_optimization_problem(holdings, t)
+            z_variables.append(z)  # Keep track of z variables
+
+            # Define a delayed task that solves the problem and extracts the optimized z value
+
+            delayed_task = delayed(_solve_and_extract_z)(
+                prob, z, self.solver, self.solver_opts
+            )
+            delayed_tasks.append(delayed_task)
+
+        print(f"\nComputing trades at {datetime.now()}.")
+        results = compute(*delayed_tasks)  # This will return the z values
+        print(f"\nFinished computing trades at {datetime.now()}.")
+
+        # # The results are the updated z values as numpy arrays
+        # updated_z_values = [np.array(z_val) for z_val in results]
+
+        return results
+
+    def generate_trade_list(self, holdings: pd.Series, t: dt.datetime) -> pd.Series:
+        """Calculates and returns trade list (in units of currency passed in) using convex (single period) optimization.
+
+        Parameters
+        ----------
+        holdings : pandas.Series
+            Holdings at beginning of period `t`.
+        t : datetime.datetime
+            The datetime for associated holdings `holdings`.
+        """
+        if t is None:
+            t = dt.datetime.today()
+
+        prob, z = self.formulate_optimization_problem(holdings, t)
+
+        try:
+            prob.solve(solver=self.solver, **self.solver_opts)
+
+            if prob.status == "unbounded":
                 print(f"The problem is unbounded at {t}.")
                 return self._zerotrade(holdings)
 
-            if self.prob.status == "infeasible":
+            if prob.status == "infeasible":
                 print(f"The problem is infeasible at {t}.")
                 return self._zerotrade(holdings)
 
+            value = sum(holdings)
             u = pd.Series(index=holdings.index, data=(z.value * value))
 
             # Unwind logic starts
@@ -154,8 +188,8 @@ class SPOTranches(BaseStrategy):
 
             return u
 
-        except (cvx.SolverError, cvx.DCPError, TypeError):
-            print(f"The solver failed for {t}.")
+        except (cvx.SolverError, cvx.DCPError, TypeError) as e:
+            print(f"The solver failed for {t}. Error details: {e}")
             return self._zerotrade(holdings)
 
     def _cum_returns_to_scale_unwind(self, t_unwind: dt.datetime, t: dt.datetime):

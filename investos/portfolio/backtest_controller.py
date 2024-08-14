@@ -1,6 +1,9 @@
 import statistics
+from datetime import datetime
 
 import pandas as pd
+from dask.distributed import Client
+from dask_cloudprovider.aws import FargateCluster
 
 from investos.portfolio.result import BaseResult
 
@@ -16,6 +19,23 @@ class BacktestController:
         self._set_time_periods(**kwargs)
 
         self.hooks = kwargs.get("hooks", {})
+
+        self.distributed = kwargs.get("distributed", False)
+        self.dask_cluster = kwargs.get("dask_cluster", False)
+        self.dask_cluster_config = {
+            "n_workers": 4,
+            "image": "daskdev/dask:latest",
+            "region_name": "us-east-2",  # Change this to your preferred AWS region
+            "worker_cpu": 1024 * 2,  # 2 vCPU
+            "worker_mem": 1024 * 8,  # 8 GB memory
+            "scheduler_cpu": 1024,
+            "scheduler_mem": 1024 * 4,
+            "environment": {
+                "EXTRA_PIP_PACKAGES": "investos scikit-learn",
+            },
+        }
+        self.dask_cluster_config.update(kwargs.get("dask_cluster_config", {}))
+
         self.initial_portfolio = kwargs.get(
             "initial_portfolio",
             self._create_initial_portfolio_if_not_provided(**kwargs),
@@ -29,25 +49,50 @@ class BacktestController:
         self.results.strategy = self.strategy
 
     def generate_positions(self):
-        print("Generating historical portfolio trades and positions...")
-
+        print(
+            f"Generating historical portfolio trades and positions at {datetime.now()}..."
+        )
         # Create t == 0 position (no trades)
         t = self._get_initial_t()
         u = pd.Series(index=self.initial_portfolio.index, data=0)
         h_next = self.initial_portfolio  # Includes cash
         self.results.save_position(t, u, h_next)
 
-        # Walk through time and calculate future trades, estimated and actual costs and returns, and resulting positions
-        for t in self.time_periods:
-            u = self.strategy.generate_trade_list(h_next, t)
-            h_next, u = self.strategy.get_actual_positions_for_t(h_next, u, t)
-            self.results.save_position(t, u, h_next)
+        if self.distributed:
+            # [ ] Generate all trades here
+            # [ ] Then go back to normal loop (and get it to work)
+            # [ ] Add default method into base strat saying distr func not implemented
+            print(
+                f"Distributing trade generation with Dask client.\n\nNote: will ignore hooks. Will use starting portfolio (defaults to cash if not explicitly provided) for portfolio-wide constraints and risk-models. Trade-specific costs, constraints, and risk-models will continue to work as expected.\n\nCreating Dask cluster at {datetime.now()}..."
+            )
+            if not self.dask_cluster:
+                self.dask_cluster = FargateCluster(**self.dask_cluster_config)
 
-            for func in self.hooks.get("after_trades", []):
-                func(self, t, u, h_next)
+            self.client = Client(self.dask_cluster, timeout="600s")
 
-        print("Done simulating.")
-        return self.results
+            print(f"\nCluster created. Distributing tasks at {datetime.now()}.")
+
+            # [ ] Dont save here, save in precompute step.
+            # [ ] For testing only
+            self.results_tmp = self.strategy.precompute_trades_distributed(
+                h_next, self.time_periods
+            )
+
+            print("Finished distributed trade generation. Closing dask cluster...")
+            self.dask_cluster.close()
+            print("Dask cluster closed.")
+        else:
+            # Walk through time and calculate future trades, estimated and actual costs and returns, and resulting positions
+            for t in self.time_periods:
+                u = self.strategy.generate_trade_list(h_next, t)
+                h_next, u = self.strategy.get_actual_positions_for_t(h_next, u, t)
+                self.results.save_position(t, u, h_next)
+
+                for func in self.hooks.get("after_trades", []):
+                    func(self, t, u, h_next)
+
+            print(f"Done simulating at {datetime.now()}.")
+            return self.results
 
     def _set_time_periods(self, **kwargs):
         time_periods = kwargs.get("time_periods", self.strategy.actual_returns.index)

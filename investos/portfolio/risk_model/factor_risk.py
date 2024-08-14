@@ -121,6 +121,7 @@ class FactorRisk(BaseRisk):
         print(
             "\nWinsorizing, mean-filling, and standardizing risk factor data (grouped by datetime)..."
         )
+        warnings.filterwarnings("ignore", category=UserWarning)
         self.factor_loadings = self.factor_loadings.groupby("datetime").apply(
             risk_util.wins_std_mean_fill,
             [self._fos_return_name],  # Don't standardize
