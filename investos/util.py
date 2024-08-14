@@ -151,6 +151,6 @@ def get_max_key_lt_or_eq_value(dictionary, value):
         return None
 
 
-def _solve_and_extract_z(prob, z, solver, solver_opts):
+def _solve_and_extract_z(prob, z, t, solver, solver_opts):
     prob.solve(solver=solver, **solver_opts)
-    return z.value  # Return the value of z after solving
+    return t, z.value  # Return the value of z after solving

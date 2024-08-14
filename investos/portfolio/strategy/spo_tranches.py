@@ -126,8 +126,9 @@ class SPOTranches(BaseStrategy):
 
             # Define a delayed task that solves the problem and extracts the optimized z value
 
+            # [ ] TBU: send and return t
             delayed_task = delayed(_solve_and_extract_z)(
-                prob, z, self.solver, self.solver_opts
+                prob, z, t, self.solver, self.solver_opts
             )
             delayed_tasks.append(delayed_task)
 
