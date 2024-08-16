@@ -1,4 +1,5 @@
 import statistics
+import time
 from datetime import datetime
 
 import pandas as pd
@@ -23,13 +24,14 @@ class BacktestController:
         self.distributed = kwargs.get("distributed", False)
         self.dask_cluster = kwargs.get("dask_cluster", False)
         self.dask_cluster_config = {
-            "n_workers": 4,
+            "n_workers": 50,
             "image": "daskdev/dask:latest",
             "region_name": "us-east-2",  # Change this to your preferred AWS region
             "worker_cpu": 1024 * 2,  # 2 vCPU
-            "worker_mem": 1024 * 8,  # 8 GB memory
-            "scheduler_cpu": 1024,
-            "scheduler_mem": 1024 * 4,
+            "worker_mem": 1024 * 4,  # 4 GB memory
+            "scheduler_cpu": 1024 * 16,
+            "scheduler_mem": 1024 * 32,
+            "scheduler_timeout": "3600s",
             "environment": {
                 "EXTRA_PIP_PACKAGES": "investos scikit-learn",
             },
@@ -50,7 +52,7 @@ class BacktestController:
 
     def generate_positions(self):
         print(
-            f"Generating historical portfolio trades and positions at {datetime.now()}..."
+            f"Generating historical portfolio trades and positions at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}..."
         )
         # Create t == 0 position (no trades)
         t = self._get_initial_t()
@@ -59,40 +61,23 @@ class BacktestController:
         self.results.save_position(t, u, h_next)
 
         if self.distributed:
-            # [ ] Generate all trades here
-            # [ ] Then go back to normal loop (and get it to work)
-            # [ ] Add default method into base strat saying distr func not implemented
-            print(
-                f"Distributing trade generation with Dask client.\n\nNote: will ignore hooks. Will use starting portfolio (defaults to cash if not explicitly provided) for portfolio-wide constraints and risk-models. Trade-specific costs, constraints, and risk-models will continue to work as expected.\n\nCreating Dask cluster at {datetime.now()}..."
-            )
-            if not self.dask_cluster:
-                self.dask_cluster = FargateCluster(**self.dask_cluster_config)
-
-            self.client = Client(self.dask_cluster, timeout="600s")
-
-            print(f"\nCluster created. Distributing tasks at {datetime.now()}.")
-
-            # [ ] Dont save here, save in precompute step.
-            # [ ] For testing only
-            self.results_tmp = self.strategy.precompute_trades_distributed(
-                h_next, self.time_periods
-            )
-
-            print("Finished distributed trade generation. Closing dask cluster...")
+            self._dask_start_client_and_cluster()
+            self.strategy.precompute_trades_distributed(h_next, self.time_periods)
+            print("\nClosing dask cluster...")
             self.dask_cluster.close()
-            print("Dask cluster closed.")
-        else:
-            # Walk through time and calculate future trades, estimated and actual costs and returns, and resulting positions
-            for t in self.time_periods:
-                u = self.strategy.generate_trade_list(h_next, t)
-                h_next, u = self.strategy.get_actual_positions_for_t(h_next, u, t)
-                self.results.save_position(t, u, h_next)
+            print("\nDask cluster closed.\n")
 
-                for func in self.hooks.get("after_trades", []):
-                    func(self, t, u, h_next)
+        # Walk through time and calculate future trades, estimated and actual costs and returns, and resulting positions
+        for t in self.time_periods:
+            u = self.strategy.generate_trade_list(h_next, t)
+            h_next, u = self.strategy.get_actual_positions_for_t(h_next, u, t)
+            self.results.save_position(t, u, h_next)
 
-            print(f"Done simulating at {datetime.now()}.")
-            return self.results
+            for func in self.hooks.get("after_trades", []):
+                func(self, t, u, h_next)
+
+        print(f"\n\nDone simulating at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}.")
+        return self.results
 
     def _set_time_periods(self, **kwargs):
         time_periods = kwargs.get("time_periods", self.strategy.actual_returns.index)
@@ -121,3 +106,30 @@ class BacktestController:
             median_time_delta = self.time_periods[1] - self.time_periods[0]
 
         return pd.to_datetime(self.start_date) - median_time_delta
+
+    def _dask_start_client_and_cluster(self, retries=5, delay=15):
+        print(
+            "\nDistributing trade generation with Dask client.\n\nTrade-specific costs, constraints, and risk-models will continue to work as expected."
+        )
+        if self.dask_cluster:
+            self.client = Client(self.dask_cluster, timeout="3600s")
+        else:
+            for i in range(retries):
+                try:
+                    print(
+                        f"\nCreating Dask cluster at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}..."
+                    )
+                    self.dask_cluster = FargateCluster(**self.dask_cluster_config)
+                    self.client = Client(self.dask_cluster, timeout="600s")
+                    print(
+                        f"\nCluster created. Distributing tasks at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}."
+                    )
+                    return True
+                except Exception as e:
+                    print(
+                        f"Connection attempt {i+1} failed: {e}. Will retry in {delay}s"
+                    )
+                    if i < retries - 1:
+                        time.sleep(delay)
+                    else:
+                        raise

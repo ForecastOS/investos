@@ -116,3 +116,11 @@ class EqualLongShortConstraint(BaseConstraint):
             The holding constraints based on the equal long and short exposure constraint.
         """
         return sum(w_plus) == 0.0
+
+
+class EqualLongShortTradeConstraint(BaseConstraint):
+    def __init__(self, exclude_assets=["cash"], **kwargs):
+        super().__init__(exclude_assets=exclude_assets, **kwargs)
+
+    def _weight_expr(self, t, w_plus, z, v):
+        return sum(z) == 0.0

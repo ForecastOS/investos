@@ -120,24 +120,23 @@ class SPOTranches(BaseStrategy):
         z_variables = []
 
         for t in time_periods:
-            # Create convex optimization problem
             prob, z = self.formulate_optimization_problem(holdings, t)
-            z_variables.append(z)  # Keep track of z variables
-
-            # Define a delayed task that solves the problem and extracts the optimized z value
-
-            # [ ] TBU: send and return t
+            z_variables.append(z)
             delayed_task = delayed(_solve_and_extract_z)(
                 prob, z, t, self.solver, self.solver_opts
             )
             delayed_tasks.append(delayed_task)
 
-        print(f"\nComputing trades at {datetime.now()}.")
-        results = compute(*delayed_tasks)  # This will return the z values
-        print(f"\nFinished computing trades at {datetime.now()}.")
+        print(f"\nComputing trades at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}.")
+        results = compute(*delayed_tasks)
+        print(
+            f"\nFinished computing trades at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}."
+        )
 
-        # # The results are the updated z values as numpy arrays
-        # updated_z_values = [np.array(z_val) for z_val in results]
+        print("\nSaving distributed trades...")
+        for t, z_value in results:
+            self._save_data("z_distr", t, z_value)
+        print("\nDistributed trades saved.")
 
         return results
 
@@ -151,47 +150,55 @@ class SPOTranches(BaseStrategy):
         t : datetime.datetime
             The datetime for associated holdings `holdings`.
         """
+        is_distributed = self.backtest_controller.distributed
+
         if t is None:
             t = dt.datetime.today()
 
-        prob, z = self.formulate_optimization_problem(holdings, t)
+        if is_distributed:
+            z = self.z_distr.loc[t].values
 
-        try:
-            prob.solve(solver=self.solver, **self.solver_opts)
+        else:
+            prob, z = self.formulate_optimization_problem(holdings, t)
 
-            if prob.status == "unbounded":
-                print(f"The problem is unbounded at {t}.")
+            try:
+                prob.solve(solver=self.solver, **self.solver_opts)
+
+                if prob.status == "unbounded":
+                    print(f"The problem is unbounded at {t}.")
+                    return self._zerotrade(holdings)
+
+                if prob.status == "infeasible":
+                    print(f"The problem is infeasible at {t}.")
+                    return self._zerotrade(holdings)
+
+                z = z.value
+
+            except (cvx.SolverError, cvx.DCPError, TypeError) as e:
+                print(f"The solver failed for {t}. Error details: {e}")
                 return self._zerotrade(holdings)
 
-            if prob.status == "infeasible":
-                print(f"The problem is infeasible at {t}.")
-                return self._zerotrade(holdings)
+        value = sum(holdings)
+        u = pd.Series(index=holdings.index, data=(z * value))
 
-            value = sum(holdings)
-            u = pd.Series(index=holdings.index, data=(z.value * value))
+        # Unwind logic starts
+        trades_saved = self.backtest_controller.results.u.shape[0]
+        self._save_data("u_unwind_pre", t, u)
 
-            # Unwind logic starts
-            trades_saved = self.backtest_controller.results.u.shape[0]
-            self._save_data("u_unwind_pre", t, u)
+        if trades_saved >= self.n_periods_held:
+            # Use holdings_unwind, t_unwind, w_unwind, u_unwind, u_unwind_scaled
+            idx_unwind = trades_saved - self.n_periods_held
+            u_unwind_pre = self.u_unwind_pre.iloc[idx_unwind]
+            u_unwind_pre = u_unwind_pre.drop(self.cash_column_name)
 
-            if trades_saved >= self.n_periods_held:
-                # Use holdings_unwind, t_unwind, w_unwind, u_unwind, u_unwind_scaled
-                idx_unwind = trades_saved - self.n_periods_held
-                u_unwind_pre = self.u_unwind_pre.iloc[idx_unwind]
-                u_unwind_pre = u_unwind_pre.drop(self.cash_column_name)
+            t_unwind = self.backtest_controller.results.u.index[idx_unwind]
+            r_scale_unwind = self._cum_returns_to_scale_unwind(t_unwind, t)
+            u_unwind_scaled = u_unwind_pre * r_scale_unwind
 
-                t_unwind = self.backtest_controller.results.u.index[idx_unwind]
-                r_scale_unwind = self._cum_returns_to_scale_unwind(t_unwind, t)
-                u_unwind_scaled = u_unwind_pre * r_scale_unwind
+            u -= u_unwind_scaled
+        # Unwind logic ends
 
-                u -= u_unwind_scaled
-            # Unwind logic ends
-
-            return u
-
-        except (cvx.SolverError, cvx.DCPError, TypeError) as e:
-            print(f"The solver failed for {t}. Error details: {e}")
-            return self._zerotrade(holdings)
+        return u
 
     def _cum_returns_to_scale_unwind(self, t_unwind: dt.datetime, t: dt.datetime):
         df = self.actual_returns + 1
