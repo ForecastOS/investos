@@ -28,7 +28,7 @@ class BacktestController:
             "image": "daskdev/dask:latest",
             "region_name": "us-east-2",  # Change this to your preferred AWS region
             "worker_cpu": 1024 * 2,  # 2 vCPU
-            "worker_mem": 1024 * 4,  # 8 GB memory
+            "worker_mem": 1024 * 4,  # 4 GB memory
             "scheduler_cpu": 1024 * 16,
             "scheduler_mem": 1024 * 32,
             "scheduler_timeout": "3600s",
