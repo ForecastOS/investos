@@ -28,7 +28,7 @@ class TradeReturnConstraint(BaseConstraint):
         return (alpha_term - cvx.sum(costs_li)) >= 0
 
 
-class TradeGrossReturnConstraintCustom(BaseConstraint):
+class TradeGrossReturnConstraint(BaseConstraint):
     def __init__(self, forecast_returns, limit=0.01, **kwargs):
         self.limit = limit
         super().__init__(**kwargs)
