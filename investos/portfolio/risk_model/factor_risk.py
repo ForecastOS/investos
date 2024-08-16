@@ -71,13 +71,21 @@ class FactorRisk(BaseRisk):
             self.idiosyncratic_variance, t, lookback_for_closest=True
         )
 
-        self.expression = cvx.sum_squares(cvx.multiply(np.sqrt(idiosync_var), w_plus))
-
         risk_from_factors = factor_load.T @ factor_covar @ factor_load
+        sigma = risk_from_factors + np.diag(idiosync_var)
+        self.expression = cvx.quad_form(w_plus, sigma)
 
-        self.expression += w_plus @ risk_from_factors @ w_plus.T
+        if self._penalize_risk:
+            risk_penalty = self.expression
+        else:
+            risk_penalty = cvx.sum(0)
 
-        return self.expression, []
+        if self._max_std_dev:
+            constr_li = [self.expression <= (self._max_std_dev**2)]
+        else:
+            constr_li = []
+
+        return risk_penalty, constr_li
 
     def _get_fos_risk_factor_data(self):
         print("Getting risk factor data from ForecastOS:")
@@ -385,3 +393,9 @@ class FactorRisk(BaseRisk):
         )
         self._recalc_td = kwargs.get("recalc_td", timedelta(days=30))
         self._ppy_for_annualizing_var = kwargs.get("ppy_for_annualizing_var", 252)
+        self._penalize_risk = kwargs.get("penalize_risk", True)
+        self._max_std_dev = kwargs.get("max_std_dev", None)
+        if self._max_std_dev:
+            print(
+                "\nMake sure you are using a solver that can handle quadratic constraints (since you set max standard deviation in your risk model, which creates a quadratic constraint), like cvx.CLARABEL.\nNote that cvx.OSQP doesn't support convex constraints as of Aug 2024."
+            )
