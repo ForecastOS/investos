@@ -50,11 +50,11 @@ def wins_std_mean_fill(group, dont_std_cols, adj_dict, drop_cols=["id"]):
         group[col] = winsorize(group[col], limits=wins_limits)
         group[col] = imputer.fit_transform(group[[col]])
 
-    cols = [col for col in cols if col not in dont_std_cols]
-
     for col in cols:
         for func in adj_dict.get("normalization", {}).get(col, []):
             group[col] = func(group[col])
+
+    cols = [col for col in cols if col not in dont_std_cols]
 
     # Standardizing numeric columns within the group
     scaler = StandardScaler()

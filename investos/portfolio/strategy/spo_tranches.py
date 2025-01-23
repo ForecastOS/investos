@@ -66,6 +66,14 @@ class SPOTranches(BaseStrategy):
         self.n_periods_held = n_periods_held
         self.u_unwind = {}
 
+        self.polishing = kwargs.get("polishing", True)
+        self.polishing_denom = kwargs.get("polishing_denom", 100_000)
+
+        self.discreet_shares = kwargs.get("discreet_shares", False)
+        if self.discreet_shares:
+            self.n_share_block = kwargs.get("n_share_block", 100)
+            self.actual_prices = kwargs.get("actual_prices", None)
+
     def formulate_optimization_problem(self, holdings: pd.Series, t: dt.datetime):
         value = sum(holdings)
         w = holdings / value  # Portfolio weights
@@ -180,6 +188,21 @@ class SPOTranches(BaseStrategy):
 
         value = sum(holdings)
         u = pd.Series(index=holdings.index, data=(z * value))
+
+        # Zero out small values; cash (re)calculated later based on trade balance, cash value here doesn't matter
+        if self.polishing:
+            u[abs(u) < value / self.polishing_denom] = 0
+
+        # Round trade to discreet n_share_block (default: 100)
+        if self.discreet_shares:
+            prices = values_in_time(self.actual_prices, t)
+            block_prices = prices * self.n_share_block
+            block_prices[self.cash_column_name] = None
+
+            non_cash_mask = u.index != self.cash_column_name
+            u[non_cash_mask] = (
+                u[non_cash_mask] / block_prices[non_cash_mask]
+            ).round() * block_prices[non_cash_mask]
 
         # Unwind logic starts
         trades_saved = self.backtest_controller.results.u.shape[0]

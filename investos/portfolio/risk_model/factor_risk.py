@@ -111,7 +111,7 @@ class FactorRisk(BaseRisk):
                 temp_df.sort_values("datetime"),
                 on="datetime",
                 by="id",
-                direction="forward",
+                direction="backward",
                 tolerance=pd.Timedelta("150 days"),
             )
 
