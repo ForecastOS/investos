@@ -10,9 +10,9 @@ import sys
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "InvestOS"
-copyright = "2024, InvestOS"
+copyright = "2025, InvestOS"
 author = "Charlie Reese, ForecastOS"
-release = "0.5.5"
+release = "0.5.6"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
