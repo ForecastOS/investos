@@ -190,14 +190,25 @@ class BaseResult(SaveResult):
         return (self.returns - self.risk_free_returns).dropna()
 
     @property
-    def annualized_excess_return(self) -> float:
-        """Returns a float representing the annualized excess return of the entire period under review. Uses beginning and ending portfolio values for the calculation (value @ t[-1] and value @ t[0]), as well as the number of years in the forecast."""
-        return ((self.total_excess_return + 1) ** (1 / self.years_forecast)) - 1
+    def annualized_risk_free_return(self) -> float:
+        """Returns a float representing the annualized risk free (cash) return of the entire period under review."""
+        return ((self.total_risk_free_return + 1) ** (1 / self.years_forecast)) - 1
 
     @property
-    def annualized_return_over_cash(self) -> float:
+    def annualized_excess_return(self, geometric=False) -> float:
+        """Returns a float representing the annualized excess return of the entire period under review. Uses beginning and ending portfolio values for the calculation (value @ t[-1] and value @ t[0]), as well as the number of years in the forecast."""
+        if geometric:
+            return ((self.total_excess_return + 1) ** (1 / self.years_forecast)) - 1
+        else:
+            return self.annualized_return - self.annualized_benchmark_return
+
+    @property
+    def annualized_return_over_cash(self, geometric=False) -> float:
         """Returns a float representing the annualized return over cash of the entire period under review. Uses beginning and ending portfolio values for the calculation (value @ t[-1] and value @ t[0]), as well as the number of years in the forecast."""
-        return ((self.total_return_over_cash + 1) ** (1 / self.years_forecast)) - 1
+        if geometric:
+            return ((self.total_return_over_cash + 1) ** (1 / self.years_forecast)) - 1
+        else:
+            return self.annualized_return - self.annualized_risk_free_return
 
     @property
     def excess_risk_annualized(self) -> pd.Series:
