@@ -14,3 +14,4 @@ guides_tmp
 .DS_Store
 false/*
 docs/build/*
+benchmarks/
