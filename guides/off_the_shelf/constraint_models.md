@@ -153,6 +153,14 @@ Instantiate with the following arguments:
 
 -   limit: float = 0.025
 
+### EqualLongShortTradeConstraint
+
+[EqualLongShortTradeConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/long_constraint.py#L121) enforces equal long and short trade exposure.
+
+To instantiate EqualLongShortTradeConstraint you will need to set the following argument:
+
+-   exclude_assets: [str] = ["cash"]
+
 ## Long Constraints, Portfolio
 
 ### LongOnlyConstraint

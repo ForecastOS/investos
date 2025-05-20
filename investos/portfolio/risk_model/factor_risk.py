@@ -49,10 +49,9 @@ class FactorRisk(BaseRisk):
             self._calculate_factor_returns()
             self._calculate_idiosyncratic_returns()
             self._generate_risk_models()
+            self._drop_excluded_assets()
             self._apply_risk_model_adjustments()
             print("\nDone generating point-in-time structural risk models.")
-
-        self._drop_excluded_assets()
 
     def _estimated_cost_for_optimization(self, t, w_plus, z, value):
         """Optimization (non-cash) cost penalty for assuming associated asset risk.
@@ -87,17 +86,205 @@ class FactorRisk(BaseRisk):
 
         return risk_penalty, constr_li
 
+    def portfolio_variance_estimate(self, t, w_plus):
+        if self._dynamic_vra:
+            factor_covar = util.values_in_time(
+                self.adj_factor_covariance, t, lookback_for_closest=True
+            )
+            idiosync_var = util.values_in_time(
+                self.adj_idiosyncratic_variance, t, lookback_for_closest=True
+            )
+        else:
+            factor_covar = util.values_in_time(
+                self.factor_covariance, t, lookback_for_closest=True
+            )
+            idiosync_var = util.values_in_time(
+                self.idiosyncratic_variance, t, lookback_for_closest=True
+            )
+
+        factor_load = util.values_in_time(
+            self.factor_loadings, t, lookback_for_closest=True
+        )
+
+        w = w_plus.values  # n x 1
+        B = factor_load.values  # n x k
+        F = factor_covar.values  # k x k
+        D_diag = idiosync_var.values  # n x 1
+
+        # Factor risk: (B^T w)^T F (B^T w)
+        factor_exposure = B @ w  # k x 1
+        factor_risk = factor_exposure.T @ F @ factor_exposure  # scalar
+
+        # Idiosyncratic risk: w^T D w
+        idiosyncratic_risk = np.sum((w**2) * D_diag)  # scalar
+
+        # Total portfolio variance
+        portfolio_variance = factor_risk + idiosyncratic_risk
+        portfolio_variance = min(portfolio_variance, self.max_daily_var_est)
+
+        # Convert to desired variance time period
+        portfolio_variance = portfolio_variance * self._periods_in_estimate
+
+        return portfolio_variance
+
+    def portfolio_volatility_estimate(self, t, w_plus):
+        return self.portfolio_variance_estimate(t, w_plus) ** 0.5
+
+    def _make_dynamic_volatility_regime_adjustment(self, weights_for_vra_adj):
+        """
+        Volatility Regime Adjustment (VRA)
+        """
+
+        print("Making dynamic volatility regime adjustment.")
+
+        # --------------------------------------------------------------------
+        # Helper: EWMA with a half-life measured in periods (trading days)
+        # --------------------------------------------------------------------
+        def ewm_half_life(series: pd.Series, half_life: int) -> pd.Series:
+            """Exponentially weighted moving average with an intuitive half-life."""
+            alpha = 1.0 - np.exp(np.log(0.5) / half_life)
+            return series.ewm(alpha=alpha, adjust=False).mean()
+
+        # --------------------------------------------------------------------
+        # 1.  Reconstruct *realised* factor & specific returns from X_t
+        # --------------------------------------------------------------------
+        asset_returns = self.actual_returns
+        dates = asset_returns.index
+
+        cols = [f"{col}_returns" for col in list(self.factor_covariance.columns.values)]
+        factor_rts = self.factor_returns[["datetime", *cols]].set_index("datetime")
+        specific_rts = self.idiosyncratic_returns.pivot(
+            columns="id", index="datetime", values="idio_return"
+        )[self.idiosyncratic_variance.columns]
+
+        # --------------------------------------------------------------------
+        # 2.  Pull forecast *volatilities* (σ) from the inputs
+        # --------------------------------------------------------------------
+        factor_sigma_fc = pd.DataFrame(  # (T × K)
+            {
+                d: np.sqrt(np.diag(self.factor_covariance.loc[d]))
+                for d in self.factor_covariance.index.get_level_values(0)
+            }
+        ).T
+
+        specific_sigma_fc = self.idiosyncratic_variance.apply(np.sqrt)  # (T × N)
+
+        # --------------------------------------------------------------------
+        # 3.  Standardise realised returns by forecasts  → z-scores
+        # --------------------------------------------------------------------
+        # Backwards merge_asof forecasts (fc) to actuals index
+        factor_sigma_fc = pd.merge_asof(
+            pd.DataFrame(index=factor_rts.index).reset_index(),
+            factor_sigma_fc.reset_index().rename(columns={"index": "datetime"}),
+            on="datetime",  # or on='date' if you renamed it
+            direction="backward",
+        ).set_index("datetime")
+
+        specific_sigma_fc = pd.merge_asof(
+            pd.DataFrame(index=specific_rts.index).reset_index(),
+            specific_sigma_fc.reset_index().rename(columns={"index": "datetime"}),
+            on="datetime",
+            direction="backward",
+        ).set_index("datetime")
+
+        factor_rts.columns = factor_sigma_fc.columns
+
+        z_factor = factor_rts / factor_sigma_fc
+        z_specific = specific_rts / specific_sigma_fc
+
+        # Ffill where holiday
+        holiday_dates = specific_rts[
+            (specific_rts.isna() | (specific_rts == 0)).all(axis=1)
+        ].index
+
+        z_factor.loc[holiday_dates] = np.nan
+        z_factor = z_factor.ffill(limit=1)
+        z_factor = z_factor.dropna(how="all")
+
+        z_specific.loc[holiday_dates] = np.nan
+        z_specific = z_specific.ffill(limit=1)
+        z_specific = z_specific.dropna(how="all")
+
+        # --------------------------------------------------------------------
+        # 4.  Cross-sectional bias statistics, B_t
+        #     – equal-weight across factors
+        #     – cap-weight across stocks
+        # --------------------------------------------------------------------
+        B_factor_daily = (z_factor**2).mean(axis=1)
+        weights = weights_for_vra_adj  # w_{n,t}
+        weights = weights.reindex(z_specific.index, method="bfill")
+        B_spec_daily = (z_specific**2 * weights).sum(axis=1)
+
+        # # --------------------------------------------------------------------
+        # # 5.  Smooth B_t through time  → λ²_t   and λ_t
+        # # --------------------------------------------------------------------
+        λ2_factor = ewm_half_life(B_factor_daily, self._dynamic_vra_config["half_life"])
+        λ2_spec = ewm_half_life(B_spec_daily, self._dynamic_vra_config["half_life"])
+
+        λ_factor, λ_spec = np.sqrt(λ2_factor), np.sqrt(λ2_spec)  # Series (T,)
+
+        # # Optional: clip multipliers for robustness
+        self._λ_factor = λ_factor.clip(upper=self._dynamic_vra_config["max_mult"])
+        self._λ_spec = λ_spec.clip(upper=self._dynamic_vra_config["max_mult"])
+
+        # --------------------------------------------------------------------
+        # 6.  Produce *next period's (tomorrow's)* adjusted forecasts
+        # --------------------------------------------------------------------
+        # a) Factor covariance matrices – scale entire Σ_F by λ_factor² (correlations unchanged)
+        dates = dates[dates >= self.start_date]
+
+        factor_covar_adj_dfs = []
+        idio_var_adj_dfs = []
+        for t_idx in range(len(dates) - 1):
+            today, tomorrow = dates[t_idx], dates[t_idx + 1]
+            tmp = util.values_in_time(
+                self.factor_covariance, tomorrow, lookback_for_closest=True
+            ) * (self._λ_factor.loc[today] ** 2)
+            tmp.index = pd.MultiIndex.from_product(
+                [[tomorrow], tmp.index], names=["datetime", "index"]
+            )
+            factor_covar_adj_dfs.append(tmp)
+
+            # b) Idiosyncratic variances – scale by λ_spec²
+            tmp = util.values_in_time(
+                self.idiosyncratic_variance, tomorrow, lookback_for_closest=True
+            ) * (self._λ_spec.loc[today] ** 2)
+            idio_var_adj_dfs.append([tomorrow, tmp])
+
+        self.adj_factor_covariance = pd.concat(factor_covar_adj_dfs)
+        self.adj_idiosyncratic_variance = pd.concat(
+            {date: series for date, series in idio_var_adj_dfs}, axis=1
+        ).T
+
     def _get_fos_risk_factor_data(self):
         print("Getting risk factor data from ForecastOS:")
 
         # Start with returns
         print(f"- Getting {self._fos_return_name}")
-        self.factor_loadings = (
+        self.actual_returns = (
             fos.Feature.get(self._fos_return_uuid)
             .get_df()
             .rename(columns={"value": self._fos_return_name})
         )
-        self.factor_loadings = risk_util.drop_na_and_inf(self.factor_loadings)
+        self.actual_returns = risk_util.drop_na_and_inf(self.actual_returns)
+        self.factor_loadings = self.actual_returns.copy()
+        self.actual_returns = (
+            self.actual_returns.pivot(columns="id", index="datetime")
+            .sort_index(axis=1)
+            .sort_index(axis=0)
+        )
+        self.actual_returns = self.actual_returns[
+            (
+                self.actual_returns.index
+                >= (
+                    self.start_date
+                    - self._risk_model_window_td
+                    - self._dynamic_vra_config["td_padding"]
+                )
+            )
+            & (self.actual_returns.index <= self.end_date)
+        ]
+        self.actual_returns.columns = self.actual_returns.columns.droplevel(0)
 
         # Join risk factors
         for factor, uuid in self._fos_risk_factor_uuids_dict.items():
@@ -118,7 +305,11 @@ class FactorRisk(BaseRisk):
         self.factor_loadings = self.factor_loadings[
             (
                 self.factor_loadings.datetime
-                >= (self.start_date - self._risk_model_window_td)
+                >= (
+                    self.start_date
+                    - self._risk_model_window_td
+                    - self._dynamic_vra_config["td_padding"]
+                )
             )
             & (self.factor_loadings.datetime <= self.end_date)
         ]
@@ -220,7 +411,8 @@ class FactorRisk(BaseRisk):
 
         datetimes = self.factor_loadings.index.get_level_values(0).unique()
         datetimes = datetimes[
-            (datetimes >= self.start_date) & (datetimes <= self.end_date)
+            (datetimes >= self.start_date - self._dynamic_vra_config["td_padding"])
+            & (datetimes <= self.end_date)
         ]
 
         factor_loadings_tmp_df = self.factor_loadings.reset_index().drop(
@@ -323,7 +515,44 @@ class FactorRisk(BaseRisk):
         self.factor_loadings.columns = self.factor_loadings.columns.droplevel(0)
 
     def _apply_risk_model_adjustments(self):
-        pass
+        if self._dynamic_vra:
+            weights = self._dynamic_vra_config["weights"]
+            if not weights:
+                df_market_cap = fos.get_feature_df(
+                    "dfa7e6a3-671d-41b2-89e3-10b7bdcf7af9"
+                )
+                df_market_cap = df_market_cap.dropna(subset=["value"])
+
+                df_market_cap["datetime"] = pd.to_datetime(df_market_cap["datetime"])
+
+                # Rank within each datetime by descending value
+                df_market_cap["rank"] = df_market_cap.groupby("datetime")["value"].rank(
+                    ascending=False, method="dense"
+                )
+
+                # Optional: Convert to int if you prefer integer ranks
+                df_market_cap["rank"] = df_market_cap["rank"].astype(int)
+
+                # Keep selected dates only
+                df_market_cap = df_market_cap[df_market_cap.datetime >= self.start_date]
+                df_market_cap = df_market_cap[df_market_cap.datetime <= self.end_date]
+
+                # Remove errant data for L14CLL-R (Faraday Future Intelligent Electric)
+                df_market_cap = df_market_cap[df_market_cap.id != "L14CLL-R"]
+
+                df_market_cap = df_market_cap[df_market_cap["rank"] <= 100]
+                df_market_cap["pct_value"] = df_market_cap[
+                    "value"
+                ] / df_market_cap.groupby("datetime")["value"].transform("sum")
+
+                weights = (
+                    df_market_cap[["id", "datetime", "pct_value"]]
+                    .pivot(index="datetime", columns="id", values="pct_value")
+                    .fillna(0)
+                    .sort_index(axis=1)
+                )
+
+            self._make_dynamic_volatility_regime_adjustment(weights)
 
     def _create_empty_risk_models(self):
         self.idiosyncratic_variance = pd.DataFrame(
@@ -339,6 +568,7 @@ class FactorRisk(BaseRisk):
         self.idiosyncratic_variance = self._remove_excl_columns(
             self.idiosyncratic_variance
         )
+        self.actual_returns = self._remove_excl_columns(self.actual_returns)
 
     def _create_factor_returns_df(self):
         df_list = []
@@ -389,12 +619,23 @@ class FactorRisk(BaseRisk):
             "add_global_constant_factor", True
         )
         self._risk_model_window_td = kwargs.get(
-            "risk_model_window_td", timedelta(days=91)
+            "risk_model_window_td", timedelta(days=325)
         )
-        self._recalc_td = kwargs.get("recalc_td", timedelta(days=30))
-        self._ppy_for_annualizing_var = kwargs.get("ppy_for_annualizing_var", 252)
-        self._penalize_risk = kwargs.get("penalize_risk", True)
+        self._recalc_td = kwargs.get("recalc_td", timedelta(days=21))
+        self._periods_in_estimate = kwargs.get(
+            "periods_in_estimate", 252
+        )  # For making yearly (~252), monthly (~21), or daily (1)
+        self._penalize_risk = kwargs.get("penalize_risk", False)
         self._max_std_dev = kwargs.get("max_std_dev", None)
+        self._dynamic_vra = kwargs.get("dynamic_vra", True)
+        self._dynamic_vra_config = {
+            "half_life": 7,
+            "max_mult": 3.0,
+            "td_padding": timedelta(days=365),
+            "weights": False,
+        }
+        self._dynamic_vra_config.update(kwargs.get("dynamic_vra_config", {}))
+        self.max_daily_var_est = kwargs.get("max_daily_var_est", 0.00063)
         if self._max_std_dev:
             print(
                 "\nMake sure you are using a solver that can handle quadratic constraints (since you set max standard deviation in your risk model, which creates a quadratic constraint), like cvx.CLARABEL.\nNote that cvx.OSQP doesn't support convex constraints as of Aug 2024."
