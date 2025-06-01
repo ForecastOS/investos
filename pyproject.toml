@@ -1,9 +1,9 @@
 [tool.poetry]
 name = "investos"
-version = "0.5.7"
+version = "0.5.8"
 description = "Reliable backtesting and portfolio optimization for investors who want to focus on generating alpha"
 authors = ["Charlie Reese", "ForecastOS"]
-license = "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
+license = "MIT"
 readme = "README.md"
 packages = [{include = "investos"}]
 homepage = "https://investos.io/"
@@ -14,7 +14,7 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Financial and Insurance Industry",
-    "License :: Other/Proprietary License",
+    "License :: MIT",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3 :: Only",
