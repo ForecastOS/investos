@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "investos"
-version = "0.6.0"
+version = "0.6.1"
 description = "Reliable backtesting and portfolio optimization for investors who want to focus on generating alpha"
 authors = ["Charlie Reese", "ForecastOS"]
 license = "MIT"

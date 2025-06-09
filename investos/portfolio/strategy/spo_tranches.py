@@ -131,7 +131,7 @@ class SPOTranches(BaseStrategy):
             prob, z = self.formulate_optimization_problem(holdings, t)
             z_variables.append(z)
             delayed_task = delayed(_solve_and_extract_z)(
-                prob, z, t, self.solver, self.solver_opts
+                prob, z, t, self.solver, self.solver_opts, holdings
             )
             delayed_tasks.append(delayed_task)
 
@@ -187,7 +187,11 @@ class SPOTranches(BaseStrategy):
                 return self._zerotrade(holdings)
 
         value = sum(holdings)
-        u = pd.Series(index=holdings.index, data=(z * value))
+        try:
+            u = pd.Series(index=holdings.index, data=(z * value))
+        except Exception as e:
+            print(f"Calculating trades failed for {t}. Error details: {e}")
+            return self._zerotrade(holdings)
 
         # Zero out small values; cash (re)calculated later based on trade balance, cash value here doesn't matter
         if self.polishing:

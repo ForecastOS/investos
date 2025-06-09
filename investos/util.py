@@ -1,6 +1,7 @@
 import copy
 from functools import wraps
 
+import cvxpy as cvx
 import numpy as np
 import pandas as pd
 
@@ -151,6 +152,9 @@ def get_max_key_lt_or_eq_value(dictionary, value):
         return None
 
 
-def _solve_and_extract_z(prob, z, t, solver, solver_opts):
-    prob.solve(solver=solver, **solver_opts)
-    return t, z.value  # Return the value of z after solving
+def _solve_and_extract_z(prob, z, t, solver, solver_opts, holdings):
+    try:
+        prob.solve(solver=solver, **solver_opts)
+        return t, z.value  # Return the value of z after solving
+    except (cvx.SolverError, cvx.DCPError, TypeError):
+        return t, pd.Series(index=holdings.index, data=0.0)  # Zerotrade
