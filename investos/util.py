@@ -157,4 +157,4 @@ def _solve_and_extract_z(prob, z, t, solver, solver_opts, holdings):
         prob.solve(solver=solver, **solver_opts)
         return t, z.value  # Return the value of z after solving
     except (cvx.SolverError, cvx.DCPError, TypeError):
-        return t, pd.Series(index=holdings.index, data=0.0)  # Zerotrade
+        return t, pd.Series(index=holdings.index, data=0.0).values  # Zero trade

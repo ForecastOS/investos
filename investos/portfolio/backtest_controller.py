@@ -66,6 +66,9 @@ class BacktestController:
             print("\nClosing dask cluster...")
             self.dask_cluster.close()
             print("\nDask cluster closed.\n")
+            self.strategy.z_distr = self.strategy.z_distr.fillna(
+                0
+            )  # Fill NAs that occur due to no solution
 
         # Walk through time and calculate future trades, estimated and actual costs and returns, and resulting positions
         for t in self.time_periods:
