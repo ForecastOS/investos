@@ -6,9 +6,10 @@ import pandas as pd
 
 from investos.portfolio.result.save_result import SaveResult
 from investos.util import clip_for_dates
+from investos.utils import HydrateMixin
 
 
-class BaseResult(SaveResult):
+class BaseResult(SaveResult, HydrateMixin):
     """The `Result` class captures portfolio data and performance for each asset and period over time.
 
     Instances of this object are called by the :py:meth:`investos.portfolio.controller.Controller.generate_positions` method.
@@ -140,6 +141,47 @@ class BaseResult(SaveResult):
         return pd.Series(
             data=val.values[1:] / val.values[:-1] - 1, index=val.index[1:]
         ).dropna()
+
+    @property
+    def returns_by_year(self) -> pd.Series:
+        """Returns a pandas Series of the cumulative returns, grouped by year."""
+        grouped_returns = (
+            (1 + self.returns)
+            .groupby([self.returns.index.year])
+            .apply(lambda x: x.prod() - 1)
+        )
+
+        # Create a proper DatetimeIndex
+        grouped_returns.index = pd.to_datetime(grouped_returns.index, format="%Y")
+        return grouped_returns
+
+    @property
+    def returns_by_quarter(self) -> pd.Series:
+        """Returns a pandas Series of the cumulative returns, grouped by quarter."""
+        grouped_returns = (
+            (1 + self.returns)
+            .groupby(self.returns.index.to_period("Q"))
+            .apply(lambda x: x.prod() - 1)
+        )
+
+        # Create a proper DatetimeIndex
+        grouped_returns.index = grouped_returns.index.to_timestamp(how="start")
+        return grouped_returns
+
+    @property
+    def returns_by_month(self) -> pd.Series:
+        """Returns a pandas Series of the cumulative returns, grouped by month."""
+        grouped_returns = (
+            (1 + self.returns)
+            .groupby([self.returns.index.year, self.returns.index.month])
+            .apply(lambda x: x.prod() - 1)
+        )
+
+        # Convert MultiIndex (year, month) to DatetimeIndex
+        grouped_returns.index = pd.to_datetime(
+            [f"{year}-{month:02d}" for year, month in grouped_returns.index]
+        )
+        return grouped_returns
 
     @property
     def portfolio_hit_rate(self):
