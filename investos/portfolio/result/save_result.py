@@ -65,9 +65,10 @@ class SaveResult:
 
     def save_backtest_charts(self):
         self.save_chart_historical_value()
+        self.save_chart_grouped_return()
+        self.save_chart_historical_leverage()
         self.save_cumulative_returns()
         self.save_chart_rolling_sharpe()
-        self.save_chart_historical_leverage()
 
     def save_chart_historical_value(self):
         json_body = {
@@ -87,6 +88,35 @@ class SaveResult:
                         "y_name": "Benchmark",
                         "x_values": [str(el) for el in self.benchmark_v.index],
                         "y_values": list(self.benchmark_v.values),
+                    },
+                ],
+            }
+        }
+
+        self._save_chart(json_body)
+
+    def save_chart_grouped_return(self):
+        json_body = {
+            "chart": {
+                "title": "Returns by period",
+                "type": "bar",
+                "chartable_type": "Backtest",
+                "chartable_id": self.backtest_id,
+                "chart_traces": [
+                    {
+                        "x_name": "Dates",
+                        "y_name": "Month",
+                        "x_values": [str(el) for el in self.returns_by_month.index],
+                        "y_values": list(self.returns_by_month.values),
+                        "config": {
+                            "type": "bar",
+                        },
+                    },
+                    {
+                        "x_name": "Dates",
+                        "y_name": "Year",
+                        "x_values": [str(el) for el in self.returns_by_year.index],
+                        "y_values": list(self.returns_by_year.values),
                     },
                 ],
             }
