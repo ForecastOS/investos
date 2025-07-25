@@ -69,6 +69,7 @@ class SaveResult:
         self.save_chart_historical_leverage()
         self.save_cumulative_returns()
         self.save_chart_rolling_sharpe()
+        self.save_chart_two_way_turnover()
 
     def save_chart_historical_value(self):
         json_body = {
@@ -262,6 +263,29 @@ class SaveResult:
                             str(el) for el in self.cumulative_return_short.index
                         ],
                         "y_values": list(self.cumulative_return_short.values),
+                    },
+                ],
+            }
+        }
+
+        self._save_chart(json_body)
+
+    def save_chart_two_way_turnover(self, periods_in_year=252):
+        s = self.u.drop(columns="cash").abs().sum(axis=1).rolling(
+            window=periods_in_year
+        ).sum() / (self.v * 2 * self.leverage)
+
+        json_body = {
+            "chart": {
+                "title": "Turnover (rolling year, % of non-cash exposure)",
+                "chartable_type": "Backtest",
+                "chartable_id": self.backtest_id,
+                "chart_traces": [
+                    {
+                        "x_name": "Dates",
+                        "y_name": "Turnover (Two-Way)",
+                        "x_values": [str(el) for el in s.index],
+                        "y_values": list(s.fillna(method="bfill").values),
                     },
                 ],
             }
