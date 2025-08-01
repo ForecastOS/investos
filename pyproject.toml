@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "investos"
-version = "0.6.4"
+version = "0.7.0"
 description = "Reliable backtesting and portfolio optimization for investors who want to focus on generating alpha"
 authors = ["Charlie Reese", "ForecastOS"]
 license = "MIT"
@@ -32,7 +32,7 @@ cvxpy = "^1.5.4"
 requests = "^2.31.0"
 numpy = "^1.24.3"
 pandas = "^2.0.1"
-forecastos = "^0.1.0"
+forecastos = "^0.2.0"
 statsmodels = "^0.14.2"
 dask = "^2024.8.0"
 dask-cloudprovider = "^2022.10.0"
