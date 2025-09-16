@@ -57,6 +57,9 @@ class BaseResult(SaveResult, HydrateMixin):
         h_next : pandas.Series
             Holdings at beginning of period t + 1, after trades `u` and returns for period `t`.
         """
+        # Zero out small (immaterial only) rounding errors in h_next
+        h_next = h_next.where(h_next.abs() >= 1e-5, 0.0)
+
         self.save_data("u", t, u)
         self.save_data("h_next", t, h_next)
 
