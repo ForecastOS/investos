@@ -212,13 +212,14 @@ class SPOTranches(BaseStrategy):
         trades_saved = self.backtest_controller.results.u.shape[0]
         self._save_data("u_unwind_pre", t, u)
 
-        if trades_saved >= self.n_periods_held:
+        if trades_saved > self.n_periods_held:
             # Use holdings_unwind, t_unwind, w_unwind, u_unwind, u_unwind_scaled
             idx_unwind = trades_saved - self.n_periods_held
-            u_unwind_pre = self.u_unwind_pre.iloc[idx_unwind]
+            t_unwind = self.backtest_controller.results.u.index[idx_unwind]
+
+            u_unwind_pre = self.u_unwind_pre.loc[t_unwind]
             u_unwind_pre = u_unwind_pre.drop(self.cash_column_name)
 
-            t_unwind = self.backtest_controller.results.u.index[idx_unwind]
             r_scale_unwind = self._cum_returns_to_scale_unwind(t_unwind, t)
             u_unwind_scaled = u_unwind_pre * r_scale_unwind
 
