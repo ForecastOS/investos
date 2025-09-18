@@ -30,9 +30,9 @@ classifiers = [
 python = "^3.9"
 cvxpy = "^1.5.4"
 requests = "^2.31.0"
-numpy = "^1.24.3"
+numpy = ">=2.0.0"
 pandas = "^2.0.1"
-forecastos = "^0.2.0"
+forecastos = { path = "../forecastos", develop = true }
 statsmodels = "^0.14.2"
 dask = "^2024.8.0"
 dask-cloudprovider = "^2022.10.0"
