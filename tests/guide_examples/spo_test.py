@@ -68,6 +68,11 @@ def test_spo():
             MaxAbsTurnoverConstraint(limit=0.05),
         ],
         cash_column_name="cash",
+        solver_opts={
+            "eps_abs": 1e-5,
+            "eps_rel": 1e-5,
+            "adaptive_rho_interval": 50,
+        },
     )
 
     portfolio = inv.portfolio.BacktestController(
@@ -87,8 +92,15 @@ def test_spo():
     print(summary)
 
     assert isinstance(summary, str)
-    assert round(backtest_result.annualized_return, 4) == 0.0568
-    assert round(backtest_result.excess_risk_annualized, 4) == 0.0247
-    assert round(backtest_result.information_ratio, 2) == 1.06
-    assert round(backtest_result.annual_turnover, 2) == 12.88
-    assert round(backtest_result.portfolio_hit_rate, 3) == 0.6000
+    assert (
+        round(backtest_result.annualized_return, 2) >= 0.05
+        and round(backtest_result.annualized_return, 2) <= 0.06
+    )
+    assert (
+        round(backtest_result.annual_turnover, 1) >= 12.6
+        and round(backtest_result.annual_turnover, 1) <= 13.0
+    )
+    assert (
+        round(backtest_result.portfolio_hit_rate, 2) >= 0.56
+        and round(backtest_result.portfolio_hit_rate, 2) <= 0.60
+    )

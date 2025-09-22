@@ -3,24 +3,38 @@ import pandas as pd
 import investos as inv
 from investos.portfolio.constraint_model import (
     LongCashConstraint,
+    LongOnlyConstraint,
     MaxAbsTurnoverConstraint,
     MaxLongLeverageConstraint,
-    MaxLongTradeLeverageConstraint,
-    MaxShortLeverageConstraint,
-    MaxShortTradeLeverageConstraint,
-    MaxTradeWeightConstraint,
-    MinTradeWeightConstraint,
+    MaxWeightConstraint,
 )
 from investos.portfolio.cost_model import ShortHoldingCost, TradingCost
 
 
-def test_spo_tranches():
+def test_spo_weights():
     actual_returns = pd.read_parquet(
         "https://investos.io/example_actual_returns.parquet"
     )
     forecast_returns = pd.read_parquet(
         "https://investos.io/example_forecast_returns.parquet"
     )
+
+    def top_n_mask(df, n=200, weight=0.005, window=20):
+        # Rank each row in descending order (largest value gets rank 1)
+        ranks = df.rank(axis=1, method="first", ascending=False)
+
+        # Create mask for top 50 values
+        mask = ranks <= n
+
+        # Assign 0.02 to top 50, else 0
+        weighted = mask.astype(float) * weight
+
+        # Rolling average across the last `window` columns
+        rolling_avg = weighted.rolling(window=window, min_periods=1).mean()
+
+        return rolling_avg
+
+    target_weights = top_n_mask(forecast_returns)
 
     # For trading costs:
     actual_prices = pd.read_parquet(
@@ -48,11 +62,9 @@ def test_spo_tranches():
         index=forecast_returns.columns, data=short_cost_percent / trading_days_per_year
     )
 
-    n_periods_held = 30
-
-    strategy = inv.portfolio.strategy.SPOTranches(
+    strategy = inv.portfolio.strategy.SPOWeights(
         actual_returns=actual_returns,
-        forecast_returns=forecast_returns,
+        target_weights=target_weights,
         costs=[
             ShortHoldingCost(short_rates=short_rates, exclude_assets=["cash"]),
             TradingCost(
@@ -64,28 +76,25 @@ def test_spo_tranches():
             ),
         ],
         constraints=[
-            MaxShortLeverageConstraint(limit=0.3),
-            MaxLongLeverageConstraint(limit=1.3),
-            MaxLongTradeLeverageConstraint(limit=1.3 / n_periods_held),
-            MaxShortTradeLeverageConstraint(limit=0.3 / n_periods_held),
-            MinTradeWeightConstraint(limit=-0.03 / n_periods_held),
-            MaxTradeWeightConstraint(limit=0.03 / n_periods_held),
+            LongOnlyConstraint(),
+            MaxLongLeverageConstraint(limit=1.0),
+            MaxWeightConstraint(limit=0.01),
             LongCashConstraint(),
-            MaxAbsTurnoverConstraint(limit=0.05),
+            MaxAbsTurnoverConstraint(limit=0.10),
         ],
-        n_periods_held=n_periods_held,
         cash_column_name="cash",
         solver_opts={
-            "eps_abs": 1e-5,
-            "eps_rel": 1e-5,
+            "eps_abs": 3e-6,
+            "eps_rel": 3e-6,
             "adaptive_rho_interval": 50,
+            # "verbose": True,
         },
     )
 
     portfolio = inv.portfolio.BacktestController(
         strategy=strategy,
         start_date="2017-01-01",
-        end_date="2017-06-30",
+        end_date="2018-01-01",
         hooks={
             "after_trades": [
                 lambda backtest, t, u, h_next: print(".", end=""),
@@ -100,14 +109,14 @@ def test_spo_tranches():
 
     assert isinstance(summary, str)
     assert (
-        round(backtest_result.annualized_return, 3) >= 0.034
-        and round(backtest_result.annualized_return, 3) <= 0.037
+        round(backtest_result.annualized_return, 2) >= 0.18
+        and round(backtest_result.annualized_return, 2) <= 0.19
     )
     assert (
-        round(backtest_result.annual_turnover, 1) >= 8.3
-        and round(backtest_result.annual_turnover, 1) <= 9.3
+        round(backtest_result.annual_turnover, 1) >= 10.6
+        and round(backtest_result.annual_turnover, 1) <= 11.4
     )
     assert (
-        round(backtest_result.portfolio_hit_rate, 2) >= 0.70
-        and round(backtest_result.portfolio_hit_rate, 2) <= 0.80
+        round(backtest_result.portfolio_hit_rate, 2) >= 0.57
+        and round(backtest_result.portfolio_hit_rate, 2) <= 0.62
     )
