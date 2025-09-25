@@ -1412,25 +1412,23 @@ woff = ["brotli (>=1.0.1)", "brotlicffi (>=0.8.0)", "zopfli (>=0.1.4)"]
 
 [[package]]
 name = "forecastos"
-version = "0.2.1"
+version = "0.2.2"
 description = "Headless feature store, pre-engineered ML features, and tools for ML workflows. By quantitative investors at forecastos.com"
 optional = false
-python-versions = "^3.9"
-files = []
-develop = true
+python-versions = "<4.0,>=3.9"
+files = [
+    {file = "forecastos-0.2.2-py3-none-any.whl", hash = "sha256:13d6130de6bf7c35cef1778261ff770d02f6bb1e1e3c1dad245919de63f4eef6"},
+    {file = "forecastos-0.2.2.tar.gz", hash = "sha256:a1aaf928bcae0858626f31473cb32cfd3f6aeed1517254e9eee4de3fd0f81a06"},
+]
 
 [package.dependencies]
-boto3 = "^1.34.78"
-fastparquet = "^2024.5.0"
-numpy = ">=2.0.0"
-pandas = "^2.2.2"
-requests = "^2.31.0"
-scikit-learn = "^1.5.1"
-scipy = "^1.13.1"
-
-[package.source]
-type = "directory"
-url = "../forecastos"
+boto3 = ">=1.34.78,<2.0.0"
+fastparquet = ">=2024.5.0,<2025.0.0"
+numpy = ">=1.24.3"
+pandas = ">=2.2.2,<3.0.0"
+requests = ">=2.31.0,<3.0.0"
+scikit-learn = ">=1.5.1,<2.0.0"
+scipy = ">=1.13.1,<2.0.0"
 
 [[package]]
 name = "fqdn"
@@ -5343,4 +5341,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "d378662fb981d9798fae4fada792744054c3430bb03f87a34cde4dd42ecb5f70"
+content-hash = "7bbd1e1ead2890910089d612773ad907abab4379084a93a7788c83e97efa81f7"
