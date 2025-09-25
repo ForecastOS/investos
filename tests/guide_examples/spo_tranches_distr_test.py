@@ -3,16 +3,15 @@ import pandas as pd
 import investos as inv
 from investos.portfolio.constraint_model import (
     LongCashConstraint,
-    MaxAbsTurnoverConstraint,
-    MaxLongLeverageConstraint,
-    MaxShortLeverageConstraint,
-    MaxWeightConstraint,
-    MinWeightConstraint,
+    MaxLongTradeLeverageConstraint,
+    MaxShortTradeLeverageConstraint,
+    MaxTradeWeightConstraint,
+    MinTradeWeightConstraint,
 )
 from investos.portfolio.cost_model import ShortHoldingCost, TradingCost
 
 
-def test_spo():
+def test_spo_tranches():
     actual_returns = pd.read_parquet(
         "https://investos.io/example_actual_returns.parquet"
     )
@@ -46,7 +45,9 @@ def test_spo():
         index=forecast_returns.columns, data=short_cost_percent / trading_days_per_year
     )
 
-    strategy = inv.portfolio.strategy.SPO(
+    n_periods_held = 30
+
+    strategy = inv.portfolio.strategy.SPOTranches(
         actual_returns=actual_returns,
         forecast_returns=forecast_returns,
         costs=[
@@ -60,13 +61,13 @@ def test_spo():
             ),
         ],
         constraints=[
-            MaxShortLeverageConstraint(limit=0.3),
-            MaxLongLeverageConstraint(limit=1.3),
-            MinWeightConstraint(limit=-0.03),
-            MaxWeightConstraint(limit=0.03),
+            MaxLongTradeLeverageConstraint(limit=1.3 / n_periods_held),
+            MaxShortTradeLeverageConstraint(limit=0.3 / n_periods_held),
+            MinTradeWeightConstraint(limit=-0.03 / n_periods_held),
+            MaxTradeWeightConstraint(limit=0.03 / n_periods_held),
             LongCashConstraint(),
-            MaxAbsTurnoverConstraint(limit=0.05),
         ],
+        n_periods_held=n_periods_held,
         cash_column_name="cash",
         solver_opts={
             "eps_abs": 1e-5,
@@ -77,8 +78,15 @@ def test_spo():
 
     portfolio = inv.portfolio.BacktestController(
         strategy=strategy,
+        distributed=True,
+        dask_cluster_config={
+            "n_workers": 10,
+            "environment": {
+                "EXTRA_PIP_PACKAGES": "investos scikit-learn numpy>=2.0",
+            },
+        },
         start_date="2017-01-01",
-        end_date="2018-01-01",
+        end_date="2017-06-30",
         hooks={
             "after_trades": [
                 lambda backtest, t, u, h_next: print(".", end=""),
@@ -93,14 +101,14 @@ def test_spo():
 
     assert isinstance(summary, str)
     assert (
-        round(backtest_result.annualized_return, 2) >= 0.05
-        and round(backtest_result.annualized_return, 2) <= 0.06
+        round(backtest_result.annualized_return, 3) >= 0.034
+        and round(backtest_result.annualized_return, 3) <= 0.037
     )
     assert (
-        round(backtest_result.annual_turnover, 1) >= 12.6
-        and round(backtest_result.annual_turnover, 1) <= 13.0
+        round(backtest_result.annual_turnover, 1) >= 8.3
+        and round(backtest_result.annual_turnover, 1) <= 9.3
     )
     assert (
-        round(backtest_result.portfolio_hit_rate, 2) >= 0.56
-        and round(backtest_result.portfolio_hit_rate, 2) <= 0.60
+        round(backtest_result.portfolio_hit_rate, 2) >= 0.70
+        and round(backtest_result.portfolio_hit_rate, 2) <= 0.80
     )
