@@ -73,3 +73,12 @@ If you'd like to contribute, please fork the repository and make changes as you'
 <a href="https://github.com/forecastos/investos/contributors">
   <img src="https://contrib.rocks/image?repo=forecastos/investos" />
 </a>
+
+## Thank You 
+
+A special thank you to:
+
+1. The authors of the [Multi-Period Trading via Convex Optimization](https://stanford.edu/~boyd/papers/pdf/cvx_portfolio.pdf) paper: Stephen Boyd, Enzo Busseti, Ronald Kahn, et al. It formed the basis of my knowledge on convex optimization.
+2. The team behind [CVXPY](https://github.com/cvxpy/cvxpy)
+3. The team behind [OSQP](https://osqp.org/docs/index.html)
+
