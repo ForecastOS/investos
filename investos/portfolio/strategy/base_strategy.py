@@ -16,7 +16,7 @@ class BaseStrategy:
     costs : list
         Cost models evaluated during optimization strategy. Defaults to empty list. See :py:class:`~investos.portfolio.cost_model.base_cost.BaseCost` for cost model base class.
     constraints : list
-        Constraints applied for optimization strategy. Defaults to empty list. See [TBU] for optimization model base class.
+        Constraints applied for optimization strategy. Defaults to empty list. See :py:class:`~investos.portfolio.constraint_model.base_constraint.BaseConstraint for optimization model base class.
     """
 
     def __init__(
@@ -49,20 +49,34 @@ class BaseStrategy:
         raise NotImplementedError
 
     def get_actual_positions_for_t(
-        self, h: pd.Series, u: pd.Series, t: dt.datetime
+        self, dollars_holdings: pd.Series, dollars_trades: pd.Series, t: dt.datetime
     ) -> pd.Series:
         """Calculates and returns actual positions, after accounting for trades and costs during period t."""
-        h_plus = h + u
+        dollars_holdings_plus_trades = dollars_holdings + dollars_trades
 
-        costs = [cost.actual_cost(t, h_plus=h_plus, u=u) for cost in self.costs]
+        costs = [
+            cost.actual_cost(
+                t,
+                dollars_holdings_plus_trades=dollars_holdings_plus_trades,
+                dollars_trades=dollars_trades,
+            )
+            for cost in self.costs
+        ]
 
         cash_col = self.cash_column_name
-        u[cash_col] = -sum(u[u.index != cash_col]) - sum(costs)
-        h_plus[cash_col] = h[cash_col] + u[cash_col]
+        dollars_trades[cash_col] = -sum(
+            dollars_trades[dollars_trades.index != cash_col]
+        ) - sum(costs)
+        dollars_holdings_plus_trades[cash_col] = (
+            dollars_holdings[cash_col] + dollars_trades[cash_col]
+        )
 
-        h_next = self.actual_returns.loc[t] * h_plus + h_plus
+        dollars_holdings_at_next_t = (
+            self.actual_returns.loc[t] * dollars_holdings_plus_trades
+            + dollars_holdings_plus_trades
+        )
 
-        return h_next, u
+        return dollars_holdings_at_next_t, dollars_trades
 
     def metadata_dict(self):
         meta_d = {

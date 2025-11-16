@@ -11,7 +11,7 @@ class StatFactorRisk(BaseRisk):
 
     The only requirement of custom risk models is that they implement a `_estimated_cost_for_optimization` method.
 
-    Note: risk models are like cost models, except they return 0 for their `value_expr` method (because they only influence optimization weights, not actual cash costs).
+    Note: risk models are like cost models, except they return 0 for their `actual_cost` method (because they only influence optimization weights, not actual cash costs).
     """
 
     def __init__(self, actual_returns: pd.DataFrame, n_factors=5, **kwargs):
@@ -33,7 +33,9 @@ class StatFactorRisk(BaseRisk):
         if kwargs.get("calc_risk_model_on_init", False):
             self.create_risk_model(t=self.start_date)
 
-    def _estimated_cost_for_optimization(self, t, w_plus, z, value):
+    def _estimated_cost_for_optimization(
+        self, t, weights_portfolio_plus_trades, weights_trades, value
+    ):
         """Optimization (non-cash) cost penalty for assuming associated asset risk.
 
         Used by optimization strategy to determine trades.
@@ -53,12 +55,16 @@ class StatFactorRisk(BaseRisk):
             self.create_risk_model(t=t)
 
         self.expression = cvx.sum_squares(
-            cvx.multiply(np.sqrt(self.idiosyncratic_variance), w_plus)
+            cvx.multiply(
+                np.sqrt(self.idiosyncratic_variance), weights_portfolio_plus_trades
+            )
         )
 
         risk_from_factors = (self.factor_loadings @ np.sqrt(self.factor_variance)).T
 
-        self.expression += cvx.sum_squares(w_plus @ risk_from_factors)
+        self.expression += cvx.sum_squares(
+            weights_portfolio_plus_trades @ risk_from_factors
+        )
 
         return self.expression, []
 

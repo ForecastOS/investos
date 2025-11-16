@@ -15,7 +15,7 @@ import datetime as dt
 import pandas as pd
 import numpy as np
 from investos.portfolio.cost_model import BaseCost
-from investos.util import values_in_time
+from investos.util import get_value_at_t
 ```
 
 ### Define the Custom Cost Class:
@@ -62,7 +62,7 @@ def get_actual_cost(
     return sum(-np.minimum(0, h_plus) * self._get_short_rate(t))
 
 def _get_short_rate(self, t):
-    return values_in_time(self.short_rates, t)
+    return get_value_at_t(self.short_rates, t)
 ```
 
 ### Implement the `_estimated_cost_for_optimization` Method (Optional):

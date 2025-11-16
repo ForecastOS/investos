@@ -17,30 +17,10 @@ class MaxLeverageConstraint(BaseConstraint):
         super().__init__(exclude_assets=exclude_assets, **kwargs)
         self.limit = limit
 
-    def _weight_expr(self, t, w_plus, z, v):
-        """
-        Returns a series of holding constraints.
-
-        Parameters
-        ----------
-        t : datetime
-            The current time.
-
-        w_plus : series
-            Portfolio weights after trades z.
-
-        z : series
-            Trades for period t
-
-        v : float
-            Value of portfolio at period t
-
-        Returns
-        -------
-        series
-            The holding constraints based on the portfolio leverage after trades.
-        """
-        return cvx.sum(cvx.abs(w_plus)) <= self.limit
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
+        return cvx.sum(cvx.abs(weights_portfolio_plus_trades)) <= self.limit
 
 
 class MaxShortLeverageConstraint(BaseConstraint):
@@ -52,30 +32,10 @@ class MaxShortLeverageConstraint(BaseConstraint):
         super().__init__(exclude_assets=exclude_assets, **kwargs)
         self.limit = limit
 
-    def _weight_expr(self, t, w_plus, z, v):
-        """
-        Returns a series of holding constraints.
-
-        Parameters
-        ----------
-        t : datetime
-            The current time.
-
-        w_plus : series
-            Portfolio weights after trades z.
-
-        z : series
-            Trades for period t
-
-        v : float
-            Value of portfolio at period t
-
-        Returns
-        -------
-        series
-            The holding constraints based on the portfolio leverage after trades.
-        """
-        return cvx.sum(cvx.abs(cvx.neg(w_plus))) <= self.limit
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
+        return cvx.sum(cvx.abs(cvx.neg(weights_portfolio_plus_trades))) <= self.limit
 
 
 class MaxLongLeverageConstraint(BaseConstraint):
@@ -87,30 +47,10 @@ class MaxLongLeverageConstraint(BaseConstraint):
         super().__init__(exclude_assets=exclude_assets, **kwargs)
         self.limit = limit
 
-    def _weight_expr(self, t, w_plus, z, v):
-        """
-        Returns a series of holding constraints.
-
-        Parameters
-        ----------
-        t : datetime
-            The current time.
-
-        w_plus : series
-            Portfolio weights after trades z.
-
-        z : series
-            Trades for period t
-
-        v : float
-            Value of portfolio at period t
-
-        Returns
-        -------
-        series
-            The holding constraints based on the portfolio leverage after trades.
-        """
-        return cvx.sum(cvx.pos(w_plus)) <= self.limit
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
+        return cvx.sum(cvx.pos(weights_portfolio_plus_trades)) <= self.limit
 
 
 class MaxLongTradeLeverageConstraint(BaseConstraint):
@@ -118,8 +58,10 @@ class MaxLongTradeLeverageConstraint(BaseConstraint):
         self.limit = limit
         super().__init__(**kwargs)
 
-    def _weight_expr(self, t, w_plus, z, v):
-        return cvx.sum(cvx.abs(cvx.pos(z))) <= self.limit
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
+        return cvx.sum(cvx.abs(cvx.pos(weights_trades))) <= self.limit
 
 
 class MaxShortTradeLeverageConstraint(BaseConstraint):
@@ -127,5 +69,7 @@ class MaxShortTradeLeverageConstraint(BaseConstraint):
         self.limit = limit
         super().__init__(**kwargs)
 
-    def _weight_expr(self, t, w_plus, z, v):
-        return cvx.sum(cvx.abs(cvx.neg(z))) <= self.limit
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
+        return cvx.sum(cvx.abs(cvx.neg(weights_trades))) <= self.limit

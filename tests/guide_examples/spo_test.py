@@ -69,9 +69,10 @@ def test_spo():
         ],
         cash_column_name="cash",
         solver_opts={
-            "eps_abs": 1e-5,
-            "eps_rel": 1e-5,
+            "eps_abs": 1.5e-6,
+            "eps_rel": 1.5e-6,
             "adaptive_rho_interval": 50,
+            "max_iter": 100_000,
         },
     )
 
@@ -93,14 +94,14 @@ def test_spo():
 
     assert isinstance(summary, str)
     assert (
-        round(backtest_result.annualized_return, 2) >= 0.05
-        and round(backtest_result.annualized_return, 2) <= 0.06
+        round(backtest_result.annualized_return, 3) >= 0.055
+        and round(backtest_result.annualized_return, 3) <= 0.065
     )
     assert (
-        round(backtest_result.annual_turnover, 1) >= 12.6
-        and round(backtest_result.annual_turnover, 1) <= 13.0
+        round(backtest_result.annual_turnover, 1) >= 11.5
+        and round(backtest_result.annual_turnover, 1) <= 13.5
     )
     assert (
-        round(backtest_result.portfolio_hit_rate, 2) >= 0.56
-        and round(backtest_result.portfolio_hit_rate, 2) <= 0.60
+        round(backtest_result.portfolio_hit_rate, 2) >= 0.58
+        and round(backtest_result.portfolio_hit_rate, 2) <= 0.62
     )

@@ -15,7 +15,7 @@ from investos.portfolio.constraint_model import (
 from investos.portfolio.cost_model import BaseCost
 from investos.portfolio.risk_model import BaseRisk
 from investos.portfolio.strategy import BaseStrategy
-from investos.util import _solve_and_extract_z, values_in_time
+from investos.util import _solve_and_extract_trade_weights, get_value_at_t
 
 
 class SPOTranches(BaseStrategy):
@@ -76,13 +76,17 @@ class SPOTranches(BaseStrategy):
 
     def formulate_optimization_problem(self, holdings: pd.Series, t: dt.datetime):
         value = sum(holdings)
-        w = holdings / value  # Portfolio weights
-        z = cvx.Variable(w.size)  # Portfolio trades
-        wplus = w.values + z  # Portfolio weights after trades
+        weights_portfolio = holdings / value  # Portfolio weights
+        weights_trades = cvx.Variable(weights_portfolio.size)  # Portfolio trades
+        weights_portfolio_plus_trades = (
+            weights_portfolio.values + weights_trades
+        )  # Portfolio weights after trades
 
         # JUST CURRENT TRANCHE FOR SPO_TRANCHES
         alpha_term = cvx.sum(
-            cvx.multiply(values_in_time(self.forecast_returns, t).values, z)
+            cvx.multiply(
+                get_value_at_t(self.forecast_returns, t).values, weights_trades
+            )
         )
 
         assert alpha_term.is_concave()
@@ -90,16 +94,22 @@ class SPOTranches(BaseStrategy):
         costs, constraints = [], []
 
         for cost in self.costs:
-            cost_expr, const_expr = cost.weight_expr(
-                t, z, z, value, holdings.index
-            )  # z only: only calc costs per tranche, no wplus for tranche opt class
+            cost_expr, const_expr = cost.cvxpy_expression(
+                t, weights_trades, weights_trades, value, holdings.index
+            )  # weights_trades only: only calc costs per tranche, no weights_portfolio_plus_trades for tranche opt class
             costs.append(cost_expr)
             constraints += const_expr
 
         constraints += [
             item
             for item in (
-                con.weight_expr(t, wplus, z, value, holdings.index)
+                con.cvxpy_expression(
+                    t,
+                    weights_portfolio_plus_trades,
+                    weights_trades,
+                    value,
+                    holdings.index,
+                )
                 for con in self.constraints
             )
         ]
@@ -108,30 +118,26 @@ class SPOTranches(BaseStrategy):
         for el in costs:
             if not el.is_convex():
                 print(t, el, "is not convex")
-            # assert el.is_convex()
 
         for el in constraints:
             if not el.is_dcp():
                 print(t, el, "is not dcp")
-            # assert el.is_dcp()
 
         objective = cvx.Maximize(alpha_term - cvx.sum(costs))
-        constraints += [cvx.sum(z) == 0]
+        constraints += [cvx.sum(weights_trades) == 0]
         prob = cvx.Problem(
             objective, constraints
         )  # Trades need to 0 out, i.e. cash account must adjust to make everything net to 0
 
-        return (prob, z)
+        return (prob, weights_trades)
 
     def precompute_trades_distributed(self, holdings: pd.Series, time_periods):
         delayed_tasks = []
-        z_variables = []
 
         for t in time_periods:
-            prob, z = self.formulate_optimization_problem(holdings, t)
-            z_variables.append(z)
-            delayed_task = delayed(_solve_and_extract_z)(
-                prob, z, t, self.solver, self.solver_opts, holdings
+            prob, weights_trades = self.formulate_optimization_problem(holdings, t)
+            delayed_task = delayed(_solve_and_extract_trade_weights)(
+                prob, weights_trades, t, self.solver, self.solver_opts, holdings
             )
             delayed_tasks.append(delayed_task)
 
@@ -142,8 +148,8 @@ class SPOTranches(BaseStrategy):
         )
 
         print("\nSaving distributed trades...")
-        for t, z_value in results:
-            self._save_data("z_distr", t, z_value)
+        for t, weights_trades in results:
+            self._save_data("weights_trades_distr", t, weights_trades)
         print("\nDistributed trades saved.")
 
         return results
@@ -164,69 +170,69 @@ class SPOTranches(BaseStrategy):
             t = dt.datetime.today()
 
         if is_distributed:
-            z = self.z_distr.loc[t].values
+            weights_trades = self.weights_trades_distr.loc[t].values
 
         else:
-            prob, z = self.formulate_optimization_problem(holdings, t)
+            prob, weights_trades = self.formulate_optimization_problem(holdings, t)
 
             try:
                 prob.solve(solver=self.solver, **self.solver_opts)
 
-                if prob.status == "unbounded":
-                    print(f"The problem is unbounded at {t}.")
+                if prob.status in ("unbounded", "infeasible"):
+                    print(f"The problem is {prob.status} at {t}.")
                     return self._zerotrade(holdings)
 
-                if prob.status == "infeasible":
-                    print(f"The problem is infeasible at {t}.")
-                    return self._zerotrade(holdings)
-
-                z = z.value
+                weights_trades = weights_trades.value
 
             except (cvx.SolverError, cvx.DCPError, TypeError) as e:
                 print(f"The solver failed for {t}. Error details: {e}")
                 return self._zerotrade(holdings)
 
         value = sum(holdings)
+
         try:
-            u = pd.Series(index=holdings.index, data=(z * value))
+            dollars_trades = pd.Series(
+                index=holdings.index, data=(weights_trades * value)
+            )
         except Exception as e:
             print(f"Calculating trades failed for {t}. Error details: {e}")
             return self._zerotrade(holdings)
 
         # Zero out small values; cash (re)calculated later based on trade balance, cash value here doesn't matter
         if self.polishing:
-            u[abs(u) < value / self.polishing_denom] = 0
+            dollars_trades[abs(dollars_trades) < value / self.polishing_denom] = 0
 
         # Round trade to discreet n_share_block (default: 100)
         if self.discreet_shares:
-            prices = values_in_time(self.actual_prices, t)
+            prices = get_value_at_t(self.actual_prices, t)
             block_prices = prices * self.n_share_block
             block_prices[self.cash_column_name] = None
 
-            non_cash_mask = u.index != self.cash_column_name
-            u[non_cash_mask] = (
-                u[non_cash_mask] / block_prices[non_cash_mask]
+            non_cash_mask = dollars_trades.index != self.cash_column_name
+            dollars_trades[non_cash_mask] = (
+                dollars_trades[non_cash_mask] / block_prices[non_cash_mask]
             ).round() * block_prices[non_cash_mask]
 
         # Unwind logic starts
-        trades_saved = self.backtest_controller.results.u.shape[0]
-        self._save_data("u_unwind_pre", t, u)
+        trades_saved = self.backtest_controller.results.dollars_trades.shape[0]
+        self._save_data("dollars_trades_unwind_pre", t, dollars_trades)
 
         if trades_saved > self.n_periods_held:
-            # Use holdings_unwind, t_unwind, w_unwind, u_unwind, u_unwind_scaled
             idx_unwind = trades_saved - self.n_periods_held
-            t_unwind = self.backtest_controller.results.u.index[idx_unwind]
+            t_unwind = self.backtest_controller.results.dollars_trades.index[idx_unwind]
 
-            u_unwind_pre = self.u_unwind_pre.loc[t_unwind]
-            u_unwind_pre = u_unwind_pre.drop(self.cash_column_name)
+            dollars_trades_unwind_pre = self.dollars_trades_unwind_pre.loc[t_unwind]
+            dollars_trades_unwind_pre = dollars_trades_unwind_pre.drop(
+                self.cash_column_name
+            )
 
             r_scale_unwind = self._cum_returns_to_scale_unwind(t_unwind, t)
-            u_unwind_scaled = u_unwind_pre * r_scale_unwind
+            dollars_trades_unwind_scaled = dollars_trades_unwind_pre * r_scale_unwind
 
-            u -= u_unwind_scaled
+            dollars_trades -= dollars_trades_unwind_scaled
         # Unwind logic ends
 
-        return u
+        return dollars_trades
 
     def _cum_returns_to_scale_unwind(self, t_unwind: dt.datetime, t: dt.datetime):
         df = self.actual_returns + 1

@@ -12,7 +12,7 @@ from investos.portfolio.constraint_model import (
 from investos.portfolio.cost_model import BaseCost
 from investos.portfolio.risk_model import BaseRisk
 from investos.portfolio.strategy import BaseStrategy
-from investos.util import values_in_time
+from investos.util import get_value_at_t
 
 
 class SPO(BaseStrategy):
@@ -72,12 +72,17 @@ class SPO(BaseStrategy):
             t = dt.datetime.today()
 
         value = sum(holdings)
-        w = holdings / value  # Portfolio weights
-        z = cvx.Variable(w.size)  # Portfolio trades
-        wplus = w.values + z  # Portfolio weights after trades
+        weights_portfolio = holdings / value  # Portfolio weights
+        weights_trades = cvx.Variable(weights_portfolio.size)  # Portfolio trades
+        weights_portfolio_plus_trades = (
+            weights_portfolio.values + weights_trades
+        )  # Portfolio weights after trades
 
         alpha_term = cvx.sum(
-            cvx.multiply(values_in_time(self.forecast_returns, t).values, wplus)
+            cvx.multiply(
+                get_value_at_t(self.forecast_returns, t).values,
+                weights_portfolio_plus_trades,
+            )
         )
 
         assert alpha_term.is_concave()
@@ -85,14 +90,22 @@ class SPO(BaseStrategy):
         costs, constraints = [], []
 
         for cost in self.costs:
-            cost_expr, const_expr = cost.weight_expr(t, wplus, z, value, holdings.index)
+            cost_expr, const_expr = cost.cvxpy_expression(
+                t, weights_portfolio_plus_trades, weights_trades, value, holdings.index
+            )
             costs.append(cost_expr)
             constraints += const_expr
 
         constraints += [
             item
             for item in (
-                con.weight_expr(t, wplus, z, value, holdings.index)
+                con.cvxpy_expression(
+                    t,
+                    weights_portfolio_plus_trades,
+                    weights_trades,
+                    value,
+                    holdings.index,
+                )
                 for con in self.constraints
             )
         ]
@@ -101,15 +114,13 @@ class SPO(BaseStrategy):
         for el in costs:
             if not el.is_convex():
                 print(t, el, "is not convex")
-            # assert el.is_convex()
 
         for el in constraints:
             if not el.is_dcp():
                 print(t, el, "is not dcp")
-            # assert el.is_dcp()
 
         objective = cvx.Maximize(alpha_term - cvx.sum(costs))
-        constraints += [cvx.sum(z) == 0]
+        constraints += [cvx.sum(weights_trades) == 0]
         self.prob = cvx.Problem(
             objective, constraints
         )  # Trades need to 0 out, i.e. cash account must adjust to make everything net to 0
@@ -117,17 +128,15 @@ class SPO(BaseStrategy):
         try:
             self.prob.solve(solver=self.solver, **self.solver_opts)
 
-            if self.prob.status == "unbounded":
-                print(f"The problem is unbounded at {t}.")
+            if self.prob.status in ("unbounded", "infeasible"):
+                print(f"The problem is {self.prob.status} at {t}.")
                 return self._zerotrade(holdings)
 
-            if self.prob.status == "infeasible":
-                print(f"The problem is infeasible at {t}.")
-                return self._zerotrade(holdings)
+            dollars_trades = pd.Series(
+                index=holdings.index, data=(weights_trades.value * value)
+            )
 
-            u = pd.Series(index=holdings.index, data=(z.value * value))
-
-            return u
+            return dollars_trades
 
         except (cvx.SolverError, cvx.DCPError, TypeError):
             print(f"The solver failed for {t}.")

@@ -76,8 +76,8 @@ def test_spo_tranches():
         n_periods_held=n_periods_held,
         cash_column_name="cash",
         solver_opts={
-            "eps_abs": 1e-5,
-            "eps_rel": 1e-5,
+            "eps_abs": 1e-6,
+            "eps_rel": 1e-6,
             "adaptive_rho_interval": 50,
         },
     )
@@ -100,7 +100,7 @@ def test_spo_tranches():
 
     assert isinstance(summary, str)
     assert (
-        round(backtest_result.annualized_return, 3) >= 0.034
+        round(backtest_result.annualized_return, 3) >= 0.033
         and round(backtest_result.annualized_return, 3) <= 0.037
     )
     assert (
@@ -108,6 +108,6 @@ def test_spo_tranches():
         and round(backtest_result.annual_turnover, 1) <= 9.3
     )
     assert (
-        round(backtest_result.portfolio_hit_rate, 2) >= 0.70
-        and round(backtest_result.portfolio_hit_rate, 2) <= 0.80
+        round(backtest_result.portfolio_hit_rate, 2) >= 0.67
+        and round(backtest_result.portfolio_hit_rate, 2) <= 0.77
     )

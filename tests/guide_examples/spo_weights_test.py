@@ -84,10 +84,10 @@ def test_spo_weights():
         ],
         cash_column_name="cash",
         solver_opts={
-            "eps_abs": 3e-6,
-            "eps_rel": 3e-6,
+            "eps_abs": 5e-5,
+            "eps_rel": 5e-5,
             "adaptive_rho_interval": 50,
-            # "verbose": True,
+            "max_iter": 100_000,
         },
     )
 

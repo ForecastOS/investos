@@ -1,7 +1,7 @@
 import cvxpy as cvx
 
 from investos.portfolio.constraint_model.base_constraint import BaseConstraint
-from investos.util import values_in_time
+from investos.util import get_value_at_t
 
 
 class ZeroFactorExposureConstraint(BaseConstraint):
@@ -9,9 +9,17 @@ class ZeroFactorExposureConstraint(BaseConstraint):
         self.factor_exposure = factor_exposure
         super().__init__(**kwargs)
 
-    def _weight_expr(self, t, w_plus, z, v):
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
         return (
-            cvx.sum(cvx.multiply(values_in_time(self.factor_exposure, t), w_plus)) == 0
+            cvx.sum(
+                cvx.multiply(
+                    get_value_at_t(self.factor_exposure, t),
+                    weights_portfolio_plus_trades,
+                )
+            )
+            == 0
         )
 
 
@@ -20,8 +28,15 @@ class ZeroTradeFactorExposureConstraint(BaseConstraint):
         self.factor_exposure = factor_exposure
         super().__init__(**kwargs)
 
-    def _weight_expr(self, t, w_plus, z, v):
-        return cvx.sum(cvx.multiply(values_in_time(self.factor_exposure, t), z)) == 0
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
+        return (
+            cvx.sum(
+                cvx.multiply(get_value_at_t(self.factor_exposure, t), weights_trades)
+            )
+            == 0
+        )
 
 
 class MaxFactorExposureConstraint(BaseConstraint):
@@ -30,9 +45,16 @@ class MaxFactorExposureConstraint(BaseConstraint):
         self.limit = limit
         super().__init__(**kwargs)
 
-    def _weight_expr(self, t, w_plus, z, v):
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
         return (
-            cvx.sum(cvx.multiply(values_in_time(self.factor_exposure, t), w_plus))
+            cvx.sum(
+                cvx.multiply(
+                    get_value_at_t(self.factor_exposure, t),
+                    weights_portfolio_plus_trades,
+                )
+            )
             <= self.limit
         )
 
@@ -43,9 +65,16 @@ class MinFactorExposureConstraint(BaseConstraint):
         self.limit = limit
         super().__init__(**kwargs)
 
-    def _weight_expr(self, t, w_plus, z, v):
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
         return (
-            cvx.sum(cvx.multiply(values_in_time(self.factor_exposure, t), w_plus))
+            cvx.sum(
+                cvx.multiply(
+                    get_value_at_t(self.factor_exposure, t),
+                    weights_portfolio_plus_trades,
+                )
+            )
             >= self.limit
         )
 
@@ -56,10 +85,15 @@ class MaxAbsoluteFactorExposureConstraint(BaseConstraint):
         self.limit = limit
         super().__init__(**kwargs)
 
-    def _weight_expr(self, t, w_plus, z, v):
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
         return (
             cvx.sum(
-                cvx.multiply(values_in_time(self.factor_exposure, t), cvx.abs(w_plus))
+                cvx.multiply(
+                    get_value_at_t(self.factor_exposure, t),
+                    cvx.abs(weights_portfolio_plus_trades),
+                )
             )
             <= self.limit
         )
@@ -71,9 +105,15 @@ class MaxAbsoluteTradeFactorExposureConstraint(BaseConstraint):
         self.limit = limit
         super().__init__(**kwargs)
 
-    def _weight_expr(self, t, w_plus, z, v):
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
         return (
-            cvx.sum(cvx.multiply(values_in_time(self.factor_exposure, t), cvx.abs(z)))
+            cvx.sum(
+                cvx.multiply(
+                    get_value_at_t(self.factor_exposure, t), cvx.abs(weights_trades)
+                )
+            )
             <= self.limit
         )
 
@@ -84,9 +124,13 @@ class MaxTradeFactorExposureConstraint(BaseConstraint):
         self.limit = limit
         super().__init__(**kwargs)
 
-    def _weight_expr(self, t, w_plus, z, v):
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
         return (
-            cvx.sum(cvx.multiply(values_in_time(self.factor_exposure, t), z))
+            cvx.sum(
+                cvx.multiply(get_value_at_t(self.factor_exposure, t), weights_trades)
+            )
             <= self.limit
         )
 
@@ -97,8 +141,12 @@ class MinTradeFactorExposureConstraint(BaseConstraint):
         self.limit = limit
         super().__init__(**kwargs)
 
-    def _weight_expr(self, t, w_plus, z, v):
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
         return (
-            cvx.sum(cvx.multiply(values_in_time(self.factor_exposure, t), z))
+            cvx.sum(
+                cvx.multiply(get_value_at_t(self.factor_exposure, t), weights_trades)
+            )
             >= self.limit
         )

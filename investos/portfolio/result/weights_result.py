@@ -18,7 +18,9 @@ class WeightsResult(BaseResult):
         *args,
         **kwargs,
     ):
-        self.set_h_next(initial_weights, trade_weights, actual_returns, aum)
+        self.set_dollars_holdings_at_next_t(
+            initial_weights, trade_weights, actual_returns, aum
+        )
         self.risk_free = kwargs.get(
             "risk_free", pd.Series(0.0, index=actual_returns.index)
         )
@@ -34,20 +36,22 @@ class WeightsResult(BaseResult):
             **kwargs,
         )
 
-    def set_h_next(self, initial_weights, trade_weights, returns, aum):
+    def set_dollars_holdings_at_next_t(
+        self, initial_weights, trade_weights, returns, aum
+    ):
         print(
             "Calculating holding values from trades, returns, and initial weights and AUM..."
         )
 
-        h = initial_weights
+        dollars_holdings = initial_weights
         for t in trade_weights.index:
             r = returns.loc[t]
-            u = trade_weights.loc[t]
-            h_next = (h + u) * (1.0 + r)
-            self.save_position(t, u, h_next)
-            h = h_next
+            dollars_trades = trade_weights.loc[t]
+            dollars_holdings_at_next_t = (dollars_holdings + dollars_trades) * (1.0 + r)
+            self.save_position(t, dollars_trades, dollars_holdings_at_next_t)
+            dollars_holdings = dollars_holdings_at_next_t
 
-        self.u *= aum
-        self.h_next *= aum
+        self.dollars_trades *= aum
+        self.dollars_holdings_at_next_t *= aum
 
         print("Done calculations.")
