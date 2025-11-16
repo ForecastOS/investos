@@ -97,7 +97,7 @@ backtest_result = portfolio.generate_positions()
 backtest_result.summary
 ```
 
-When `backtest_result.summary` is executed, it will output summary backtest results:
+When `backtest_result.summary` is executed, it will output summary backtest results similar to the below:
 
 ```python
 # Initial timestamp                         2017-01-03 00:00:00

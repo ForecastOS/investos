@@ -40,38 +40,19 @@ def __init__(self, *args, custom_param=None, **kwargs):
     self.custom_param = custom_param
 ```
 
-### Implement the `_weight_expr` Method:
+### Implement the `_cvxpy_expression` Method:
 
 **This is the core method** where your constraint logic resides.
 
-Given a datetime `t`, a numpy-like array of asset holding weights `w_plus`, a numpy-like array of trade weights `z`, and a portfolio value `v`, return a `CVXPY` constraint expression.
+Given a datetime `t`, a numpy-like array of asset holding weights `weights_portfolio_plus_trades`, a numpy-like array of trade weights `weights_trades`, and a portfolio value `portfolio_value`, return a `CVXPY` constraint expression.
 
 See [MaxLeverageConstraint](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/constraint_model/leverage_constraint.py) for inspiration:
 
 ```python
-def _weight_expr(self, t, w_plus, z, v):
-    """
-    Returns a series of holding constraints.
-
-    Parameters
-    ----------
-    t : datetime
-
-    w_plus : array
-        Portfolio weights after trades z.
-
-    z : array
-        Trades for period t
-
-    v : float
-        Value of portfolio at period t
-
-    Returns
-    -------
-    array
-        The holding constraints based on the portfolio leverage after trades.
-    """
-    return cvx.sum(cvx.abs(w_plus)) <= self.limit
+def _cvxpy_expression(
+    self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+):
+    return cvx.sum(cvx.abs(weights_portfolio_plus_trades)) <= self.limit
 
 ```
 
