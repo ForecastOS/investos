@@ -26,12 +26,11 @@ BacktestController will ask (BaseStrategy) investment strategies to `generate_tr
 Off-the-shelf investment strategies, which extend BaseStrategy, include:
 
 -   [Single Period Optimization](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/strategy/spo.py) (SPO): optimizes for max estimated return after estimated costs and (a utility penalty for) estimated portfolio variance
--   [Single Period Optimization Tranches](https://github.com/ForecastOS/investos/tree/v0.4.1/investos/portfolio/strategy/spo_tranches.py) (SPO Tranches): Like SPO, but builds portfolio in separate tranches. Tranches are cycled in and out by customizable holding period. Tranches can be analyzed and altered in flight using BacktestController hooks.
+-   [Single Period Optimization Tranches](https://github.com/ForecastOS/investos/tree/v0.4.1/investos/portfolio/strategy/spo_tranches.py) (SPOTranches): Like SPO, but builds portfolio in separate tranches. Tranches are cycled in and out by customizable holding period. Tranches can be analyzed and altered in flight using BacktestController hooks.
+-   [Single Period Optimization Weights](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/strategy/spo_weights.py) (SPOWeights): optimizes for min deviation in portfolio weights, given constraints.
 -   [RankLongShort](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/strategy/rank_long_short.py)
 
 **Note**: `generate_trade_list` can be used to generate a trade list outside of a backtest context (i.e. to implement your investment strategy in the market).
-
-**Note**: we are starting work on new SPO classes for MVO (mean-variance optimization); minimizing expected portfolio variance with a return constraint.
 
 ### BaseResult
 

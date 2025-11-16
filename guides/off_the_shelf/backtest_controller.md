@@ -50,7 +50,7 @@ backtest_controller = inv.portfolio.BacktestController(
 ```python
 hooks = {
     "after_trades": [
-        lambda backtest, t, u, h_next: print(".", end=''),
+        lambda backtest, t, dollars_trades, dollars_holdings_at_next_t: print(".", end=''),
     ]
 }
 ```

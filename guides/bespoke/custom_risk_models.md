@@ -40,33 +40,41 @@ def __init__(self, *args, custom_param=None, **kwargs):
 
 `_estimated_cost_for_optimization` returns a utility cost expression for optimization that penalizes risk.
 
-Given a datetime `t`, a numpy-like array of holding weights `w_plus`, a numpy-like array of trade weights `z`, and portfolio value `value`, return a two item tuple containing a CVXPY expression and a (possibly empty) list of constraints.
+Given a datetime `t`, a numpy-like array of holding weights `weights_portfolio_plus_trades`, a numpy-like array of trade weights `weights_trades`, and portfolio value `value`, return a two item tuple containing a CVXPY expression and a (possibly empty) list of constraints.
 
 See [FactorRisk](https://github.com/ForecastOS/investos/tree/v0.3.10/investos/portfolio/risk_model/factor_risk.py) for inspiration:
 
 ```python
-def _estimated_cost_for_optimization(self, t, w_plus, z, value):
-        """Optimization (non-cash) cost penalty for assuming associated asset risk.
+def _estimated_cost_for_optimization(
+    self, t, weights_portfolio_plus_trades, weights_trades, value
+):
+    """Optimization (non-cash) cost penalty for assuming associated asset risk.
 
-        Used by optimization strategy to determine trades.
-        """
-        factor_covar = util.get_value_at_t(
-            self.factor_covariance, t, lookback_for_closest=True
-        )
-        factor_load = util.get_value_at_t(
-            self.factor_loadings, t, lookback_for_closest=True
-        )
-        idiosync_var = util.get_value_at_t(
-            self.idiosyncratic_variance, t, lookback_for_closest=True
-        )
+    Used by optimization strategy to determine trades.
 
-        self.expression = cvx.sum_squares(cvx.multiply(np.sqrt(idiosync_var), w_plus))
+    Not used to calculate simulated costs for backtest performance.
+    """
+    factor_covar = util.get_value_at_t(self.factor_covariance, t, use_lookback=True)
+    factor_load = util.get_value_at_t(self.factor_loadings, t, use_lookback=True)
+    idiosync_var = util.get_value_at_t(
+        self.idiosyncratic_variance, t, use_lookback=True
+    )
 
-        risk_from_factors = factor_load.T @ factor_covar @ factor_load
+    risk_from_factors = factor_load.T @ factor_covar @ factor_load
+    sigma = risk_from_factors + np.diag(idiosync_var)
+    self.expression = cvx.quad_form(weights_portfolio_plus_trades, sigma)
 
-        self.expression += w_plus @ risk_from_factors @ w_plus.T
+    if self._penalize_risk:
+        risk_penalty = self.expression
+    else:
+        risk_penalty = cvx.sum(0)
 
-        return self.expression, []
+    if self._max_std_dev:
+        constr_li = [self.expression <= (self._max_std_dev**2)]
+    else:
+        constr_li = []
+
+    return risk_penalty, constr_li
 ```
 
 ### Implement Helper Methods (Optional):

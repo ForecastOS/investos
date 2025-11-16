@@ -40,26 +40,19 @@ def __init__(self, *args, custom_param=None, **kwargs):
 
 **This is the core method** where your cost logic resides.
 
-Given a datetime `t`, a series of holdings indexed by asset `h_plus`, and a series of trades indexed by asset `u`, return the sum of costs for all assets.
+Given a datetime `t`, a series of holdings indexed by asset `dollars_holdings_plus_trades`, and a series of trades indexed by asset `dollars_trades`, return the sum of costs for all assets.
 
 See [ShortHoldingCost](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/cost_model/short_holding_cost.py) for inspiration:
 
 ```python
 def get_actual_cost(
-        self, t: dt.datetime, h_plus: pd.Series, u: pd.Series
-    ) -> pd.Series:
+    self, t: dt.datetime, dollars_holdings_plus_trades: pd.Series, dollars_trades: pd.Series
+) -> pd.Series:
     """Method that calculates per-period (short position) holding costs given period `t` holdings and trades.
-
-    Parameters
-    ----------
-    t : datetime.datetime
-        The datetime for associated trades `u` and holdings plus trades `h_plus`.
-    h_plus : pandas.Series
-        Holdings at beginning of period t, plus trades for period `t` (`u`). Same as `u` + `h` for `t`.
-    u : pandas.Series
-        Trades (as values) for period `t`.
     """
-    return sum(-np.minimum(0, h_plus) * self._get_short_rate(t))
+    return sum(
+        -np.minimum(0, dollars_holdings_plus_trades) * self._get_short_rate(t)
+    )
 
 def _get_short_rate(self, t):
     return get_value_at_t(self.short_rates, t)
@@ -69,19 +62,23 @@ def _get_short_rate(self, t):
 
 If you're using a convex optimization based investment strategy, `_estimated_cost_for_optimization` is used to return a cost expression for optimization.
 
-Given a datetime `t`, a numpy-like array of holding weights `w_plus`, and a numpy-like array of trade weights `z`, return a two item tuple containing a `cvx.sum(expression)` and a (possibly empty) list of constraints.
+Given a datetime `t`, a numpy-like array of holding weights `weights_portfolio_plus_trades`, a numpy-like array of trade weights `weights_trades`, and `portfolio_value`, return a two item tuple containing a `cvx.sum(expression)` and a (possibly empty) list of constraints.
 
 See [ShortHoldingCost](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/cost_model/short_holding_cost.py) for inspiration:
 
 ```python
-def _estimated_cost_for_optimization(self, t, w_plus, z, value):
+def _estimated_cost_for_optimization(
+    self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+):
     """Estimated holding costs.
 
     Used by optimization strategy to determine trades.
 
     Not used to calculate simulated holding costs for backtest performance.
     """
-    expression = cvx.multiply(self._get_short_rate(t), cvx.neg(w_plus))
+    expression = cvx.multiply(
+        self._get_short_rate(t), cvx.neg(weights_portfolio_plus_trades)
+    )
 
     return cvx.sum(expression), []
 ```

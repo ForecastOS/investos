@@ -45,7 +45,7 @@ backtest_result.summary
 
 That's all that's required to run your first (RankLongShort) backtest!
 
-When `backtest_result.summary` is executed, it will output summary backtest results:
+When `backtest_result.summary` is executed, it will output summary backtest results similar to the below:
 
 ```python
 # Initial timestamp                         2017-01-03 00:00:00
@@ -64,10 +64,10 @@ When `backtest_result.summary` is executed, it will output summary backtest resu
 
 If you have a charting library installed, like matplotlib, check out [BaseResult](https://github.com/ForecastOS/investos/tree/v0.3.9/investos/portfolio/result/base_result.py) for the many metrics you can plot, like:
 
--   portfolio value evolution (`backtest_result.v`),
+-   portfolio value evolution (`backtest_result.portfolio_value`),
 -   long and short leverage evolution (`backtest_result.leverage`),
 -   trades in SBUX (`backtest_result.trades['SBUX']`),
--   holdings in AAPL (`backtest_result.h['AAPL']`),
+-   holdings in AAPL (`backtest_result.dollars_holdings['AAPL']`),
 -   etc.
 
 ## What Could Be Improved

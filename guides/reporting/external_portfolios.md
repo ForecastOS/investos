@@ -129,9 +129,9 @@ backtest_result.summary
 
 In an ipynb, you can easily plot:
 
--   Your portfolio value evolution `result.v.plot()`
+-   Your portfolio value evolution `result.portfolio_value.plot()`
 -   Your leverage `result.long_leverage.plot()`
--   Your holdings in a specific asset `result.h['TSLA'].plot()`
+-   Your holdings in a specific asset `result.dollars_holdings['TSLA'].plot()`
 -   Your trades in a specific asset `result.trades['TSLA'].plot()`
 -   And many more metrics, series, and dataframes provided by the result object
 
