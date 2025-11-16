@@ -338,7 +338,7 @@ class BaseResult(SaveResult, HydrateMixin):
     def information_ratio(self, use_annualized_inputs=True) -> float:
         """Returns a float representing the (annualized) Information Ratio of the portfolio.
 
-        Ratio is calculated as mean of :py:attr:`~investos.portfolio.result.base_result.base_result.BaseResult.excess_returns` / standard deviation of :py:attr:`~investos.portfolio.result.base_result.BaseResult.excess_returns`. Annualized by multiplying ratio by square root of periods per year (:py:attr:`~investos.portfolio.result.base_result.BaseResult.ppy`).
+        Ratio is calculated as mean of :py:attr:`~investos.portfolio.result.base_result.base_result.BaseResult.excess_returns` / standard deviation of :py:attr:`~investos.portfolio.result.base_result.BaseResult.excess_returns`. Annualized by multiplying ratio by square root of periods per year (:py:attr:`~investos.portfolio.result.base_result.BaseResult.periods_per_year`).
         """
         if use_annualized_inputs:
             return self.annualized_excess_return / self.excess_risk_annualized
@@ -362,7 +362,7 @@ class BaseResult(SaveResult, HydrateMixin):
     def sharpe_ratio(self, use_annualized_inputs=True) -> float:
         """Returns a float representing the (annualized) Sharpe Ratio of the portfolio.
 
-        Ratio is calculated as mean of :py:attr:`~investos.portfolio.result.base_result.base_result.BaseResult.excess_returns` / standard deviation of :py:attr:`~investos.portfolio.result.base_result.BaseResult.excess_returns`. Annualized by multiplying ratio by square root of periods per year (:py:attr:`~investos.portfolio.result.base_result.BaseResult.ppy`).
+        Ratio is calculated as mean of :py:attr:`~investos.portfolio.result.base_result.base_result.BaseResult.excess_returns` / standard deviation of :py:attr:`~investos.portfolio.result.base_result.BaseResult.excess_returns`. Annualized by multiplying ratio by square root of periods per year (:py:attr:`~investos.portfolio.result.base_result.BaseResult.periods_per_year`).
         """
         if use_annualized_inputs:
             return self.annualized_return_over_cash / self.risk_over_cash_annualized
@@ -416,7 +416,7 @@ class BaseResult(SaveResult, HydrateMixin):
 
     @property
     def annual_turnover(self):
-        return self.turnover.mean() * self.ppy
+        return self.turnover.mean() * self.periods_per_year
 
     @property
     def max_drawdown(self):

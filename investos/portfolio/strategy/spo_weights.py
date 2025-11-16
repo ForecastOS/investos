@@ -103,7 +103,6 @@ class SPOWeights(BaseStrategy):
         for el in constraints:
             if not el.is_dcp():
                 print(t, el, "is not dcp")
-            # assert el.is_dcp()
 
         objective = cvx.Minimize(cvx.sum(cvx.abs(wdiff)))
         constraints += [cvx.sum(weights_trades) == 0]
