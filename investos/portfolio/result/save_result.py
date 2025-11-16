@@ -81,14 +81,14 @@ class SaveResult:
                     {
                         "x_name": "Dates",
                         "y_name": "Portfolio",
-                        "x_values": [str(el) for el in self.v.index],
-                        "y_values": list(self.v.values),
+                        "x_values": [str(el) for el in self.portfolio_value.index],
+                        "y_values": list(self.portfolio_value.values),
                     },
                     {
                         "x_name": "Dates",
                         "y_name": "Benchmark",
-                        "x_values": [str(el) for el in self.benchmark_v.index],
-                        "y_values": list(self.benchmark_v.values),
+                        "x_values": [str(el) for el in self.benchmark_value.index],
+                        "y_values": list(self.benchmark_value.values),
                     },
                 ],
             }
@@ -126,7 +126,7 @@ class SaveResult:
         self._save_chart(json_body)
 
     def save_chart_rolling_sharpe(self):
-        num_periods = self.v.shape[0] - 1
+        num_periods = self.portfolio_value.shape[0] - 1
         num_a = min(60, num_periods)
         num_b = min(252, num_periods)
 
@@ -139,7 +139,7 @@ class SaveResult:
                     {
                         "x_name": "Dates",
                         "y_name": f"Sharpe: {num_a} periods",
-                        "x_values": [str(el) for el in self.v.index],
+                        "x_values": [str(el) for el in self.portfolio_value.index],
                         "y_values": list(
                             self.sharpe_ratio_rolling(num_a)
                             .fillna(method="bfill")
@@ -149,7 +149,7 @@ class SaveResult:
                     {
                         "x_name": "Dates",
                         "y_name": f"Sharpe: {num_b} periods",
-                        "x_values": [str(el) for el in self.v.index],
+                        "x_values": [str(el) for el in self.portfolio_value.index],
                         "y_values": list(
                             self.sharpe_ratio_rolling(num_b)
                             .fillna(method="bfill")
@@ -163,7 +163,7 @@ class SaveResult:
         self._save_chart(json_body)
 
     def save_chart_historical_returns(self):
-        num_periods = self.v.shape[0] - 1
+        num_periods = self.portfolio_value.shape[0] - 1
         rolling_num_a = min(20, num_periods)
         rolling_num_b = min(60, num_periods)
         rolling_num_c = min(252, num_periods)
@@ -177,9 +177,9 @@ class SaveResult:
                     {
                         "x_name": "Dates",
                         "y_name": f"{rolling_num_a} periods",
-                        "x_values": [str(el) for el in self.v.index],
+                        "x_values": [str(el) for el in self.portfolio_value.index],
                         "y_values": list(
-                            self.v.pct_change(periods=rolling_num_a)
+                            self.portfolio_value.pct_change(periods=rolling_num_a)
                             .fillna(method="bfill")
                             .values
                         ),
@@ -187,9 +187,9 @@ class SaveResult:
                     {
                         "x_name": "Dates",
                         "y_name": f"{rolling_num_b} periods",
-                        "x_values": [str(el) for el in self.v.index],
+                        "x_values": [str(el) for el in self.portfolio_value.index],
                         "y_values": list(
-                            self.v.pct_change(periods=rolling_num_b)
+                            self.portfolio_value.pct_change(periods=rolling_num_b)
                             .fillna(method="bfill")
                             .values
                         ),
@@ -197,9 +197,9 @@ class SaveResult:
                     {
                         "x_name": "Dates",
                         "y_name": f"{rolling_num_c} periods",
-                        "x_values": [str(el) for el in self.v.index],
+                        "x_values": [str(el) for el in self.portfolio_value.index],
                         "y_values": list(
-                            self.v.pct_change(periods=rolling_num_c)
+                            self.portfolio_value.pct_change(periods=rolling_num_c)
                             .fillna(method="bfill")
                             .values
                         ),
@@ -271,9 +271,9 @@ class SaveResult:
         self._save_chart(json_body)
 
     def save_chart_two_way_turnover(self, periods_in_year=252):
-        s = self.u.drop(columns="cash").abs().sum(axis=1).rolling(
+        s = self.dollars_trades.drop(columns="cash").abs().sum(axis=1).rolling(
             window=periods_in_year
-        ).sum() / (self.v * 2 * self.leverage)
+        ).sum() / (self.portfolio_value * 2 * self.leverage)
 
         json_body = {
             "chart": {

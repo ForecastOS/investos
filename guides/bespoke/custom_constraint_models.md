@@ -19,7 +19,7 @@ import numpy as np
 import cvxpy as cvx
 
 from investos.portfolio.constraint_model import BaseConstraint
-from investos.util import values_in_time
+from investos.util import get_value_at_t
 ```
 
 ### Define the Custom Constraint Class:

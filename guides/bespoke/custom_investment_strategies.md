@@ -14,7 +14,7 @@ First, ensure you have the necessary modules imported:
 import datetime as dt
 import pandas as pd
 from investos.portfolio.strategy import BaseStrategy
-from investos.util import values_in_time
+from investos.util import get_value_at_t
 ```
 
 ### Define the Custom Strategy Class:
@@ -47,7 +47,7 @@ For example, a simple, contrived momentum-based strategy might look like this:
 def generate_trade_list(self, holdings: pd.Series, t: dt.datetime) -> pd.Series:
     # A placeholder example:
     ### Buy assets that have had positive returns in the last period
-    returns = values_in_time(self.actual_returns, t)
+    returns = get_value_at_t(self.actual_returns, t)
     buy_assets = returns[returns > 0].index
     trade_values = pd.Series(index=holdings.index, data=0.0)
     trade_values[buy_assets] = 100  # Buying $100 of each positive-return asset

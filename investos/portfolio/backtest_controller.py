@@ -56,28 +56,36 @@ class BacktestController:
         )
         # Create t == 0 position (no trades)
         t = self._get_initial_t()
-        u = pd.Series(index=self.initial_portfolio.index, data=0)
-        h_next = self.initial_portfolio  # Includes cash
-        self.results.save_position(t, u, h_next)
+        dollars_trades = pd.Series(index=self.initial_portfolio.index, data=0)
+        dollars_holdings_at_next_t = self.initial_portfolio  # Includes cash
+        self.results.save_position(t, dollars_trades, dollars_holdings_at_next_t)
 
         if self.distributed:
             self._dask_start_client_and_cluster()
-            self.strategy.precompute_trades_distributed(h_next, self.time_periods)
+            self.strategy.precompute_trades_distributed(
+                dollars_holdings_at_next_t, self.time_periods
+            )
             print("\nClosing dask cluster...")
             self.dask_cluster.close()
             print("\nDask cluster closed.\n")
-            self.strategy.z_distr = self.strategy.z_distr.fillna(
-                0
+            self.strategy.weights_trades_distr = (
+                self.strategy.weights_trades_distr.fillna(0)
             )  # Fill NAs that occur due to no solution
 
         # Walk through time and calculate future trades, estimated and actual costs and returns, and resulting positions
         for t in self.time_periods:
-            u = self.strategy.generate_trade_list(h_next, t)
-            h_next, u = self.strategy.get_actual_positions_for_t(h_next, u, t)
-            self.results.save_position(t, u, h_next)
+            dollars_trades = self.strategy.generate_trade_list(
+                dollars_holdings_at_next_t, t
+            )
+            dollars_holdings_at_next_t, dollars_trades = (
+                self.strategy.get_actual_positions_for_t(
+                    dollars_holdings_at_next_t, dollars_trades, t
+                )
+            )
+            self.results.save_position(t, dollars_trades, dollars_holdings_at_next_t)
 
             for func in self.hooks.get("after_trades", []):
-                func(self, t, u, h_next)
+                func(self, t, dollars_trades, dollars_holdings_at_next_t)
 
         print(f"\n\nDone simulating at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}.")
         return self.results

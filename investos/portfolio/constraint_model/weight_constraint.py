@@ -8,46 +8,20 @@ class MaxWeightConstraint(BaseConstraint):
     Parameters
     ----------
     limit : float, optional
-        The maximum weight of each asset in the portfolio. Defaults to 0.05.
+        The maximum weight of each asset in the portfolio. Defaults to 0.025.
 
     **kwargs :
         Additional keyword arguments.
-
-    Methods
-    -------
-    weight_expr(self, t, w_plus, z, v):
-        Returns a series of holding constraints based on the portfolio weights after trades.
-
     """
 
     def __init__(self, limit: float = 0.025, exclude_assets=["cash"], **kwargs):
         super().__init__(exclude_assets=exclude_assets, **kwargs)
         self.limit = limit
 
-    def _weight_expr(self, t, w_plus, z, v):
-        """
-        Returns a series of holding constraints.
-
-        Parameters
-        ----------
-        t : datetime
-            The current time.
-
-        w_plus : series
-            Portfolio weights after trades z.
-
-        z : series
-            Trades for period t
-
-        v : float
-            Value of portfolio at period t
-
-        Returns
-        -------
-        series
-            The holding constraints based on the portfolio weights after trades.
-        """
-        return w_plus <= self.limit
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
+        return weights_portfolio_plus_trades <= self.limit
 
 
 class MinWeightConstraint(BaseConstraint):
@@ -57,62 +31,40 @@ class MinWeightConstraint(BaseConstraint):
     Parameters
     ----------
     limit : float, optional
-        The minimum weight of each asset in the portfolio. Defaults to -0.05.
+        The minimum weight of each asset in the portfolio. Defaults to -0.025.
 
     **kwargs :
         Additional keyword arguments.
-
-    Methods
-    -------
-    weight_expr(self, t, w_plus, z, v):
-        Returns a series of holding constraints based on the portfolio weights after trades.
-
     """
 
     def __init__(self, limit: float = -0.025, exclude_assets=["cash"], **kwargs):
         super().__init__(exclude_assets=exclude_assets, **kwargs)
         self.limit = limit
 
-    def _weight_expr(self, t, w_plus, z, v):
-        """
-        Returns a series of holding constraints.
-
-        Parameters
-        ----------
-        t : datetime
-            The current time.
-
-        w_plus : series
-            Portfolio weights after trades z.
-
-        z : series
-            Trades for period t
-
-        v : float
-            Value of portfolio at period t
-
-        Returns
-        -------
-        series
-            The holding constraints based on the portfolio weights after trades.
-        """
-        return w_plus >= self.limit
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
+        return weights_portfolio_plus_trades >= self.limit
 
 
 class ZeroWeightConstraint(BaseConstraint):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def _weight_expr(self, t, w_plus, z, v):
-        return w_plus == 0
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
+        return weights_portfolio_plus_trades == 0
 
 
 class ZeroTradeWeightConstraint(BaseConstraint):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def _weight_expr(self, t, w_plus, z, v):
-        return z == 0
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
+        return weights_trades == 0
 
 
 class MaxTradeWeightConstraint(BaseConstraint):
@@ -120,8 +72,10 @@ class MaxTradeWeightConstraint(BaseConstraint):
         self.limit = limit
         super().__init__(**kwargs)
 
-    def _weight_expr(self, t, w_plus, z, v):
-        return z <= self.limit
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
+        return weights_trades <= self.limit
 
 
 class MinTradeWeightConstraint(BaseConstraint):
@@ -129,5 +83,7 @@ class MinTradeWeightConstraint(BaseConstraint):
         self.limit = limit
         super().__init__(**kwargs)
 
-    def _weight_expr(self, t, w_plus, z, v):
-        return z >= self.limit
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
+        return weights_trades >= self.limit

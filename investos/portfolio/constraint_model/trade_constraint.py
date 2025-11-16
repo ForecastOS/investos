@@ -8,5 +8,7 @@ class MaxAbsTurnoverConstraint(BaseConstraint):
         self.limit = limit
         super().__init__(**kwargs)
 
-    def _weight_expr(self, t, w_plus, z, v):
-        return cvx.sum(cvx.abs(z)) <= self.limit
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
+        return cvx.sum(cvx.abs(weights_trades)) <= self.limit

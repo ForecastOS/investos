@@ -50,13 +50,13 @@ def _estimated_cost_for_optimization(self, t, w_plus, z, value):
 
         Used by optimization strategy to determine trades.
         """
-        factor_covar = util.values_in_time(
+        factor_covar = util.get_value_at_t(
             self.factor_covariance, t, lookback_for_closest=True
         )
-        factor_load = util.values_in_time(
+        factor_load = util.get_value_at_t(
             self.factor_loadings, t, lookback_for_closest=True
         )
-        idiosync_var = util.values_in_time(
+        idiosync_var = util.get_value_at_t(
             self.idiosyncratic_variance, t, lookback_for_closest=True
         )
 

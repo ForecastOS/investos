@@ -1,7 +1,7 @@
 import cvxpy as cvx
 
 from investos.portfolio.constraint_model.base_constraint import BaseConstraint
-from investos.util import remove_excluded_columns_pd, values_in_time
+from investos.util import get_value_at_t, remove_excluded_columns_pd
 
 
 class TradeReturnConstraint(BaseConstraint):
@@ -14,18 +14,28 @@ class TradeReturnConstraint(BaseConstraint):
         )
         self.forecast_returns -= self.limit
 
-    def _weight_expr(self, t, w_plus, z, v):
-        alpha_term = cvx.sum(
-            cvx.multiply(values_in_time(self.forecast_returns, t).values, z)
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
+        sum_forecast_alpha = cvx.sum(
+            cvx.multiply(
+                get_value_at_t(self.forecast_returns, t).values, weights_trades
+            )
         )
 
         costs_li = []
         for cost in self.costs:
-            # Trade specific, not portfolio level (hence 2 z's and no w_plus)
-            cost_expr, _ = cost.weight_expr(t, z, z, v, self.forecast_returns.index)
+            # Trade specific, not portfolio level (hence 2 weights_trades and no weights_portfolio_plus_trades)
+            cost_expr, _ = cost.cvxpy_expression(
+                t,
+                weights_trades,
+                weights_trades,
+                portfolio_value,
+                self.forecast_returns.index,
+            )
             costs_li.append(cost_expr)
 
-        return (alpha_term - cvx.sum(costs_li)) >= 0
+        return (sum_forecast_alpha - cvx.sum(costs_li)) >= 0
 
 
 class TradeGrossReturnConstraint(BaseConstraint):
@@ -36,9 +46,13 @@ class TradeGrossReturnConstraint(BaseConstraint):
             forecast_returns, self.exclude_assets
         )
 
-    def _weight_expr(self, t, w_plus, z, v):
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
         sum_forecast_alpha = cvx.sum(
-            cvx.multiply(values_in_time(self.forecast_returns, t).values, z)
+            cvx.multiply(
+                get_value_at_t(self.forecast_returns, t).values, weights_trades
+            )
         )
 
         return sum_forecast_alpha <= self.limit

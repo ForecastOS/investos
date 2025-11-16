@@ -11,7 +11,7 @@ from investos.portfolio.constraint_model import (
 from investos.portfolio.cost_model import BaseCost
 from investos.portfolio.risk_model import BaseRisk
 from investos.portfolio.strategy import BaseStrategy
-from investos.util import values_in_time
+from investos.util import get_value_at_t
 
 
 class SPOWeights(BaseStrategy):
@@ -70,11 +70,16 @@ class SPOWeights(BaseStrategy):
             t = dt.datetime.today()
 
         value = sum(holdings)
-        w = holdings / value  # Portfolio weights
-        z = cvx.Variable(w.size)  # Portfolio trades
-        wplus = w.values + z  # Portfolio weights after trades
+        weights_portfolio = holdings / value  # Portfolio weights
+        weights_trades = cvx.Variable(weights_portfolio.size)  # Portfolio trades
+        weights_portfolio_plus_trades = (
+            weights_portfolio.values + weights_trades
+        )  # Portfolio weights after trades
 
-        wdiff = wplus - values_in_time(self.target_weights, t).values
+        wdiff = (
+            weights_portfolio_plus_trades
+            - get_value_at_t(self.target_weights, t).values
+        )
 
         assert wdiff.is_concave()
 
@@ -84,7 +89,13 @@ class SPOWeights(BaseStrategy):
         constraints += [
             item
             for item in (
-                con.weight_expr(t, wplus, z, value, holdings.index)
+                con.cvxpy_expression(
+                    t,
+                    weights_portfolio_plus_trades,
+                    weights_trades,
+                    value,
+                    holdings.index,
+                )
                 for con in self.constraints
             )
         ]
@@ -95,7 +106,7 @@ class SPOWeights(BaseStrategy):
             # assert el.is_dcp()
 
         objective = cvx.Minimize(cvx.sum(cvx.abs(wdiff)))
-        constraints += [cvx.sum(z) == 0]
+        constraints += [cvx.sum(weights_trades) == 0]
         self.prob = cvx.Problem(
             objective, constraints
         )  # Trades need to 0 out, i.e. cash account must adjust to make everything net to 0
@@ -103,18 +114,16 @@ class SPOWeights(BaseStrategy):
         try:
             self.prob.solve(solver=self.solver, **self.solver_opts)
 
-            if self.prob.status == "unbounded":
-                print(f"The problem is unbounded at {t}.")
+            if self.prob.status in ("unbounded", "infeasible"):
+                print(f"The problem is {self.prob.status} at {t}.")
                 return self._zerotrade(holdings)
 
-            if self.prob.status == "infeasible":
-                print(f"The problem is infeasible at {t}.")
-                return self._zerotrade(holdings)
+            dollars_trades = pd.Series(
+                index=holdings.index, data=(weights_trades.value * value)
+            )
 
-            u = pd.Series(index=holdings.index, data=(z.value * value))
+            return dollars_trades
 
-            return u
-
-        except (cvx.SolverError, cvx.DCPError, TypeError):
-            print(f"The solver failed for {t}.")
+        except (cvx.SolverError, cvx.DCPError, TypeError) as e:
+            print(f"The solver failed for {t}. Error details: {e}")
             return self._zerotrade(holdings)

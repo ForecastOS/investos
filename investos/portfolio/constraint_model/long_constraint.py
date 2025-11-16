@@ -14,30 +14,10 @@ class LongOnlyConstraint(BaseConstraint):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def _weight_expr(self, t, w_plus, z, v):
-        """
-        Returns a series of holding constraints.
-
-        Parameters
-        ----------
-        t : datetime
-            The current time.
-
-        w_plus : series
-            Portfolio weights after trades z.
-
-        z : series
-            Trades for period t
-
-        v : float
-            Value of portfolio at period t
-
-        Returns
-        -------
-        series
-            The holding constraints based on the no short positions (including no short cash position) constraint.
-        """
-        return w_plus >= 0.0
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
+        return weights_portfolio_plus_trades >= 0.0
 
 
 class LongCashConstraint(BaseConstraint):
@@ -53,30 +33,10 @@ class LongCashConstraint(BaseConstraint):
     def __init__(self, include_assets=["cash"], **kwargs):
         super().__init__(include_assets=include_assets, **kwargs)
 
-    def _weight_expr(self, t, w_plus, z, v):
-        """
-        Returns a series of holding constraints.
-
-        Parameters
-        ----------
-        t : datetime
-            The current time.
-
-        w_plus : series
-            Portfolio weights after trades z.
-
-        z : series
-            Trades for period t
-
-        v : float
-            Value of portfolio at period t
-
-        Returns
-        -------
-        series
-            The holding constraints based on the no short cash positions constraint
-        """
-        return w_plus >= 0.0
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
+        return weights_portfolio_plus_trades >= 0.0
 
 
 class EqualLongShortConstraint(BaseConstraint):
@@ -92,35 +52,17 @@ class EqualLongShortConstraint(BaseConstraint):
     def __init__(self, exclude_assets=["cash"], **kwargs):
         super().__init__(exclude_assets=exclude_assets, **kwargs)
 
-    def _weight_expr(self, t, w_plus, z, v):
-        """
-        Returns a series of holding constraints.
-
-        Parameters
-        ----------
-        t : datetime
-            The current time.
-
-        w_plus : series
-            Portfolio weights after trades z.
-
-        z : series
-            Trades for period t
-
-        v : float
-            Value of portfolio at period t
-
-        Returns
-        -------
-        series
-            The holding constraints based on the equal long and short exposure constraint.
-        """
-        return sum(w_plus) == 0.0
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
+        return sum(weights_portfolio_plus_trades) == 0.0
 
 
 class EqualLongShortTradeConstraint(BaseConstraint):
     def __init__(self, exclude_assets=["cash"], **kwargs):
         super().__init__(exclude_assets=exclude_assets, **kwargs)
 
-    def _weight_expr(self, t, w_plus, z, v):
-        return sum(z) == 0.0
+    def _cvxpy_expression(
+        self, t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+    ):
+        return sum(weights_trades) == 0.0

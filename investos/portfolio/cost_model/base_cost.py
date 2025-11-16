@@ -9,7 +9,7 @@ import investos.util as util
 class BaseCost:
     """Base cost model for InvestOS.
     Other cost models should subclass BaseCost.
-    The only requirement of custom cost models is that they (re)implement :py:meth:`~investos.portfolio.cost_model.base_cost.BaseCost.value_expr`.
+    The only requirement of custom cost models is that they implement `_estimated_cost_for_optimization` and `get_actual_cost`.
     """
 
     def __init__(self, **kwargs):
@@ -17,34 +17,50 @@ class BaseCost:
         self.exclude_assets = kwargs.get("exclude_assets", ["cash"])
         self.include_assets = kwargs.get("include_assets", [])
 
-    def weight_expr(self, t, w_plus, z, value, asset_idx):
-        w_plus = util.remove_excluded_columns_np(
-            w_plus,
+    def cvxpy_expression(
+        self,
+        t,
+        weights_portfolio_plus_trades,
+        weights_trades,
+        portfolio_value,
+        asset_idx,
+    ):
+        weights_portfolio_plus_trades = util.remove_excluded_columns_np(
+            weights_portfolio_plus_trades,
             asset_idx,
             exclude_assets=self.exclude_assets,
             include_assets=self.include_assets,
         )
-        z = util.remove_excluded_columns_np(
-            z,
+        weights_trades = util.remove_excluded_columns_np(
+            weights_trades,
             asset_idx,
             exclude_assets=self.exclude_assets,
             include_assets=self.include_assets,
         )
 
-        cost, constraints = self._estimated_cost_for_optimization(t, w_plus, z, value)
+        cost, constraints = self._estimated_cost_for_optimization(
+            t, weights_portfolio_plus_trades, weights_trades, portfolio_value
+        )
         return self.gamma * cost, constraints
 
-    def actual_cost(self, t: dt.datetime, h_plus: pd.Series, u: pd.Series) -> pd.Series:
-        h_plus = util.remove_excluded_columns_pd(
-            h_plus,
+    def actual_cost(
+        self,
+        t: dt.datetime,
+        dollars_holdings_plus_trades: pd.Series,
+        dollars_trades: pd.Series,
+    ) -> pd.Series:
+        dollars_holdings_plus_trades = util.remove_excluded_columns_pd(
+            dollars_holdings_plus_trades,
             exclude_assets=self.exclude_assets,
             include_assets=self.include_assets,
         )
-        u = util.remove_excluded_columns_pd(
-            u, exclude_assets=self.exclude_assets, include_assets=self.include_assets
+        dollars_trades = util.remove_excluded_columns_pd(
+            dollars_trades,
+            exclude_assets=self.exclude_assets,
+            include_assets=self.include_assets,
         )
 
-        return self.get_actual_cost(t, h_plus, u)
+        return self.get_actual_cost(t, dollars_holdings_plus_trades, dollars_trades)
 
     def __mul__(self, other):
         """Read the gamma parameter as a multiplication; so you can change self.gamma without setting it directly as: gamma * BaseCost()"""

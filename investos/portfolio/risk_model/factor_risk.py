@@ -53,26 +53,24 @@ class FactorRisk(BaseRisk):
             self._apply_risk_model_adjustments()
             print("\nDone generating point-in-time structural risk models.")
 
-    def _estimated_cost_for_optimization(self, t, w_plus, z, value):
+    def _estimated_cost_for_optimization(
+        self, t, weights_portfolio_plus_trades, weights_trades, value
+    ):
         """Optimization (non-cash) cost penalty for assuming associated asset risk.
 
         Used by optimization strategy to determine trades.
 
         Not used to calculate simulated costs for backtest performance.
         """
-        factor_covar = util.values_in_time(
-            self.factor_covariance, t, lookback_for_closest=True
-        )
-        factor_load = util.values_in_time(
-            self.factor_loadings, t, lookback_for_closest=True
-        )
-        idiosync_var = util.values_in_time(
-            self.idiosyncratic_variance, t, lookback_for_closest=True
+        factor_covar = util.get_value_at_t(self.factor_covariance, t, use_lookback=True)
+        factor_load = util.get_value_at_t(self.factor_loadings, t, use_lookback=True)
+        idiosync_var = util.get_value_at_t(
+            self.idiosyncratic_variance, t, use_lookback=True
         )
 
         risk_from_factors = factor_load.T @ factor_covar @ factor_load
         sigma = risk_from_factors + np.diag(idiosync_var)
-        self.expression = cvx.quad_form(w_plus, sigma)
+        self.expression = cvx.quad_form(weights_portfolio_plus_trades, sigma)
 
         if self._penalize_risk:
             risk_penalty = self.expression
@@ -86,37 +84,35 @@ class FactorRisk(BaseRisk):
 
         return risk_penalty, constr_li
 
-    def portfolio_variance_estimate(self, t, w_plus):
+    def portfolio_variance_estimate(self, t, weights_portfolio_plus_trades):
         if self._dynamic_vra:
-            factor_covar = util.values_in_time(
-                self.adj_factor_covariance, t, lookback_for_closest=True
+            factor_covar = util.get_value_at_t(
+                self.adj_factor_covariance, t, use_lookback=True
             )
-            idiosync_var = util.values_in_time(
-                self.adj_idiosyncratic_variance, t, lookback_for_closest=True
+            idiosync_var = util.get_value_at_t(
+                self.adj_idiosyncratic_variance, t, use_lookback=True
             )
         else:
-            factor_covar = util.values_in_time(
-                self.factor_covariance, t, lookback_for_closest=True
+            factor_covar = util.get_value_at_t(
+                self.factor_covariance, t, use_lookback=True
             )
-            idiosync_var = util.values_in_time(
-                self.idiosyncratic_variance, t, lookback_for_closest=True
+            idiosync_var = util.get_value_at_t(
+                self.idiosyncratic_variance, t, use_lookback=True
             )
 
-        factor_load = util.values_in_time(
-            self.factor_loadings, t, lookback_for_closest=True
-        )
+        factor_load = util.get_value_at_t(self.factor_loadings, t, use_lookback=True)
 
-        w = w_plus.values  # n x 1
+        weights_portfolio = weights_portfolio_plus_trades.values  # n x 1
         B = factor_load.values  # n x k
         F = factor_covar.values  # k x k
         D_diag = idiosync_var.values  # n x 1
 
-        # Factor risk: (B^T w)^T F (B^T w)
-        factor_exposure = B @ w  # k x 1
+        # Factor risk: (B^T weights_portfolio)^T F (B^T weights_portfolio)
+        factor_exposure = B @ weights_portfolio  # k x 1
         factor_risk = factor_exposure.T @ F @ factor_exposure  # scalar
 
         # Idiosyncratic risk: w^T D w
-        idiosyncratic_risk = np.sum((w**2) * D_diag)  # scalar
+        idiosyncratic_risk = np.sum((weights_portfolio**2) * D_diag)  # scalar
 
         # Total portfolio variance
         portfolio_variance = factor_risk + idiosyncratic_risk
@@ -127,8 +123,8 @@ class FactorRisk(BaseRisk):
 
         return portfolio_variance
 
-    def portfolio_volatility_estimate(self, t, w_plus):
-        return self.portfolio_variance_estimate(t, w_plus) ** 0.5
+    def portfolio_volatility_estimate(self, t, weights_portfolio_plus_trades):
+        return self.portfolio_variance_estimate(t, weights_portfolio_plus_trades) ** 0.5
 
     def _make_dynamic_volatility_regime_adjustment(self, weights_for_vra_adj):
         """
@@ -237,8 +233,8 @@ class FactorRisk(BaseRisk):
         idio_var_adj_dfs = []
         for t_idx in range(len(dates) - 1):
             today, tomorrow = dates[t_idx], dates[t_idx + 1]
-            tmp = util.values_in_time(
-                self.factor_covariance, tomorrow, lookback_for_closest=True
+            tmp = util.get_value_at_t(
+                self.factor_covariance, tomorrow, use_lookback=True
             ) * (self._λ_factor.loc[today] ** 2)
             tmp.index = pd.MultiIndex.from_product(
                 [[tomorrow], tmp.index], names=["datetime", "index"]
@@ -246,8 +242,8 @@ class FactorRisk(BaseRisk):
             factor_covar_adj_dfs.append(tmp)
 
             # b) Idiosyncratic variances – scale by λ_spec²
-            tmp = util.values_in_time(
-                self.idiosyncratic_variance, tomorrow, lookback_for_closest=True
+            tmp = util.get_value_at_t(
+                self.idiosyncratic_variance, tomorrow, use_lookback=True
             ) * (self._λ_spec.loc[today] ** 2)
             idio_var_adj_dfs.append([tomorrow, tmp])
 
@@ -538,6 +534,7 @@ class FactorRisk(BaseRisk):
                 df_market_cap = df_market_cap[df_market_cap.datetime <= self.end_date]
 
                 # Remove errant data for L14CLL-R (Faraday Future Intelligent Electric)
+                # TODO: fix upstream and remove
                 df_market_cap = df_market_cap[df_market_cap.id != "L14CLL-R"]
 
                 df_market_cap = df_market_cap[df_market_cap["rank"] <= 100]

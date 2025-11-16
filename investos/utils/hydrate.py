@@ -20,14 +20,14 @@ class HydrateMixin:
         self.__version__ = inv.__version__
         skip_keys = self._implied_attributes()
 
-        for k, v in self.__dict__.items():
+        for k, value in self.__dict__.items():
             if k in skip_keys:
                 continue
             try:
-                pickle.dumps(v)
-                clean_state[k] = v
+                pickle.dumps(value)
+                clean_state[k] = value
             except Exception as e:
-                print(f"⚠️ Skipping non-pickleable attribute: {k} ({type(v)}): {e}")
+                print(f"⚠️ Skipping non-pickleable attribute: {k} ({type(value)}): {e}")
 
         return clean_state
 

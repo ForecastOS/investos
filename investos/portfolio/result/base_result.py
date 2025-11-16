@@ -44,24 +44,31 @@ class BaseResult(SaveResult, HydrateMixin):
                 ),
             )
 
-    def save_position(self, t: dt.datetime, u: pd.Series, h_next: pd.Series) -> None:
+    def save_position(
+        self,
+        t: dt.datetime,
+        dollars_trades: pd.Series,
+        dollars_holdings_at_next_t: pd.Series,
+    ) -> None:
         """
-        Save data `u` and `h_next` related to position for datetime `t` on `Result` object.
+        Save data `dollars_trades` and `dollars_holdings_at_next_t` related to position for datetime `t` on `Result` object.
 
         Parameters
         ----------
         t : datetime.datetime
-            The datetime for associated trades `u` and t + 1 holdings `h_next`.
-        u : pandas.Series
+            The datetime for associated trades `dollars_trades` and t + 1 holdings `dollars_holdings_at_next_t`.
+        dollars_trades : pandas.Series
             Trades (as values) for period `t`.
-        h_next : pandas.Series
-            Holdings at beginning of period t + 1, after trades `u` and returns for period `t`.
+        dollars_holdings_at_next_t : pandas.Series
+            Holdings at beginning of period t + 1, after trades `dollars_trades` and returns for period `t`.
         """
-        # Zero out small (immaterial only) rounding errors in h_next
-        h_next = h_next.where(h_next.abs() >= 1e-5, 0.0)
+        # Zero out small (immaterial only) rounding errors in dollars_holdings_at_next_t
+        dollars_holdings_at_next_t = dollars_holdings_at_next_t.where(
+            dollars_holdings_at_next_t.abs() >= 1e-5, 0.0
+        )
 
-        self.save_data("u", t, u)
-        self.save_data("h_next", t, h_next)
+        self.save_data("dollars_trades", t, dollars_trades)
+        self.save_data("dollars_holdings_at_next_t", t, dollars_holdings_at_next_t)
 
     @property
     def summary(self) -> None:
@@ -78,8 +85,8 @@ class BaseResult(SaveResult, HydrateMixin):
         """
         data = collections.OrderedDict(
             {
-                "Initial timestamp": self.h.index[0],
-                "Final timestamp": self.h.index[-1],
+                "Initial timestamp": self.dollars_holdings.index[0],
+                "Final timestamp": self.dollars_holdings.index[-1],
                 "Total portfolio return (%)": str(round(self.total_return * 100, 2))
                 + "%",
                 "Annualized portfolio return (%)": str(
@@ -110,37 +117,41 @@ class BaseResult(SaveResult, HydrateMixin):
 
     @property
     @clip_for_dates
-    def h(self) -> pd.DataFrame:
-        """Returns a pandas Dataframe of asset holdings (`h`) at the beginning of each datetime period."""
-        tmp = self.h_next.copy()
-        tmp = self.h_next.shift(1)  # Shift h_next to h timing
+    def dollars_holdings(self) -> pd.DataFrame:
+        """Returns a pandas Dataframe of asset holdings (`dollars_holdings`) at the beginning of each datetime period."""
+        tmp = self.dollars_holdings_at_next_t.copy()
+        tmp = self.dollars_holdings_at_next_t.shift(
+            1
+        )  # Shift dollars_holdings_at_next_t to dollars_holdings timing
         return tmp[1:]
 
     @property
     @clip_for_dates
     def trades(self) -> pd.DataFrame:
-        "Returns a pandas Series of trades (u)."
-        return self.u
+        "Returns a pandas Series of trades (dollars_trades)."
+        return self.dollars_trades
 
     @property
     def num_periods(self) -> int:
         """Number of periods in backtest. Note that the starting position (at t=0) does not count as a period."""
-        return self.h.shape[0]
+        return self.dollars_holdings.shape[0]
 
     @property
-    def v(self) -> pd.Series:
-        """Returns a pandas Series for the value (`v`) of the portfolio for each datetime period."""
-        return self.h.sum(axis=1)
+    def portfolio_value(self) -> pd.Series:
+        """Returns a pandas Series for the value (`portfolio_value`) of the portfolio for each datetime period."""
+        return self.dollars_holdings.sum(axis=1)
 
     @property
-    def v_with_benchmark(self) -> pd.Series:
+    def portfolio_value_with_benchmark(self) -> pd.Series:
         """Returns a pandas Dataframe with simulated portfolio and benchmark values."""
-        return pd.DataFrame({"portfolio": self.v, "benchmark": self.benchmark_v})
+        return pd.DataFrame(
+            {"portfolio": self.portfolio_value, "benchmark": self.benchmark_value}
+        )
 
     @property
     def returns(self) -> pd.Series:
         """Returns a pandas Series of the returns for each datetime period (vs the previous period)."""
-        val = self.v
+        val = self.portfolio_value
         return pd.Series(
             data=val.values[1:] / val.values[:-1] - 1, index=val.index[1:]
         ).dropna()
@@ -193,12 +204,12 @@ class BaseResult(SaveResult, HydrateMixin):
     @property
     def total_return(self) -> float:
         """Returns a float representing the total return for the entire period under review."""
-        return self.v.iloc[-1] / self.v.iloc[0] - 1
+        return self.portfolio_value.iloc[-1] / self.portfolio_value.iloc[0] - 1
 
     @property
     def total_benchmark_return(self) -> float:
         """Returns a float representing the return over benchmark for the entire period under review."""
-        return self.benchmark_v.iloc[-1] / self.benchmark_v.iloc[0] - 1
+        return self.benchmark_value.iloc[-1] / self.benchmark_value.iloc[0] - 1
 
     @property
     def total_risk_free_return(self) -> float:
@@ -258,12 +269,12 @@ class BaseResult(SaveResult, HydrateMixin):
     @property
     def excess_risk_annualized(self) -> pd.Series:
         """Returns a pandas Series of risk in excess of the benchmark."""
-        return self.excess_returns.std() * np.sqrt(self.ppy)
+        return self.excess_returns.std() * np.sqrt(self.periods_per_year)
 
     @property
     def risk_over_cash_annualized(self) -> pd.Series:
         """Returns a pandas Series of risk in excess of the risk free rate."""
-        return self.returns_over_cash.std() * np.sqrt(self.ppy)
+        return self.returns_over_cash.std() * np.sqrt(self.periods_per_year)
 
     @property
     def cash_column_name(self) -> str:
@@ -298,13 +309,13 @@ class BaseResult(SaveResult, HydrateMixin):
         return self.risk_free
 
     @property
-    def benchmark_v(self) -> pd.Series:
+    def benchmark_value(self) -> pd.Series:
         """Returns series of simulated portfolio values, if portfolio was invested 100% in benchmark at time 0"""
         benchmark_factors = self.benchmark_returns + 1
         benchmark_factors.iloc[0] = 1  # No returns for period 0
 
         return (
-            benchmark_factors.cumprod() * self.v.iloc[0]
+            benchmark_factors.cumprod() * self.portfolio_value.iloc[0]
         )  # Calculate values if initial portfolio value was invested 100% in benchmark
 
     @property
@@ -312,10 +323,12 @@ class BaseResult(SaveResult, HydrateMixin):
         """Returns a float representing the number of years in the backtest period.
         Calculated as (datetime @ t[-1] - datetime @ t[0]) / datetime.timedelta(days=365.25)
         """
-        return (self.v.index[-1] - self.v.index[0]) / dt.timedelta(days=365.25)
+        return (
+            self.portfolio_value.index[-1] - self.portfolio_value.index[0]
+        ) / dt.timedelta(days=365.25)
 
     @property
-    def ppy(self) -> float:
+    def periods_per_year(self) -> float:
         """Returns a float representing the number of periods per year in the backtest period.
         Calculated as :py:attr:`~investos.portfolio.result.base_result.BaseResult.num_periods` / :py:attr:`~investos.portfolio.result.base_result.BaseResult.years_forecast`
         """
@@ -331,7 +344,7 @@ class BaseResult(SaveResult, HydrateMixin):
             return self.annualized_excess_return / self.excess_risk_annualized
         else:
             return (
-                np.sqrt(self.ppy)
+                np.sqrt(self.periods_per_year)
                 * np.mean(self.excess_returns)
                 / np.std(self.excess_returns)
             )
@@ -355,7 +368,7 @@ class BaseResult(SaveResult, HydrateMixin):
             return self.annualized_return_over_cash / self.risk_over_cash_annualized
         else:
             return (
-                np.sqrt(self.ppy)
+                np.sqrt(self.periods_per_year)
                 * np.mean(self.returns_over_cash)
                 / np.std(self.returns_over_cash)
             )
@@ -371,27 +384,35 @@ class BaseResult(SaveResult, HydrateMixin):
 
     @property
     def turnover(self):
-        """Turnover ||u_t||_1/v_t"""
         noncash_trades = self.trades.drop([self.cash_column_name], axis=1)
-        return np.abs(noncash_trades).sum(axis=1) / self.v
+        return np.abs(noncash_trades).sum(axis=1) / self.portfolio_value
 
     @property
     def leverage(self):
-        """Turnover ||u_t||_1/v_t"""
-        noncash_h = self.h.drop([self.cash_column_name], axis=1)
-        return np.abs(noncash_h).sum(axis=1) / self.v
+        noncash_dollars_holdings = self.dollars_holdings.drop(
+            [self.cash_column_name], axis=1
+        )
+        return np.abs(noncash_dollars_holdings).sum(axis=1) / self.portfolio_value
 
     @property
     def long_leverage(self):
-        """Turnover ||u_t||_1/v_t"""
-        noncash_h = self.h.drop([self.cash_column_name], axis=1)
-        return np.abs(noncash_h[noncash_h > 0]).sum(axis=1) / self.v
+        noncash_dollars_holdings = self.dollars_holdings.drop(
+            [self.cash_column_name], axis=1
+        )
+        return (
+            np.abs(noncash_dollars_holdings[noncash_dollars_holdings > 0]).sum(axis=1)
+            / self.portfolio_value
+        )
 
     @property
     def short_leverage(self):
-        """Turnover ||u_t||_1/v_t"""
-        noncash_h = self.h.drop([self.cash_column_name], axis=1)
-        return np.abs(noncash_h[noncash_h < 0]).sum(axis=1) / self.v
+        noncash_dollars_holdings = self.dollars_holdings.drop(
+            [self.cash_column_name], axis=1
+        )
+        return (
+            np.abs(noncash_dollars_holdings[noncash_dollars_holdings < 0]).sum(axis=1)
+            / self.portfolio_value
+        )
 
     @property
     def annual_turnover(self):
@@ -400,27 +421,33 @@ class BaseResult(SaveResult, HydrateMixin):
     @property
     def max_drawdown(self):
         """The maximum peak to trough drawdown in percent."""
-        val_arr = self.v.values
-        max_dd_so_far = 0
-        cur_max = val_arr[0]
-        for val in val_arr[1:]:
+        pv_li = self.portfolio_value.values
+        max_drawdown_so_far = 0
+        cur_max = pv_li[0]
+        for val in pv_li[1:]:
             if val >= cur_max:
                 cur_max = val
-            elif (cur_max - val) / cur_max > max_dd_so_far:
-                max_dd_so_far = (cur_max - val) / cur_max
-        return max_dd_so_far
+            elif (cur_max - val) / cur_max > max_drawdown_so_far:
+                max_drawdown_so_far = (cur_max - val) / cur_max
+        return max_drawdown_so_far
 
     def hit_rate(self, scale_ignore=10_000):
-        h = self.h.where(self.h.abs() <= self.starting_aum / scale_ignore, 0)
+        dollars_holdings = self.dollars_holdings.where(
+            self.dollars_holdings.abs() <= self.starting_aum / scale_ignore, 0
+        )
         returns_df = self.actual_returns
-        if self.cash_column_name in list(h.columns):
-            h = h.drop([self.cash_column_name], axis=1)
+        if self.cash_column_name in list(dollars_holdings.columns):
+            dollars_holdings = dollars_holdings.drop([self.cash_column_name], axis=1)
         if self.cash_column_name in list(returns_df.columns):
             returns_df = returns_df.drop([self.cash_column_name], axis=1)
 
-        h = h.iloc[1:].round(decimals=0).replace(-0.0, 0.0)
-        returns_df = returns_df[returns_df.index.isin(h.index)]
-        sign_agree_df = (np.sign(h) * np.sign(returns_df)).fillna(0).astype(int)
+        dollars_holdings = (
+            dollars_holdings.iloc[1:].round(decimals=0).replace(-0.0, 0.0)
+        )
+        returns_df = returns_df[returns_df.index.isin(dollars_holdings.index)]
+        sign_agree_df = (
+            (np.sign(dollars_holdings) * np.sign(returns_df)).fillna(0).astype(int)
+        )
 
         hit = sign_agree_df[sign_agree_df == 1].sum(axis=1)
         hit_attempt = sign_agree_df[sign_agree_df.abs() == 1].abs().sum(axis=1)
@@ -428,7 +455,7 @@ class BaseResult(SaveResult, HydrateMixin):
 
     @property
     def starting_aum(self):
-        return self.h.iloc[0].sum()
+        return self.dollars_holdings.iloc[0].sum()
 
     # -----------------------------------------------
     # Aggregate value created over time
@@ -436,50 +463,60 @@ class BaseResult(SaveResult, HydrateMixin):
 
     @property
     @clip_for_dates
-    def v_created(self) -> pd.Series:
+    def portfolio_value_created(self) -> pd.Series:
         """Returns a pandas Series for the value (`v`) of the portfolio for each datetime period."""
-        return self.h.sum(axis=1) - self.starting_aum
+        return self.dollars_holdings.sum(axis=1) - self.starting_aum
 
     @property
     @clip_for_dates
     def cumulative_return(self) -> pd.Series:
-        """Returns a pandas Series for the value (`v`) of the portfolio for each datetime period."""
-        return self.v_created / self.starting_aum
+        """Returns a pandas Series for the value (`portfolio_value`) of the portfolio for each datetime period."""
+        return self.portfolio_value_created / self.starting_aum
 
     @property
     @clip_for_dates
-    def v_created_long(self) -> pd.Series:
-        """Returns a pandas Series for the value (`v`) of the portfolio for each datetime period."""
+    def portfolio_value_created_long(self) -> pd.Series:
+        """Returns a pandas Series for the value (`portfolio_value`) of the portfolio for each datetime period."""
         return (
-            ((self.h + self.u)[(self.h + self.u) > 0] * self.actual_returns)
+            (
+                (self.dollars_holdings + self.dollars_trades)[
+                    (self.dollars_holdings + self.dollars_trades) > 0
+                ]
+                * self.actual_returns
+            )
             .sum(axis=1)
             .shift(
                 1
-            )  # Uses fwd returns, so shift backwards to match returns and v_created
+            )  # Uses fwd returns, so shift backwards to match returns and portfolio_value_created
             .fillna(0)
         )
 
     @property
     @clip_for_dates
     def cumulative_return_long(self) -> pd.Series:
-        """Returns a pandas Series for the value (`v`) of the portfolio for each datetime period."""
-        return self.v_created_long.cumsum() / self.starting_aum
+        """Returns a pandas Series for the value (`portfolio_value`) of the portfolio for each datetime period."""
+        return self.portfolio_value_created_long.cumsum() / self.starting_aum
 
     @property
     @clip_for_dates
-    def v_created_short(self) -> pd.Series:
-        """Returns a pandas Series for the value (`v`) of the portfolio for each datetime period."""
+    def portfolio_value_created_short(self) -> pd.Series:
+        """Returns a pandas Series for the value (`portfolio_value`) of the portfolio for each datetime period."""
         return (
-            ((self.h + self.u)[(self.h + self.u) < 0] * self.actual_returns)
+            (
+                (self.dollars_holdings + self.dollars_trades)[
+                    (self.dollars_holdings + self.dollars_trades) < 0
+                ]
+                * self.actual_returns
+            )
             .sum(axis=1)
             .shift(
                 1
-            )  # Uses fwd returns, so shift backwards to match returns and v_created
+            )  # Uses fwd returns, so shift backwards to match returns and portfolio_value_created
             .fillna(0)
         )
 
     @property
     @clip_for_dates
     def cumulative_return_short(self) -> pd.Series:
-        """Returns a pandas Series for the value (`v`) of the portfolio for each datetime period."""
-        return self.v_created_short.cumsum() / self.starting_aum
+        """Returns a pandas Series for the value (`portfolio_value`) of the portfolio for each datetime period."""
+        return self.portfolio_value_created_short.cumsum() / self.starting_aum

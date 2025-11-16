@@ -27,62 +27,71 @@ def deep_dict_merge(default_d, update_d):
     return default_d  # With update_d values copied onto it
 
 
-def values_in_time(obj, t, tau=None, lookback_for_closest=False):
+def get_value_at_t(source, current_time, prediction_time=None, use_lookback=False):
     """
-    From CVXPortfolio:
+    Obtain the value(s) of a source object at a given time.
 
-    Obtain value(s) of object at time t, or right before.
+    Parameters
+    ----------
+    source : callable, pd.Series, pd.DataFrame, or other object
+        - If callable, returns source(current_time, prediction_time).
+        - If a pandas object, returns the value at the index matching
+          current_time (or (current_time, prediction_time) for MultiIndex).
+        - If no matching index is found, returns the object itself unless
+          use_lookback=True, in which case it returns the most recent prior index.
 
-    Optionally specify time tau>=t for which we want a prediction,
-    otherwise it is assumed tau = t.
+    current_time : np.Timestamp
+        Time at which the value is desired.
 
-    obj: callable, pd.Series, pd.DataFrame, or something else.
+    prediction_time : np.Timestamp or None
+        Optional forecast time. If None, defaults to current_time.
 
-        If a callable, we return obj(t,tau).
+    use_lookback : bool
+        If True, and no exact index match exists, return the value at the
+        closest index strictly before current_time.
 
-        If obj has an index attribute,
-        we try to return obj.loc[t],
-        or obj.loc[t, tau], if the index is a MultiIndex.
-        If not available, we return obj.
-
-        Otherwise, we return obj.
-
-    t: np.Timestamp (or similar). Time at which we want
-        the value.
-
-    tau: np.Timestamp (or similar), or None. Time tau >= t
-        of the prediction,  e.g., tau could be tomorrow, t
-        today, and we ask for prediction of market volume tomorrow,
-        made today. If None, then it is assumed tau = t.
-
+    Returns
+    -------
+    The retrieved value or the original source object.
     """
+    if prediction_time is None:
+        prediction_time = current_time
 
-    if callable(obj):
-        return obj(t, tau)
+    # Case 1: Callable source
+    if callable(source):
+        return source(current_time, prediction_time)
 
-    if isinstance(obj, pd.Series) or isinstance(obj, pd.DataFrame):
+    # Case 2: Pandas Series/DataFrame
+    if isinstance(source, (pd.Series, pd.DataFrame)):
         try:
-            if isinstance(obj.index, pd.MultiIndex):
-                return obj.loc[(t, tau)]
+            if isinstance(source.index, pd.MultiIndex):
+                return source.loc[(current_time, prediction_time)]
             else:
-                return obj.loc[t]
+                return source.loc[current_time]
         except KeyError:
-            if lookback_for_closest:
-                filtered_idx = obj.index[
-                    obj.index.get_level_values(0) < t
-                ].get_level_values(0)
+            if not use_lookback:
+                return source
 
-                if not filtered_idx.empty:
-                    return obj.loc[filtered_idx.max()]
-                else:
-                    return obj
+            # Lookback mode: find the closest earlier timestamp
+            time_index = source.index.get_level_values(0)
+            earlier_times = time_index[time_index < current_time]
+
+            if not earlier_times.empty:
+                closest_time = earlier_times.max()
+                return source.loc[closest_time]
             else:
-                return obj
+                return source
 
-    return obj
+    # Case 3: Fallback
+    return source
 
 
 def clip_for_dates(func):
+    """
+    Decorator that restricts the returned pandas object to the date range
+    defined by the instance's `start_date` and `end_date`.
+    """
+
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         pd_obj = func(self, *args, **kwargs)
@@ -94,6 +103,7 @@ def clip_for_dates(func):
 
 
 def remove_excluded_columns_pd(arg, exclude_assets=None, include_assets=None):
+    """Filter a DataFrame or Series by keeping `include_assets` if provided, otherwise dropping `exclude_assets`."""
     if include_assets:
         if isinstance(arg, pd.DataFrame):
             return arg[[col for col in include_assets if col in arg.columns]]
@@ -113,6 +123,7 @@ def remove_excluded_columns_pd(arg, exclude_assets=None, include_assets=None):
 def remove_excluded_columns_np(
     np_arr, holdings_cols, exclude_assets=None, include_assets=None
 ):
+    """Filter a NumPy array by including or excluding columns based on asset names."""
     if include_assets:
         idx_incl_assets = holdings_cols.get_indexer(include_assets)
         # Filter out -1 values (i.e. assets with no match)
@@ -152,9 +163,14 @@ def get_max_key_lt_or_eq_value(dictionary, value):
         return None
 
 
-def _solve_and_extract_z(prob, z, t, solver, solver_opts, holdings):
+def _solve_and_extract_trade_weights(
+    prob, weights_trades, t, solver, solver_opts, holdings
+):
     try:
         prob.solve(solver=solver, **solver_opts)
-        return t, z.value  # Return the value of z after solving
+        return (
+            t,
+            weights_trades.value,
+        )  # Return the value of weights_trades after solving
     except (cvx.SolverError, cvx.DCPError, TypeError):
         return t, pd.Series(index=holdings.index, data=0.0).values  # Zero trade
