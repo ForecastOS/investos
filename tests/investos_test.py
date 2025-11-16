@@ -2,7 +2,7 @@ import investos as inv
 
 
 def test_version():
-    assert inv.__version__ == "0.8.1"
+    assert inv.__version__ == "0.9.1"
 
 
 def test_key_and_endpoint():
